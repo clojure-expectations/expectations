@@ -1,9 +1,7 @@
 (ns expectations
   (:use clojure.test))
 
-(.addShutdownHook
- (Runtime/getRuntime)
- (Thread. run-all-tests))
+(-> (Runtime/getRuntime) (.addShutdownHook (Thread. run-all-tests)))
 
 (defmethod report :begin-test-ns [m]
     (with-test-out
@@ -26,8 +24,7 @@
 (defmethod comparison :in-map [expected actual options]
 	   (fn [e a] (= e (select-keys a (keys e)))))
 
-(defmethod comparison :in-set [expected actual options]
-	   (fn [e a] (a e)))
+(defmethod comparison :in-set [expected actual options] (fn [e a] (a e)))
 
 (defmethod comparison :regex [expected actual options] re-seq)
 
@@ -44,17 +41,3 @@
   ([expected option actual]
      `(deftest ~(gensym)
 	(is (~(comparison (eval expected) actual (eval option)) ~expected ~actual)))))
-
-(expect {:foo 1} in (assoc {:bar 1} :foo 1)) 
-
-(expect :foo in #{:foo :bar}) 
-
-(expect 2 (inc 1))
-
-(expect "foo" "foo")
-
-(expect #"foo" (str "boo" "foo" "ar"))
-
-(expect ArithmeticException (/ 12 0))
-
-(expect String "foo")
