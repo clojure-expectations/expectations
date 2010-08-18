@@ -249,78 +249,22 @@
 
 
 (defmacro try-expr
-  "Used by the 'is' macro to catch unexpected exceptions.
-  You don't call this."
-  {:added "1.1"}
+  "Used by the 'is' macro to catch unexpected exceptions."
   [msg form]
   `(try ~(assert-expr msg form)
         (catch Throwable t#
           (report {:type :error, :message ~msg,
                    :expected '~form, :actual t#}))))
 
-
-
-;;; ASSERTION MACROS
-
-;; You use these in your tests.
-
-(defmacro is
-  "Generic assertion macro.  'form' is any predicate test.
-  'msg' is an optional message to attach to the assertion.
-  
-  Example: (is (= 4 (+ 2 2)) \"Two plus two should be 4\")
-
-  Special forms:
-
-  (is (thrown? c body)) checks that an instance of c is thrown from
-  body, fails if not; then returns the thing thrown.
-
-  (is (thrown-with-msg? c re body)) checks that an instance of c is
-  thrown AND that the message on the exception matches (with
-  re-find) the regular expression re."
-  {:added "1.1"} 
-  ([form] `(is ~form nil))
-  ([form msg] `(try-expr ~msg ~form)))
-
-(defmacro are
-  "Checks multiple assertions with a template expression.
-  See clojure.template/do-template for an explanation of
-  templates.
-
-  Example: (are [x y] (= x y)  
-                2 (+ 1 1)
-                4 (* 2 2))
-  Expands to: 
-           (do (is (= 2 (+ 1 1)))
-               (is (= 4 (* 2 2))))
-
-  Note: This breaks some reporting features, such as line numbers."
-  {:added "1.1"}
-  [argv expr & args]
-  `(temp/do-template ~argv (is ~expr) ~@args))
-
-(defmacro testing
-  "Adds a new string to the list of testing contexts.  May be nested,
-  but must occur inside a test function (deftest)."
-  {:added "1.1"}
-  [string & body]
-  `(binding [*testing-contexts* (conj *testing-contexts* ~string)]
-     ~@body))
-
-
-
 ;;; DEFINING TESTS
 
-(defmacro deftest
-  "Defines a test function with no arguments.  Test functions may call
-  other tests, so tests may be composed.  If you compose tests, you
-  should also define a function named test-ns-hook; run-tests will
-  call test-ns-hook instead of testing all vars.
+(defmacro is
+  ([form] `(try-expr nil ~form)))
 
-  Note: Actually, the test body goes in the :test metadata on the var,
+(defmacro deftest
+  "The test body goes in the :test metadata on the var,
   and the real function (the value of the var) calls test-var on
   itself."
-  {:added "1.1"}
   [name & body]
   `(def ~(vary-meta name assoc :test `(fn [] ~@body))
 	(fn [] (test-var (var ~name)))))
