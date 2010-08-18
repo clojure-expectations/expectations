@@ -1,7 +1,5 @@
 (ns expectations
-  (:require
-   [clojure.stacktrace :as stack]
-   [clojure.template :as temp]))
+  (:require [clojure.stacktrace :as stack]))
 
 ;;; GLOBALS USED BY THE REPORTING FUNCTIONS
 
@@ -12,21 +10,9 @@
 
 ;;; UTILITIES FOR REPORTING FUNCTIONS
 
-(defn file-position
-  "Returns a vector [filename line-number] for the nth call up the
-  stack."
-  {:added "1.1"}
-  [n]
-  (let [^StackTraceElement s (nth (.getStackTrace (new java.lang.Throwable)) n)]
-    [(.getFileName s) (.getLineNumber s)]))
-
-(defn testing-vars-str
-  "Returns a string representation of the current test.  Renders the source file and line of
-  current assertion."
-  {:added "1.1"}
-  []
-  (let [[file line] (file-position 4)]
-    (str file ":" line)))
+(defn file-position []
+  (let [^StackTraceElement s (nth (.getStackTrace (new java.lang.Throwable)) 4)]
+    (str (.getFileName s) ":" (.getLineNumber s))))
 
 (defn inc-report-counter
   "Increments the named counter in *report-counters*, a ref to a map.
@@ -46,13 +32,13 @@
 
 (defmethod report :fail [m]
 	   (inc-report-counter :fail)
-	   (println "\nFAIL in" (testing-vars-str))
+	   (println "\nFAIL in" (file-position))
 	   (println "expected:" (pr-str (:expected m)))
 	   (println "  actual:" (pr-str (:actual m))))
 
 (defmethod report :error [m]
 	   (inc-report-counter :error)
-	   (println "\nERROR in" (testing-vars-str))
+	   (println "\nERROR in" (file-position))
 	   (println "expected:" (pr-str (:expected m)))
 	   (print "  actual: ")
 	   (let [actual (:actual m)]
@@ -69,66 +55,24 @@
 (defmethod report :begin-test-var [m])
 (defmethod report :end-test-var [m])
 
-;;; UTILITIES FOR ASSERTIONS
-
-(defn get-possibly-unbound-var
-  "Like var-get but returns nil if the var is unbound."
-  {:added "1.1"}
-  [v]
-  (try (var-get v)
-       (catch IllegalStateException e
-         nil)))
-
-(defn function?
-  "Returns true if argument is a function or a symbol that resolves to
-  a function (not a macro)."
-  {:added "1.1"}
-  [x]
-  (if (symbol? x)
-    (when-let [v (resolve x)]
-      (when-let [value (get-possibly-unbound-var v)]
-        (and (fn? value)
-             (not (:macro (meta v))))))
-    (fn? x)))
-
-(defn assert-predicate
-  "Returns generic assertion code for any functional predicate.  The
-  'expected' argument to 'report' will contains the original form, the
-  'actual' argument will contain the form with all its sub-forms
-  evaluated.  If the predicate returns false, the 'actual' form will
-  be wrapped in (not...)."
-  {:added "1.1"}
-  [form]
-  (let [args (rest form)
-        pred (first form)]
-    `(let [values# (list ~@args)
-           result# (apply ~pred values#)]
-       (if result#
-         (report {:type :pass :expected '~form, :actual (cons ~pred values#)})
-         (report {:type :fail :expected '~form, :actual (list '~'not (cons '~pred values#))}))
-       result#)))
-
-(defn assert-any
-  "Returns generic assertion code for any test, including macros, Java
-  method calls, or isolated symbols."
-  {:added "1.1"}
-  [form]
-  `(let [value# ~form]
-     (if value#
-       (report {:type :pass :expected '~form, :actual value#})
-       (report {:type :fail :expected '~form, :actual value#}))
-     value#))
-
-
-
 ;;; ASSERTION METHODS
 
 (defmulti assert-expr (fn [form] (first form)))
 
 (defmethod assert-expr :default [form]
-	   (if (and (sequential? form) (function? (first form)))
-	     (assert-predicate form)
-	     (assert-any form)))
+	   ;;  "Returns generic assertion code for any functional predicate.  The
+	   ;;  'expected' argument to 'report' will contains the original form, the
+	   ;;  'actual' argument will contain the form with all its sub-forms
+	   ;;  evaluated.  If the predicate returns false, the 'actual' form will
+	   ;;  be wrapped in (not...)."
+	   (let [args (rest form)
+		 pred (first form)]
+	     `(let [values# (list ~@args)
+		    result# (apply ~pred values#)]
+		(if result#
+		  (report {:type :pass :expected '~form, :actual (cons ~pred values#)})
+		  (report {:type :fail :expected '~form, :actual (list '~'not (cons '~pred values#))}))
+		result#)))
 
 (defmethod assert-expr 'thrown? [form]
 	   ;; (is (thrown? c expr))
@@ -165,9 +109,7 @@
   (when-let [t (:test (meta v))]
     (report {:type :begin-test-var, :var v})
     (inc-report-counter :test)
-    (try (t)
-	 (catch Throwable e
-	   (report {:type :error :expected "Uncaught exception, not in assertion." :actual e})))
+    (t)
     (report {:type :end-test-var :var v})))
 
 (defn test-all-vars [ns]
@@ -180,22 +122,14 @@
     (test-all-vars ns)
     @*report-counters*))
 
-(defn run-tests [& namespaces]
+(defn run-tests [namespaces]
   (let [summary (assoc (apply merge-with + (map test-ns namespaces)) :type :summary)]
     (report summary)
     summary))
 
 (defn run-all-tests
-  ([] (apply run-tests (all-ns)))
-  ([re] (apply run-tests (filter #(re-matches re (name (ns-name %))) (all-ns)))))
-
-(defn successful?
-  "Returns true if the given test summary indicates all tests
-  were successful, false otherwise."
-  {:added "1.1"}
-  [summary]
-  (and (zero? (:fail summary 0))
-       (zero? (:error summary 0))))
+  ([] (run-tests (all-ns)))
+  ([re] (run-tests (filter #(re-matches re (name (ns-name %))) (all-ns)))))
 
 (-> (Runtime/getRuntime) (.addShutdownHook (Thread. run-all-tests)))
 
