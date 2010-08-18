@@ -97,9 +97,10 @@
   "The test body goes in the :test metadata on the var,
   and the real function (the value of the var) calls test-var on
   itself."
-  [name & body]
-  `(def ~(vary-meta name assoc :test `(fn [] ~@body))
-	(fn [] (test-var (var ~name)))))
+  [& body]
+  (let [name (gensym test)]
+    `(def ~(vary-meta name assoc :test `(fn [] ~@body))
+	  (fn [] (test-var (var ~name))))))
 
 ;;; RUNNING TESTS: LOW-LEVEL FUNCTIONS
 
@@ -161,8 +162,6 @@
 
 (defmacro expect 
   ([expected actual]
-     `(deftest ~(gensym)
-	(is (~(comparison (eval expected) actual {}) ~expected ~actual))))
+     `(deftest (is (~(comparison (eval expected) actual {}) ~expected ~actual))))
   ([expected option actual]
-     `(deftest ~(gensym)
-	(is (~(comparison (eval expected) actual (eval option)) ~expected ~actual)))))
+     `(deftest (is (~(comparison (eval expected) actual (eval option)) ~expected ~actual)))))
