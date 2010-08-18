@@ -90,51 +90,45 @@
    'report' will be a map with a :type key.  See the documentation at
    the top of test_is.clj for more information on the types of
    arguments for 'report'."
-     :dynamic true
-     :added "1.1"}
+    :dynamic true
+    :added "1.1"}
   report :type)
 
 (defmethod report :default [m]
-  (with-test-out (prn m)))
+	   (with-test-out (prn m)))
 
 (defmethod report :pass [m]
-  (with-test-out (inc-report-counter :pass)))
+	   (with-test-out (inc-report-counter :pass)))
 
 (defmethod report :fail [m]
-  (with-test-out
-   (inc-report-counter :fail)
-   (println "\nFAIL in" (testing-vars-str))
-   (when (seq *testing-contexts*) (println (testing-contexts-str)))
-   (when-let [message (:message m)] (println message))
-   (println "expected:" (pr-str (:expected m)))
-   (println "  actual:" (pr-str (:actual m)))))
+	   (with-test-out
+	     (inc-report-counter :fail)
+	     (println "\nFAIL in" (testing-vars-str))
+	     (when (seq *testing-contexts*) (println (testing-contexts-str)))
+	     (when-let [message (:message m)] (println message))
+	     (println "expected:" (pr-str (:expected m)))
+	     (println "  actual:" (pr-str (:actual m)))))
 
 (defmethod report :error [m]
-  (with-test-out
-   (inc-report-counter :error)
-   (println "\nERROR in" (testing-vars-str))
-   (when (seq *testing-contexts*) (println (testing-contexts-str)))
-   (when-let [message (:message m)] (println message))
-   (println "expected:" (pr-str (:expected m)))
-   (print "  actual: ")
-   (let [actual (:actual m)]
-     (if (instance? Throwable actual)
-       (stack/print-cause-trace actual *stack-trace-depth*)
-       (prn actual)))))
+	   (with-test-out
+	     (inc-report-counter :error)
+	     (println "\nERROR in" (testing-vars-str))
+	     (when (seq *testing-contexts*) (println (testing-contexts-str)))
+	     (when-let [message (:message m)] (println message))
+	     (println "expected:" (pr-str (:expected m)))
+	     (print "  actual: ")
+	     (let [actual (:actual m)]
+	       (if (instance? Throwable actual)
+		 (stack/print-cause-trace actual *stack-trace-depth*)
+		 (prn actual)))))
 
 (defmethod report :summary [m]
-  (with-test-out
-   (println "\nRan" (:test m) "tests containing"
-            (+ (:pass m) (:fail m) (:error m)) "assertions.")
-   (println (:fail m) "failures," (:error m) "errors.")))
-
-(defmethod report :begin-test-ns [m]
-    (with-test-out
-      (when (some #(:test (meta %)) (vals (ns-interns (:ns m))))
-        (println "\nTesting" (ns-name (:ns m))))))
+	   (with-test-out
+	     (println "\nRan" (:test m) "tests containing"
+		      (+ (:pass m) (:fail m) (:error m)) "assertions.")
+	     (println (:fail m) "failures," (:error m) "errors.")))
 
 ;; Ignore these message types:
-(defmethod report :end-test-ns [m])
 (defmethod report :begin-test-var [m])
 (defmethod report :end-test-var [m])
 
@@ -205,63 +199,63 @@
 (defmulti assert-expr 
   (fn [msg form]
     (cond
-      (nil? form) :always-fail
-      (seq? form) (first form)
-      :else :default)))
+     (nil? form) :always-fail
+     (seq? form) (first form)
+     :else :default)))
 
 (defmethod assert-expr :always-fail [msg form]
-  ;; nil test: always fail
-  `(report {:type :fail, :message ~msg}))
+	   ;; nil test: always fail
+	   `(report {:type :fail, :message ~msg}))
 
 (defmethod assert-expr :default [msg form]
-  (if (and (sequential? form) (function? (first form)))
-    (assert-predicate msg form)
-    (assert-any msg form)))
+	   (if (and (sequential? form) (function? (first form)))
+	     (assert-predicate msg form)
+	     (assert-any msg form)))
 
 (defmethod assert-expr 'instance? [msg form]
-  ;; Test if x is an instance of y.
-  `(let [klass# ~(nth form 1)
-         object# ~(nth form 2)]
-     (let [result# (instance? klass# object#)]
-       (if result#
-         (report {:type :pass, :message ~msg,
-                  :expected '~form, :actual (class object#)})
-         (report {:type :fail, :message ~msg,
-                  :expected '~form, :actual (class object#)}))
-       result#)))
+	   ;; Test if x is an instance of y.
+	   `(let [klass# ~(nth form 1)
+		  object# ~(nth form 2)]
+	      (let [result# (instance? klass# object#)]
+		(if result#
+		  (report {:type :pass, :message ~msg,
+			   :expected '~form, :actual (class object#)})
+		  (report {:type :fail, :message ~msg,
+			   :expected '~form, :actual (class object#)}))
+		result#)))
 
 (defmethod assert-expr 'thrown? [msg form]
-  ;; (is (thrown? c expr))
-  ;; Asserts that evaluating expr throws an exception of class c.
-  ;; Returns the exception thrown.
-  (let [klass (second form)
-        body (nthnext form 2)]
-    `(try ~@body
-          (report {:type :fail, :message ~msg,
-                   :expected '~form, :actual nil})
-          (catch ~klass e#
-            (report {:type :pass, :message ~msg,
-                     :expected '~form, :actual e#})
-            e#))))
+	   ;; (is (thrown? c expr))
+	   ;; Asserts that evaluating expr throws an exception of class c.
+	   ;; Returns the exception thrown.
+	   (let [klass (second form)
+		 body (nthnext form 2)]
+	     `(try ~@body
+		   (report {:type :fail, :message ~msg,
+			    :expected '~form, :actual nil})
+		   (catch ~klass e#
+		     (report {:type :pass, :message ~msg,
+			      :expected '~form, :actual e#})
+		     e#))))
 
 (defmethod assert-expr 'thrown-with-msg? [msg form]
-  ;; (is (thrown-with-msg? c re expr))
-  ;; Asserts that evaluating expr throws an exception of class c.
-  ;; Also asserts that the message string of the exception matches
-  ;; (with re-find) the regular expression re.
-  (let [klass (nth form 1)
-        re (nth form 2)
-        body (nthnext form 3)]
-    `(try ~@body
-          (report {:type :fail, :message ~msg, :expected '~form, :actual nil})
-          (catch ~klass e#
-            (let [m# (.getMessage e#)]
-              (if (re-find ~re m#)
-                (report {:type :pass, :message ~msg,
-                         :expected '~form, :actual e#})
-                (report {:type :fail, :message ~msg,
-                         :expected '~form, :actual e#})))
-            e#))))
+	   ;; (is (thrown-with-msg? c re expr))
+	   ;; Asserts that evaluating expr throws an exception of class c.
+	   ;; Also asserts that the message string of the exception matches
+	   ;; (with re-find) the regular expression re.
+	   (let [klass (nth form 1)
+		 re (nth form 2)
+		 body (nthnext form 3)]
+	     `(try ~@body
+		   (report {:type :fail, :message ~msg, :expected '~form, :actual nil})
+		   (catch ~klass e#
+		     (let [m# (.getMessage e#)]
+		       (if (re-find ~re m#)
+			 (report {:type :pass, :message ~msg,
+				  :expected '~form, :actual e#})
+			 (report {:type :fail, :message ~msg,
+				  :expected '~form, :actual e#})))
+		     e#))))
 
 
 (defmacro try-expr
@@ -396,10 +390,10 @@
   (fn [fixture-type & args] fixture-type))
 
 (defmethod use-fixtures :each [fixture-type & args]
-  (add-ns-meta ::each-fixtures args))
+	   (add-ns-meta ::each-fixtures args))
 
 (defmethod use-fixtures :once [fixture-type & args]
-  (add-ns-meta ::once-fixtures args))
+	   (add-ns-meta ::once-fixtures args))
 
 (defn- default-fixture
   "The default, empty, fixture function.  Just calls its argument."
@@ -454,48 +448,23 @@
            (each-fixture-fn (fn [] (test-var v)))))))))
 
 (defn test-ns
-  "If the namespace defines a function named test-ns-hook, calls that.
-  Otherwise, calls test-all-vars on the namespace.  'ns' is a
-  namespace object or a symbol.
-
-  Internally binds *report-counters* to a ref initialized to
+  "Internally binds *report-counters* to a ref initialized to
   *inital-report-counters*.  Returns the final, dereferenced state of
   *report-counters*."
-  {:added "1.1"}
   [ns]
   (binding [*report-counters* (ref *initial-report-counters*)]
-    (let [ns-obj (the-ns ns)]
-      (report {:type :begin-test-ns, :ns ns-obj})
-      ;; If the namespace has a test-ns-hook function, call that:
-      (if-let [v (find-var (symbol (str (ns-name ns-obj)) "test-ns-hook"))]
-	((var-get v))
-        ;; Otherwise, just test every var in the namespace.
-        (test-all-vars ns-obj))
-      (report {:type :end-test-ns, :ns ns-obj}))
+    (test-all-vars ns)
     @*report-counters*))
-
-
 
 ;;; RUNNING TESTS: HIGH-LEVEL FUNCTIONS
 
-(defn run-tests
-  "Runs all tests in the given namespaces; prints results.
-  Defaults to current namespace if none given.  Returns a map
-  summarizing test results."
-  {:added "1.1"}
-  ([] (run-tests *ns*))
-  ([& namespaces]
-     (let [summary (assoc (apply merge-with + (map test-ns namespaces))
-                     :type :summary)]
-       (report summary)
-       summary)))
+(defn run-tests [& namespaces]
+  (let [summary (assoc (apply merge-with + (map test-ns namespaces))
+		  :type :summary)]
+    (report summary)
+    summary))
 
 (defn run-all-tests
-  "Runs all tests in all namespaces; prints results.
-  Optional argument is a regular expression; only namespaces with
-  names matching the regular expression (with re-matches) will be
-  tested."
-  {:added "1.1"}
   ([] (apply run-tests (all-ns)))
   ([re] (apply run-tests (filter #(re-matches re (name (ns-name %))) (all-ns)))))
 
