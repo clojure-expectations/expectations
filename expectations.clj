@@ -5,7 +5,7 @@
 
 (defonce
   ^{:doc "True by default.  If set to false, no test functions will
-   be created by deftest, set-test, or with-test.  Use this to omit
+   be created by deftest, or with-test.  Use this to omit
    tests when compiling or loading production code."
     :added "1.1"}
   *load-tests* true)
@@ -359,108 +359,32 @@
     `(def ~(vary-meta name assoc :test `(fn [] ~@body) :private true)
           (fn [] (test-var (var ~name))))))
 
-
-(defmacro set-test
-  "Experimental.
-  Sets :test metadata of the named var to a fn with the given body.
-  The var must already exist.  Does not modify the value of the var.
-
-  When *load-tests* is false, set-test is ignored."
-  {:added "1.1"}
-  [name & body]
-  (when *load-tests*
-    `(alter-meta! (var ~name) assoc :test (fn [] ~@body))))
-
-
-
-;;; DEFINING FIXTURES
-
-(defn- add-ns-meta
-  "Adds elements in coll to the current namespace metadata as the
-  value of key."
-  {:added "1.1"}
-  [key coll]
-  (alter-meta! *ns* assoc key coll))
-
-(defmulti use-fixtures
-  "Wrap test runs in a fixture function to perform setup and
-  teardown. Using a fixture-type of :each wraps every test
-  individually, while:once wraps the whole run in a single function."
-  {:added "1.1"}
-  (fn [fixture-type & args] fixture-type))
-
-(defmethod use-fixtures :each [fixture-type & args]
-	   (add-ns-meta ::each-fixtures args))
-
-(defmethod use-fixtures :once [fixture-type & args]
-	   (add-ns-meta ::once-fixtures args))
-
-(defn- default-fixture
-  "The default, empty, fixture function.  Just calls its argument."
-  {:added "1.1"}
-  [f]
-  (f))
-
-(defn compose-fixtures
-  "Composes two fixture functions, creating a new fixture function
-  that combines their behavior."
-  {:added "1.1"}
-  [f1 f2]
-  (fn [g] (f1 (fn [] (f2 g)))))
-
-(defn join-fixtures
-  "Composes a collection of fixtures, in order.  Always returns a valid
-  fixture function, even if the collection is empty."
-  {:added "1.1"}
-  [fixtures]
-  (reduce compose-fixtures default-fixture fixtures))
-
-
-
-
 ;;; RUNNING TESTS: LOW-LEVEL FUNCTIONS
 
-(defn test-var
-  "If v has a function in its :test metadata, calls that function,
-  with *testing-vars* bound to (conj *testing-vars* v)."
-  {:dynamic true, :added "1.1"}
-  [v]
+(defn test-var [v]
+  ;;;  "If v has a function in its :test metadata, calls that function,
+  ;;;  with *testing-vars* bound to (conj *testing-vars* v)."
   (when-let [t (:test (meta v))]
     (binding [*testing-vars* (conj *testing-vars* v)]
       (report {:type :begin-test-var, :var v})
       (inc-report-counter :test)
       (try (t)
            (catch Throwable e
-             (report {:type :error, :message "Uncaught exception, not in assertion."
-                      :expected nil, :actual e})))
+             (report {:type :error, :message "Uncaught exception, not in assertion." :expected nil, :actual e})))
       (report {:type :end-test-var, :var v}))))
 
-(defn test-all-vars
-  "Calls test-var on every var interned in the namespace, with fixtures."
-  {:added "1.1"}
-  [ns]
-  (let [once-fixture-fn (join-fixtures (::once-fixtures (meta ns)))
-        each-fixture-fn (join-fixtures (::each-fixtures (meta ns)))]
-    (once-fixture-fn
-     (fn []
-       (doseq [v (vals (ns-interns ns))]
-         (when (:test (meta v))
-           (each-fixture-fn (fn [] (test-var v)))))))))
+(defn test-all-vars [ns]
+  (doseq [v (vals (ns-interns ns))]
+    (when (:test (meta v))
+      (test-var v))))
 
-(defn test-ns
-  "Internally binds *report-counters* to a ref initialized to
-  *inital-report-counters*.  Returns the final, dereferenced state of
-  *report-counters*."
-  [ns]
+(defn test-ns [ns]
   (binding [*report-counters* (ref *initial-report-counters*)]
     (test-all-vars ns)
     @*report-counters*))
 
-;;; RUNNING TESTS: HIGH-LEVEL FUNCTIONS
-
 (defn run-tests [& namespaces]
-  (let [summary (assoc (apply merge-with + (map test-ns namespaces))
-		  :type :summary)]
+  (let [summary (assoc (apply merge-with + (map test-ns namespaces)) :type :summary)]
     (report summary)
     summary))
 
