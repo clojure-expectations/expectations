@@ -3,20 +3,12 @@
    [clojure.stacktrace :as stack]
    [clojure.template :as temp]))
 
-(defonce
-  ^{:doc "True by default.  If set to false, no test functions will
-   be created by deftest, or with-test.  Use this to omit
-   tests when compiling or loading production code."
-    :added "1.1"}
-  *load-tests* true)
-
 (def
  ^{:doc "The maximum depth of stack traces to print when an Exception
   is thrown during a test.  Defaults to nil, which means print the 
   complete stack trace."
    :added "1.1"}
  *stack-trace-depth* nil)
-
 
 ;;; GLOBALS USED BY THE REPORTING FUNCTIONS
 
@@ -37,8 +29,6 @@
   [& body]
   `(binding [*out* *test-out*]
      ~@body))
-
-
 
 ;;; UTILITIES FOR REPORTING FUNCTIONS
 
@@ -321,19 +311,6 @@
 
 ;;; DEFINING TESTS
 
-(defmacro with-test
-  "Takes any definition form (that returns a Var) as the first argument.
-  Remaining body goes in the :test metadata function for that Var.
-
-  When *load-tests* is false, only evaluates the definition, ignoring
-  the tests."
-  {:added "1.1"}
-  [definition & body]
-  (if *load-tests*
-    `(doto ~definition (alter-meta! assoc :test (fn [] ~@body)))
-    definition))
-
-
 (defmacro deftest
   "Defines a test function with no arguments.  Test functions may call
   other tests, so tests may be composed.  If you compose tests, you
@@ -342,22 +319,11 @@
 
   Note: Actually, the test body goes in the :test metadata on the var,
   and the real function (the value of the var) calls test-var on
-  itself.
-
-  When *load-tests* is false, deftest is ignored."
+  itself."
   {:added "1.1"}
   [name & body]
-  (when *load-tests*
-    `(def ~(vary-meta name assoc :test `(fn [] ~@body))
-          (fn [] (test-var (var ~name))))))
-
-(defmacro deftest-
-  "Like deftest but creates a private var."
-  {:added "1.1"}
-  [name & body]
-  (when *load-tests*
-    `(def ~(vary-meta name assoc :test `(fn [] ~@body) :private true)
-          (fn [] (test-var (var ~name))))))
+  `(def ~(vary-meta name assoc :test `(fn [] ~@body))
+	(fn [] (test-var (var ~name)))))
 
 ;;; RUNNING TESTS: LOW-LEVEL FUNCTIONS
 
