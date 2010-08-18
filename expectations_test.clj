@@ -1,5 +1,5 @@
 (ns expectations-test
-  (:use clojure.test expectations))
+  (:use expectations))
 
 (expect {:foo 1} in (assoc {:bar 1} :foo 1)) 
 
