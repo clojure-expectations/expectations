@@ -11,7 +11,7 @@
 ;;; UTILITIES FOR REPORTING FUNCTIONS
 
 (defn file-position []
-  (let [^StackTraceElement s (nth (.getStackTrace (new java.lang.Throwable)) 4)]
+  (let [^StackTraceElement s (nth (.getStackTrace (new java.lang.Throwable)) 3)]
     (str (.getFileName s) ":" (.getLineNumber s))))
 
 (defn inc-report-counter
@@ -88,18 +88,13 @@
 
 ;;; DEFINING TESTS
 
-(defmacro is [form]
-  `(try ~(assert-expr form)
-        (catch Throwable t#
-          (report {:type :error :expected '~form :actual t#}))))
-
-(defmacro deftest
-  "The test body goes in the :test metadata on the var,
-  and the real function (the value of the var) calls test-var on
-  itself."
-  [& body]
+(defmacro defexpect [body]
   (let [name (gensym test)]
-    `(def ~(vary-meta name assoc :test `(fn [] ~@body))
+    `(def ~(vary-meta name assoc :test
+		      `(fn []
+			 (try ~(assert-expr body)
+			      (catch Throwable t#
+				(report {:type :error :expected '~body :actual t#})))))
 	  (fn [] (test-var (var ~name))))))
 
 ;;; RUNNING TESTS: LOW-LEVEL FUNCTIONS
@@ -147,8 +142,7 @@
 
 (defmethod comparison :equal [expected actual options] =)
 
-(defmethod comparison :in-map [expected actual options]
-	   (fn [e a] (= e (select-keys a (keys e)))))
+(defmethod comparison :in-map [expected actual options] (fn [e a] (= e (select-keys a (keys e)))))
 
 (defmethod comparison :in-set [expected actual options] (fn [e a] (a e)))
 
@@ -162,6 +156,6 @@
 
 (defmacro expect 
   ([expected actual]
-     `(deftest (is (~(comparison (eval expected) actual {}) ~expected ~actual))))
+     `(defexpect (~(comparison (eval expected) actual {}) ~expected ~actual)))
   ([expected option actual]
-     `(deftest (is (~(comparison (eval expected) actual (eval option)) ~expected ~actual)))))
+     `(defexpect (~(comparison (eval expected) actual (eval option)) ~expected ~actual))))
