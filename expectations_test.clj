@@ -7,6 +7,10 @@
 
 (expect 2 (inc 1))
 
+;(expect 3 (inc 1))
+
+;(expect 2 (/ 12 0))
+
 (expect "foo" "foo")
 
 (expect #"foo" (str "boo" "foo" "ar"))
