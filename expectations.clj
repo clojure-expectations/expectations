@@ -21,15 +21,6 @@
 
 (def *testing-contexts* (list)) ; bound to hierarchy of "testing" strings
 
-(def *test-out* *out*)         ; PrintWriter for test reporting output
-
-(defmacro with-test-out
-  "Runs body with *out* bound to the value of *test-out*."
-  {:added "1.1"}
-  [& body]
-  `(binding [*out* *test-out*]
-     ~@body))
-
 ;;; UTILITIES FOR REPORTING FUNCTIONS
 
 (defn file-position
@@ -73,50 +64,35 @@
 
 ;;; TEST RESULT REPORTING
 
-(defmulti
-  ^{:doc "Generic reporting function, may be overridden to plug in
-   different report formats (e.g., TAP, JUnit).  Assertions such as
-   'is' call 'report' to indicate results.  The argument given to
-   'report' will be a map with a :type key.  See the documentation at
-   the top of test_is.clj for more information on the types of
-   arguments for 'report'."
-    :dynamic true
-    :added "1.1"}
-  report :type)
-
-(defmethod report :default [m]
-	   (with-test-out (prn m)))
+(defmulti report :type)
 
 (defmethod report :pass [m]
-	   (with-test-out (inc-report-counter :pass)))
+	   (inc-report-counter :pass))
 
 (defmethod report :fail [m]
-	   (with-test-out
-	     (inc-report-counter :fail)
-	     (println "\nFAIL in" (testing-vars-str))
-	     (when (seq *testing-contexts*) (println (testing-contexts-str)))
-	     (when-let [message (:message m)] (println message))
-	     (println "expected:" (pr-str (:expected m)))
-	     (println "  actual:" (pr-str (:actual m)))))
+	   (inc-report-counter :fail)
+	   (println "\nFAIL in" (testing-vars-str))
+	   (when (seq *testing-contexts*) (println (testing-contexts-str)))
+	   (when-let [message (:message m)] (println message))
+	   (println "expected:" (pr-str (:expected m)))
+	   (println "  actual:" (pr-str (:actual m))))
 
 (defmethod report :error [m]
-	   (with-test-out
-	     (inc-report-counter :error)
-	     (println "\nERROR in" (testing-vars-str))
-	     (when (seq *testing-contexts*) (println (testing-contexts-str)))
-	     (when-let [message (:message m)] (println message))
-	     (println "expected:" (pr-str (:expected m)))
-	     (print "  actual: ")
-	     (let [actual (:actual m)]
-	       (if (instance? Throwable actual)
-		 (stack/print-cause-trace actual *stack-trace-depth*)
-		 (prn actual)))))
+	   (inc-report-counter :error)
+	   (println "\nERROR in" (testing-vars-str))
+	   (when (seq *testing-contexts*) (println (testing-contexts-str)))
+	   (when-let [message (:message m)] (println message))
+	   (println "expected:" (pr-str (:expected m)))
+	   (print "  actual: ")
+	   (let [actual (:actual m)]
+	     (if (instance? Throwable actual)
+	       (stack/print-cause-trace actual *stack-trace-depth*)
+	       (prn actual))))
 
 (defmethod report :summary [m]
-	   (with-test-out
-	     (println "\nRan" (:test m) "tests containing"
-		      (+ (:pass m) (:fail m) (:error m)) "assertions.")
-	     (println (:fail m) "failures," (:error m) "errors.")))
+	   (println "\nRan" (:test m) "tests containing"
+		    (+ (:pass m) (:fail m) (:error m)) "assertions.")
+	   (println (:fail m) "failures," (:error m) "errors."))
 
 ;; Ignore these message types:
 (defmethod report :begin-test-var [m])
@@ -247,19 +223,13 @@
 				  :expected '~form, :actual e#})))
 		     e#))))
 
-
-(defmacro try-expr
-  "Used by the 'is' macro to catch unexpected exceptions."
-  [msg form]
-  `(try ~(assert-expr msg form)
-        (catch Throwable t#
-          (report {:type :error, :message ~msg,
-                   :expected '~form, :actual t#}))))
-
 ;;; DEFINING TESTS
 
-(defmacro is
-  ([form] `(try-expr nil ~form)))
+(defmacro is [form]
+  `(try ~(assert-expr nil form)
+        (catch Throwable t#
+          (report {:type :error, :message nil,
+                   :expected '~form, :actual t#}))))
 
 (defmacro deftest
   "The test body goes in the :test metadata on the var,
