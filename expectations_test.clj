@@ -2,10 +2,10 @@
   (:use expectations))
 
 ;; k/v pair in map. matches subset
-(expect (assoc {} :foos 1) in (assoc {:bar 1} :foo 1)) 
+(expect {:foo 1} in {:foo 1 :cat 4}) 
 
 ;; key in set
-(expect (identity :foos) in (conj #{:foo :bar} :cat)) 
+(expect (identity :foo) in (conj #{:foo :bar} :cat)) 
 
 ;; number equality
 (expect 2 (inc 1))

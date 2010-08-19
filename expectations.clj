@@ -33,9 +33,11 @@
 (defmethod report :fail [m]
 	   (inc-report-counter :fail)
 	   (println "\nFAIL in" (file-position))
-	   (when-let [msg (:message m)] (println msg))
-	   (when-let [msg (:expected m)] (println "expected:" msg))
-	   (when-let [msg (:actual m)] (println "  actual:" msg))
+	   (when-let [msg (:expected m)] (println          "      raw:" msg))
+	   (when-let [msg (:actual m)] (println            "evaluated:" msg))
+	   (when-let [msg (:expected-message m)] (println  "  exp-msg:" msg))
+	   (when-let [msg (:actual-message m)] (println    "  act-msg:" msg))
+	   (when-let [msg (:message m)] (println           "  message:" msg))
 	   (println))
 
 (defmethod report :error [m]
@@ -55,7 +57,7 @@
 	   (println (:fail m) "failures," (:error m) "errors."))
 
 ;; Ignore these message types:
-(defmethod report :begin-test-var [m] (println m))
+(defmethod report :begin-test-var [m])
 (defmethod report :end-test-var [m])
 
 ;;; ASSERTION METHODS
@@ -102,7 +104,6 @@
 
 (defn test-all-vars [ns]
   (doseq [v (vals (ns-interns ns))]
-;    (println v (meta v))
     (when (:test (meta v))
       (test-var v))))
 
@@ -145,6 +146,9 @@
 
 (defmethod comparison :class [expected actual options] instance?)
 
+(defn str-join [separator coll]
+  (apply str (interpose separator coll)))
+
 (defmacro defexpect [body]
   (let [n (gensym test)]
     `(def ~(vary-meta n assoc :test true :test2
@@ -157,11 +161,43 @@
 (defmacro expect-in-map [e a]
   `(def ~(with-meta (gensym "test") {:test true})
 	(fn []
-	  (if (= (eval ~e) (select-keys (eval ~a) (keys (eval ~e))))
-	    (report {:type :pass})
-	    (report {:type :fail
-		     :expected (str ~e " in " ~a)
-		     :actual (str (eval ~e) " not found in " (eval ~a))})))))
+	  (let [expected# (eval ~e)
+		actual# (eval ~a)]
+	    (if (= expected# (select-keys actual# (keys expected#)))
+	      (report {:type :pass})
+	      (let [expected-nf# (keys (apply dissoc actual# (keys expected#)))
+		    actual-nf# (keys (apply dissoc expected# (keys actual#)))
+		    in-both# (merge-with vector (apply dissoc expected# actual-nf#) (apply dissoc actual# expected-nf#))
+		    disagreeing# (filter (fn [[x# [y# z#]]] (not= y# z#)) in-both#)]
+		(report {:type :fail
+			 :expected (str ~e " expected in " ~a)
+			 :actual (str expected# " was not found in " actual#)})))))))
+
+(defmacro expect-equal-map [e a]
+  `(def ~(with-meta (gensym "test") {:test true})
+	(fn []
+	  (let [expected# (eval ~e)
+		actual# (eval ~a)]
+	    (if (= expected# actual#)
+	      (report {:type :pass})
+	      (let [expected-nf# (keys (apply dissoc actual# (keys expected#)))
+		    actual-nf# (keys (apply dissoc expected# (keys actual#)))
+		    in-both# (merge-with vector (apply dissoc expected# actual-nf#) (apply dissoc actual# expected-nf#))
+		    disagreeing# (filter (fn [[x# [y# z#]]] (not= y# z#)) in-both#)]
+		(report {:type :fail
+			 :actual-message (when actual-nf#
+					   (str actual-nf# " are in expected, but not in actual"))
+			 :expected-message (when expected-nf#
+					     (str expected-nf# " are in actual, but not in expected"))
+			 :message (when (seq disagreeing#)
+				    (str-join ", "
+					      (map
+					       (fn [[key# [exp# act#]]] (str key# " expected " exp# " but was " act#))
+					       disagreeing#)))
+			 :expected (str ~e " expected in " ~a)
+			 :actual (str expected# " was not found in " actual#)})))))))
+
+
 
 (defmacro expect-in-set [e a]
   `(def ~(with-meta (gensym "test") {:test true})
