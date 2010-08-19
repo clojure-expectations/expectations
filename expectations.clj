@@ -33,12 +33,15 @@
 (defmethod report :fail [m]
 	   (inc-report-counter :fail)
 	   (println "\nFAIL in" (file-position))
-	   (println "expected:" (pr-str (:expected m)))
-	   (println "  actual:" (pr-str (:actual m))))
+	   (when-let [msg (:message m)] (println msg))
+	   (when-let [msg (:expected m)] (println "expected:" msg))
+	   (when-let [msg (:actual m)] (println "  actual:" msg))
+	   (println))
 
 (defmethod report :error [m]
 	   (inc-report-counter :error)
 	   (println "\nERROR in" (file-position))
+	   (when-let [msg (:message m)] (println msg))
 	   (println "expected:" (pr-str (:expected m)))
 	   (print "  actual: ")
 	   (let [actual (:actual m)]
@@ -52,7 +55,7 @@
 	   (println (:fail m) "failures," (:error m) "errors."))
 
 ;; Ignore these message types:
-(defmethod report :begin-test-var [m])
+(defmethod report :begin-test-var [m] (println m))
 (defmethod report :end-test-var [m])
 
 ;;; ASSERTION METHODS
@@ -70,7 +73,7 @@
 	     `(let [values# (list ~@args)
 		    result# (apply ~pred values#)]
 		(if result#
-		  (report {:type :pass :expected '~form, :actual (cons ~pred values#)})
+		  (report {:type :pass})
 		  (report {:type :fail :expected '~form, :actual (list '~'not (cons '~pred values#))}))
 		result#)))
 
@@ -86,23 +89,12 @@
 		     (report {:type :pass :expected '~form, :actual e#})
 		     e#))))
 
-;;; DEFINING TESTS
-
-(defmacro defexpect [body]
-  (let [name (gensym test)]
-    `(def ~(vary-meta name assoc :test
-		      `(fn []
-			 (try ~(assert-expr body)
-			      (catch Throwable t#
-				(report {:type :error :expected '~body :actual t#})))))
-	  (fn [] (test-var (var ~name))))))
-
 ;;; RUNNING TESTS: LOW-LEVEL FUNCTIONS
 
 (defn test-var [v]
   ;;;  "If v has a function in its :test metadata, calls that function,
   ;;;  with *testing-vars* bound to (conj *testing-vars* v)."
-  (when-let [t (:test (meta v))]
+  (when-let [t (var-get v)]
     (report {:type :begin-test-var, :var v})
     (inc-report-counter :test)
     (t)
@@ -110,6 +102,7 @@
 
 (defn test-all-vars [ns]
   (doseq [v (vals (ns-interns ns))]
+;    (println v (meta v))
     (when (:test (meta v))
       (test-var v))))
 
@@ -152,10 +145,41 @@
 
 (defmethod comparison :class [expected actual options] instance?)
 
-(def in {:in true})
+(defmacro defexpect [body]
+  (let [n (gensym test)]
+    `(def ~(vary-meta n assoc :test true :test2
+		      `(fn []
+			 (try ~(assert-expr body)
+			      (catch Throwable t#
+				(report {:type :error :expected '~body :actual t#})))))
+	  (fn [] ((:test2 (meta (var ~n))))))))
+
+(defmacro expect-in-map [e a]
+  `(def ~(with-meta (gensym "test") {:test true})
+	(fn []
+	  (if (= (eval ~e) (select-keys (eval ~a) (keys (eval ~e))))
+	    (report {:type :pass})
+	    (report {:type :fail
+		     :expected (str ~e " in " ~a)
+		     :actual (str (eval ~e) " not found in " (eval ~a))})))))
+
+(defmacro expect-in-set [e a]
+  `(def ~(with-meta (gensym "test") {:test true})
+	(fn []
+	  (if ((eval ~e) (eval ~a))
+	    (report {:type :pass})
+	    (report {:type :fail
+		     :expected (str ~e " in " ~a)
+		     :actual (str (eval ~e) " not found in " (eval ~a))})))))
+
+(defmacro defexpect2 [e a o]
+  (cond
+   (and (:in o) (instance? java.util.Map (eval e))) (expect-in-map e a)
+   (:in o) (expect-in-set e a)))
 
 (defmacro expect 
   ([expected actual]
      `(defexpect (~(comparison (eval expected) actual {}) ~expected ~actual)))
-  ([expected option actual]
-     `(defexpect (~(comparison (eval expected) actual (eval option)) ~expected ~actual))))
+  ([expected _ actual]
+     `(defexpect2 ~expected ~actual {:in true})))
+
