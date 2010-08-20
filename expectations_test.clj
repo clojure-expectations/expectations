@@ -7,26 +7,20 @@
 ;; string equality
 (expect "foo" (identity "foo"))
 
-;; map equality
-(expect {:foo 1 :bar 2} (assoc {} :foo 1 :bar 2))
+; map equality
+(expect {:foo 1 :bar 2 :car 4} (assoc {} :foo 1 :bar 2 :car 4))
 
 ;; is the regex in the string
 (expect #"foo" (str "boo" "foo" "ar"))
 
-;; k/v pair in map. matches subset
-;(expect {:foos 1} in {:foo 1 :cat 4}) 
-
-;; key in set
-;(expect (identity :foo) in (conj #{:foo :bar} :cat)) 
-
-
 ;; does the form throw an expeted exception
-;(expect ArithmeticException (/ 12 0))
+(expect ArithmeticException (/ 12 0))
 
 ;; verify the type of the result
-;(expect String "foo")
+(expect String "foo")
 
-;; failures
-(expect (inc 0) (inc 2))
+;; k/v pair in map. matches subset
+(expect {:foo 1} (in {:foo 1 :cat 4}))
 
-(expect (inc 0) (/ 1 0))
+;; key in set
+(expect (identity :foo) (in (conj #{:foo :bar} :cat)))
