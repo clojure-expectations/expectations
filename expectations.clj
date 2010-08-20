@@ -88,27 +88,6 @@
 (defn str-join [separator coll]
   (apply str (interpose separator coll)))
 
-(defmacro expect-in-map [e a o]
-  `(def ~(with-meta (gensym "test") {:test true})
-	(fn []
-	  (let [expected# (eval ~e)
-		actual# (eval ~a)]
-	    (if (= expected# (select-keys actual# (keys expected#)))
-	      (report {:type :pass})
-	      (report {:type :fail
-		       :file-position (file-position)
-		       :expected (str ~e " expected in " ~a)
-		       :actual (str expected# " was not found in " actual#)}))))))
-
-(defmacro expect-in-set [e a o]
-  `(def ~(with-meta (gensym "test") {:test true})
-	(fn []
-	  (if ((eval ~e) (eval ~a))
-	    (report {:type :pass})
-	    (report {:type :fail
-		     :expected (str ~e " in " ~a)
-		     :actual (str (eval ~e) " not found in " (eval ~a))})))))
-
 (defmulti assert-expr
   (fn [e a]
     (let [expected (try (eval e)
