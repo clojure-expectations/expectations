@@ -11,7 +11,7 @@
 ;;; UTILITIES FOR REPORTING FUNCTIONS
 
 (defn file-position []
-;  (doseq [x (.getStackTrace (new java.lang.Throwable))] (println x))
+					;  (doseq [x (.getStackTrace (new java.lang.Throwable))] (println x))
   (let [^StackTraceElement s (nth (.getStackTrace (new java.lang.Throwable)) 3)]
     (str (.getFileName s) ":" (.getLineNumber s))))
 
@@ -38,8 +38,7 @@
 	   (when-let [msg (:actual m)] (println            "evaluated:" msg))
 	   (when-let [msg (:expected-message m)] (println  "  exp-msg:" msg))
 	   (when-let [msg (:actual-message m)] (println    "  act-msg:" msg))
-	   (when-let [msg (:message m)] (println           "  message:" msg))
-	   (println))
+	   (when-let [msg (:message m)] (println           "  message:" msg)))
 
 (defmethod report :error [m]
 	   (inc-report-counter :error)
@@ -146,16 +145,27 @@
 
 (-> (Runtime/getRuntime) (.addShutdownHook (Thread. run-all-tests)))
 
-(defmulti assert-expr (fn [& _] ))
+(defmulti assert-expr
+  (fn [e a]
+    [(try (class (eval e))
+	  (catch Throwable t
+	    (throw (RuntimeException. "the expected value cannot throw an exception" t))))
+     (try (class (eval a))
+	  (catch Throwable t (class t)))]))
+
+(defmethod assert-expr [java.util.regex.Pattern Object] [e a]
+	   `(if (re-seq ~e ~a)
+	      (report {:type :pass})
+	      (report {:type :fail,
+		       :expected (list '~ 'expect '~e '~a),
+		       :actual (str "regex #\"" ~e "\" not found in \"" ~a "\"")})))
 
 (defmethod assert-expr :default [e a]
-	   `(let [values# (list ~e ~a)
-		  result# (apply = values#)]
-	      (if result#
-		(report {:type :pass})
-		(report {:type :fail,
-			 :expected (list '~ 'expect '~e '~a),
-			 :actual (list '~ 'not (cons '~ '= values#))}))))
+	   `(if (= ~e ~a)
+	      (report {:type :pass})
+	      (report {:type :fail,
+		       :expected (list '~ 'expect '~e '~a),
+		       :actual (str-join " " [~e "not equal to" ~a])})))
 
 (defmacro doexpect [e a]
   `(try ~(assert-expr e a)
