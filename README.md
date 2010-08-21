@@ -10,9 +10,7 @@ expectations is a minimalist's testing framework
  *  focused error & failure messages
 
 ## Success Examples
-<pre>   ;; passing tests
-
-   ;; number equality
+<pre>   ;; number equality
    (expect 1 (inc 0))
 
    ;; string equality
