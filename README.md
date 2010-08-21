@@ -8,32 +8,32 @@ expectations is a minimalist's testing framework.
 *  stacktraces are trimmed of clojure library lines
 *  focused error & failure messages
 
-## Examples
-;; passing tests
+## Success Examples
+   ;; passing tests
 
-;; number equality
-(expect 1 (inc 0))
+   ;; number equality
+   (expect 1 (inc 0))
 
-;; string equality
-(expect "foo" (identity "foo"))
+   ;; string equality
+   (expect "foo" (identity "foo"))
 
-; map equality
-(expect {:foo 1 :bar 2 :car 4} (assoc {} :foo 1 :bar 2 :car 4))
+   ; map equality
+   (expect {:foo 1 :bar 2 :car 4} (assoc {} :foo 1 :bar 2 :car 4))
 
-;; is the regex in the string
-(expect #"foo" (str "boofoo"))
+   ;; is the regex in the string
+   (expect #"foo" (str "boofoo"))
 
-;; does the form throw an expeted exception
-(expect ArithmeticException (/ 12 0))
+   ;; does the form throw an expeted exception
+   (expect ArithmeticException (/ 12 0))
 
-;; verify the type of the result
-(expect String "foo")
+   ;; verify the type of the result
+   (expect String "foo")
 
-;; k/v pair in map. matches subset
-(expect {:foo 1} (in {:foo 1 :cat 4}))
+   ;; k/v pair in map. matches subset
+   (expect {:foo 1} (in {:foo 1 :cat 4}))
 
-;; key in set
-(expect :foo (in (conj #{:foo :bar} :cat)))
+   ;; key in set
+   (expect :foo (in (conj #{:foo :bar} :cat)))
 
 ## Failure Examples
 FAIL in expectations_test.clj:17
