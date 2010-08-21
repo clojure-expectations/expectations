@@ -10,8 +10,7 @@ expectations is a minimalist's testing framework
  *  focused error & failure messages
 
 ## Success Examples
-
-   ;; passing tests
+<pre>   ;; passing tests
 
    ;; number equality
    (expect 1 (inc 0))
@@ -35,7 +34,7 @@ expectations is a minimalist's testing framework
    (expect {:foo 1} (in {:foo 1 :cat 4}))
 
    ;; key in set
-   (expect :foo (in (conj #{:foo :bar} :cat)))
+   (expect :foo (in (conj #{:foo :bar} :cat)))</pre>
 
 ## Failure Examples
 <pre>FAIL in expectations_test.clj:17
