@@ -38,8 +38,7 @@ expectations is a minimalist's testing framework
    (expect :foo (in (conj #{:foo :bar} :cat)))
 
 ## Failure Examples
-
-FAIL in expectations_test.clj:17
+<pre>FAIL in expectations_test.clj:17
       raw: (expect ArithmeticException (/ 12 12))
    result: (/ 12 12) did not throw ArithmeticException
 
@@ -78,4 +77,4 @@ FAIL in expectations_test.clj:8
 ERROR in expectations_test.clj:5
       raw: (expect 2 (/ 12 0))
     threw:  java.lang.ArithmeticException - Divide by zero
-    expectations_test$test152.invoke (expectations_test.clj:5)
+    expectations_test$test152.invoke (expectations_test.clj:5)</pre>
