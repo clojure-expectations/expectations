@@ -1,5 +1,4 @@
-(ns expectations
-  (:require [clojure.stacktrace :as stack]))
+(ns expectations)
 
 ;;; GLOBALS USED BY THE REPORTING FUNCTIONS
 
@@ -14,11 +13,7 @@
   (let [^StackTraceElement s (nth (.getStackTrace (new java.lang.Throwable)) 3)]
     (str (.getFileName s) ":" (.getLineNumber s))))
 
-(defn inc-report-counter
-  "Increments the named counter in *report-counters*, a ref to a map.
-  Does nothing if *report-counters* is nil."
-  {:added "1.1"}
-  [name]
+(defn inc-report-counter [name]
   (when *report-counters*
     (dosync (commute *report-counters* assoc name
                      (inc (or (*report-counters* name) 0))))))
