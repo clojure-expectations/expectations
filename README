@@ -45,10 +45,11 @@ FAIL in expectations_test.clj:26
    result: key :fooee not found in #{:foo :bar :cat}
 
 FAIL in expectations_test.clj:11
-      raw: (expect {:afoo 1, :bar 2, :car 4} (assoc {} :foo 1 :bar 2 :car 4))
-   result: {:afoo 1, :bar 2, :car 4} does not equal {:car 4, :bar 2, :foo 1}
+      raw: (expect {:afoo 1, :bar 2, :car 4} (assoc {} :foo 1 :bar 3 :car 4))
+   result: {:afoo 1, :bar 2, :car 4} does not equal {:car 4, :bar 3, :foo 1}
   exp-msg: (:foo) are in actual, but not in expected
   act-msg: (:afoo) are in expected, but not in actual
+  message: :bar expected 2 but was 3
 
 FAIL in expectations_test.clj:5
       raw: (expect 2 (inc 0))
@@ -70,3 +71,8 @@ FAIL in expectations_test.clj:14
 FAIL in expectations_test.clj:8
       raw: (expect afoo (identity foo))
    result: afoo does not equal foo
+
+ERROR in expectations_test.clj:5
+      raw: (expect 2 (/ 12 0))
+    threw:  java.lang.ArithmeticException - Divide by zero
+    expectations_test$test152.invoke (expectations_test.clj:5)
