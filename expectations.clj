@@ -25,6 +25,12 @@
 
 ;;; TEST RESULT REPORTING
 
+(defn ignored-fns [{:keys [className fileName]}]
+  (or (= fileName "expectations.clj")
+      (re-seq #"clojure.lang" className)
+      (re-seq #"clojure.core" className)
+      (re-seq #"java.lang" className)))
+
 (defmulti report :type)
 
 (defmethod report :pass [m]
@@ -39,15 +45,14 @@
 	   (when-let [msg (:actual-message m)] (println    "  act-msg:" msg))
 	   (when-let [msg (:message m)] (println           "  message:" msg)))
 
-(defmethod report :error [m]
+(defmethod report :error [{:keys [actual expected]}]
 	   (inc-report-counter :error)
 	   (println "\nERROR in" (file-position))
-	   (println "      raw:" (pr-str (:expected m)))
-	   (print   "    threw: ")
-	   (let [actual (:actual m)]
-	     (if (instance? Throwable actual)
-	       (stack/print-cause-trace actual 1)
-	       (prn actual))))
+	   (println "      raw:" (pr-str expected))
+	   (println "    threw: " (class actual) "-" (.getMessage actual))
+	   (doseq [{:keys [className methodName fileName lineNumber]}
+		   (remove ignored-fns (map bean (.getStackTrace actual)))]
+	     (println (str "    " className "." methodName " (" fileName ":" lineNumber ")"))))
 
 (defmethod report :summary [m]
 	   (println "\nRan" (:test m) "tests containing"
@@ -95,7 +100,7 @@
 			  (throw (RuntimeException. "the expected value cannot throw an exception" t))))
 	  actual (try (eval a)
 		      (catch Throwable t nil))]
-;      (println (class expected) (class actual))
+					;      (println (class expected) (class actual))
       (cond
        (isa? expected Throwable) expected
        (::in actual) ::in
@@ -123,11 +128,11 @@
 			    :expected (list '~ 'expect '~e '~a)
 			    :actual (str-join " " [~e "are not in" (::in ~a)])
 			    :message (when (seq disagreeing#)
-				    (str-join ", "
-					      (map
-					       (fn [[key# [exp# act#]]]
-						 (str key# " expected " exp# " but was " act#))
-					       disagreeing#)))
+				       (str-join ", "
+						 (map
+						  (fn [[key# [exp# act#]]]
+						    (str key# " expected " exp# " but was " act#))
+						  disagreeing#)))
 			    }))))
 	     :default (report {:type :fail,
 			       :expected (list '~ 'expect '~e '~a),
@@ -142,7 +147,7 @@
 
 (defmethod assert-expr Exception [e a]
 	   `(try ~a
-		 (report {:type :fail :expected '~e :actual (str-join " " ['~a "did not throw" '~e])})
+		 (report {:type :fail :expected (list '~ 'expect '~e '~a) :actual (str-join " " ['~a "did not throw" '~e])})
 		 (catch ~e e#
 		   (report {:type :pass}))))
 
@@ -181,7 +186,7 @@
 	      (report {:type :pass})
 	      (report {:type :fail,
 		       :expected (list '~ 'expect '~e '~a),
-		       :actual (str-join " " [~e "does not equal to" ~a])})))
+		       :actual (str-join " " [~e "does not equal" ~a])})))
 
 (defmacro doexpect [e a]
   `(try ~(assert-expr e a)
