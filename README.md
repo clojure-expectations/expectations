@@ -15,7 +15,7 @@ expectations is a minimalist's testing framework.
    (expect 1 (inc 0))
 
    ;; string equality
-   (expect "foo" (identity "foo"))
+   (expect "foo" (identity "foo"))	
 
    ; map equality
    (expect {:foo 1 :bar 2 :car 4} (assoc {} :foo 1 :bar 2 :car 4))
