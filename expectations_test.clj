@@ -24,3 +24,25 @@
 
 ;; key in set
 (expect :foo (in (conj #{:foo :bar} :cat)))
+
+;; expect boolean
+(expect (list) (is empty?))
+
+;; multiple expects with form
+(expect [x y] x (+ y y)
+	4 2
+	6 3
+	12 6)
+
+(expect [x y] x (in y)
+	:a #{:a :b}
+	{:a :b} {:a :b :c :d})
+
+(expect [x y] x (is y)
+	nil nil?
+	+ fn?
+	[] empty?)
+
+;; todo
+;; - loose match in hashes
+;; - in with vectors

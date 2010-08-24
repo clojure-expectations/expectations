@@ -1,4 +1,5 @@
-(ns expectations)
+(ns expectations
+  (require clojure.template))
 
 ;;; GLOBALS USED BY THE REPORTING FUNCTIONS
 
@@ -99,6 +100,7 @@
       (cond
        (isa? expected Throwable) expected
        (::in actual) ::in
+       (::is actual) ::is
        :default [(class expected) (class actual)]))))
 
 
@@ -132,6 +134,13 @@
 	     :default (report {:type :fail,
 			       :expected (list '~ 'expect '~e '~a),
 			       :actual "You must supply a set or map when using (in ,,,)"})))
+
+(defmethod assert-expr ::is [e a]
+	   `(if ((::is ~a) ~e)
+	      (report {:type :pass})
+	      (report {:type :fail,
+		       :expected (list '~ 'expect '~e '~a),
+		       :actual (str ~e " is not " (last '~a))})))
 
 (defmethod assert-expr [java.util.regex.Pattern Object] [e a]
 	   `(if (re-seq ~e ~a)
@@ -188,10 +197,14 @@
 	(catch Throwable t#
 	  (report {:type :error, :expected (list '~ 'expect '~e '~a), :actual t#}))))
 
-(defmacro expect [e a]
-  `(def ~(vary-meta (gensym "test") assoc :test true)
-	(fn [] (doexpect ~e ~a))))
+(defmacro expect
+  ([e a]
+     `(def ~(vary-meta (gensym "test") assoc :test true)
+	   (fn [] (doexpect ~e ~a))))
+  ([bindings e a & args]
+     `(clojure.template/do-template ~bindings (expect ~e ~a) ~@args)))
 
 (defn in [n] {::in n})
+(defn is [n] {::is n})
 
 (-> (Runtime/getRuntime) (.addShutdownHook (Thread. run-all-tests)))
