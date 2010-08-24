@@ -96,7 +96,6 @@
 			  (throw (RuntimeException. "the expected value cannot throw an exception" t))))
 	  actual (try (eval a)
 		      (catch Throwable t nil))]
-					;      (println (class expected) (class actual))
       (cond
        (isa? expected Throwable) expected
        (::in actual) ::in
@@ -106,6 +105,12 @@
 
 (defmethod assert-expr ::in [e a]
 	   `(cond
+	     (instance? java.util.List (::in ~a))
+	     (if (seq (filter #(= ~e %) (::in ~a)))
+	       (report {:type :pass})
+	       (report {:type :fail,
+			:expected (list '~ 'expect '~e '~a),
+			:actual (str "value " ~e " not found in " (::in ~a))}))
 	     (instance? java.util.Set (::in ~a))
 	     (if (~e (::in ~a))
 	       (report {:type :pass})

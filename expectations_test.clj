@@ -25,6 +25,9 @@
 ;; key in set
 (expect :foo (in (conj #{:foo :bar} :cat)))
 
+;; val in list
+(expect :foo (in (conj [:bar] :foo)))
+
 ;; expect boolean
 (expect (list) (is empty?))
 
@@ -33,6 +36,11 @@
 	4 2
 	6 3
 	12 6)
+
+(expect [x y] 10 (+ x y)
+	4 6
+	6 4
+	12 -2)
 
 (expect [x y] x (in y)
 	:a #{:a :b}
@@ -45,4 +53,3 @@
 
 ;; todo
 ;; - loose match in hashes
-;; - in with vectors
