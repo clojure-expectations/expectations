@@ -1,7 +1,8 @@
 (ns expectations
   (require clojure.template))
 
-;;; GLOBALS USED BY THE REPORTING FUNCTIONS
+;;; GLOBALS
+(def run-tests-on-shutdown (atom true))
 
 (def *report-counters* nil)	  ; bound to a ref of a map in test-ns
 
@@ -20,11 +21,21 @@
                      (inc (or (*report-counters* name) 0))))))
 
 ;;; TEST RESULT REPORTING
+(defn str-join [separator coll]
+  (apply str (interpose separator (remove nil? coll))))
+
+(defn test-name [{:keys [file line]}] (str (last (re-seq #"[A-Za-z_\.]+" file)) ":" line))
+
+(defn fail [_ msg] (println msg))
+(defn summary [msg] (println msg))
+(defn started [test-name])
+(defn finished [test-name])
 
 (defn ignored-fns [{:keys [className fileName]}]
   (or (= fileName "expectations.clj")
       (re-seq #"clojure.lang" className)
       (re-seq #"clojure.core" className)
+      (re-seq #"clojure.main" className)
       (re-seq #"java.lang" className)))
 
 (defmulti report :type)
@@ -34,30 +45,41 @@
 
 (defmethod report :fail [m]
 	   (inc-report-counter :fail)
-	   (println "\nFAIL in" (file-position))
-	   (when-let [msg (:expected m)] (println          "      raw:" msg))
-	   (when-let [msg (:actual m)] (println            "   result:" msg))
-	   (when-let [msg (:expected-message m)] (println  "  exp-msg:" msg))
-	   (when-let [msg (:actual-message m)] (println    "  act-msg:" msg))
-	   (when-let [msg (:message m)] (println           "  message:" msg)))
+	   (fail (file-position)
+		 (str-join "\n"
+			   [(str "\nFAIL in (" (file-position) ")")
+			    (when-let [msg (:expected m)] (str         "      raw: " msg))
+			    (when-let [msg (:actual m)] (str           "   result: " msg))
+			    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
+			    (when-let [msg (:actual-message m)] (str   "  act-msg: " msg))
+			    (when-let [msg (:message m)] (str          "  message: " msg))])))
 
 (defmethod report :error [{:keys [actual expected]}]
 	   (inc-report-counter :error)
-	   (println "\nERROR in" (file-position))
-	   (println "      raw:" (pr-str expected))
-	   (println "    threw: " (class actual) "-" (.getMessage actual))
-	   (doseq [{:keys [className methodName fileName lineNumber]}
-		   (remove ignored-fns (map bean (.getStackTrace actual)))]
-	     (println (str "    " className "." methodName " (" fileName ":" lineNumber ")"))))
+	   (fail (file-position)
+		 (str-join "\n"
+			[(str "\nERROR in (" (file-position) ")")
+			 (str "      raw:" (pr-str expected))
+			 (str "    threw: " (class actual) "-" (.getMessage actual))
+			 (str-join ""
+				   (map (fn [{:keys [className methodName fileName lineNumber]}]
+					  (str "    " className "." methodName " (" fileName ":" lineNumber ")\n"))
+					(remove ignored-fns (map bean (.getStackTrace actual)))))])))
 
 (defmethod report :summary [m]
-	   (println "\nRan" (:test m) "tests containing"
-		    (+ (:pass m) (:fail m) (:error m)) "assertions.")
-	   (println (:fail m) "failures," (:error m) "errors."))
+	   (summary (str "\nRan " (:test m) " tests containing "
+			 (+ (:pass m) (:fail m) (:error m)) " assertions.\n"
+			 (:fail m) " failures, " (:error m) " errors.")))
 
-;; Ignore these message types:
-(defmethod report :begin-test-var [m])
-(defmethod report :end-test-var [m])
+(defmethod report :begin-test-var [m]
+	   (started (test-name (meta (:var m)))))
+
+(defmethod report :end-test-var [m]
+	   (finished (test-name (meta (:var m)))))
+
+;; TEST RUNNING
+
+(defn disable-run-on-shutdown [] (reset! run-tests-on-shutdown false))
 
 (defn test-var [v]
   (when-let [t (var-get v)]
@@ -84,10 +106,6 @@
 (defn run-all-tests
   ([] (run-tests (all-ns)))
   ([re] (run-tests (filter #(re-matches re (name (ns-name %))) (all-ns)))))
-
-
-(defn str-join [separator coll]
-  (apply str (interpose separator coll)))
 
 (defmulti assert-expr
   (fn [e a]
@@ -212,4 +230,8 @@
 (defn in [n] {::in n})
 (defn is [n] {::is n})
 
-(-> (Runtime/getRuntime) (.addShutdownHook (Thread. run-all-tests)))
+(->
+ (Runtime/getRuntime)
+ (.addShutdownHook
+  (proxy [Thread] []
+    (run [] (when @run-tests-on-shutdown (run-all-tests))))))
