@@ -12,7 +12,7 @@
 ;;; UTILITIES FOR REPORTING FUNCTIONS
 
 (defn file-position []
-  (let [^StackTraceElement s (nth (.getStackTrace (new java.lang.Throwable)) 3)]
+  (let [s (nth (.getStackTrace (new java.lang.Throwable)) 3)]
     (str (.getFileName s) ":" (.getLineNumber s))))
 
 (defn inc-report-counter [name]
