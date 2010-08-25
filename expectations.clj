@@ -124,7 +124,7 @@
 (defmethod assert-expr ::in [e a]
 	   `(cond
 	     (instance? java.util.List (::in ~a))
-	     (if (seq (filter #(= ~e %) (::in ~a)))
+	     (if (seq (filter (fn [item#] (= ~e item#)) (::in ~a)))
 	       (report {:type :pass})
 	       (report {:type :fail,
 			:expected (list '~ 'expect '~e '~a),
