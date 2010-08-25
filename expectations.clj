@@ -90,7 +90,7 @@
 
 (defn test-all-vars [ns]
   (doseq [v (vals (ns-interns ns))]
-    (when (:test (meta v))
+    (when (:expectation (meta v))
       (test-var v))))
 
 (defn test-ns [ns]
@@ -222,7 +222,7 @@
 
 (defmacro expect
   ([e a]
-     `(def ~(vary-meta (gensym "test") assoc :test true)
+     `(def ~(vary-meta (gensym "test") assoc :expectation true)
 	   (fn [] (doexpect ~e ~a))))
   ([bindings e a & args]
      `(clojure.template/do-template ~bindings (expect ~e ~a) ~@args)))
