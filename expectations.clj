@@ -116,7 +116,7 @@
 			  (instance? Throwable e)  ::expected-exception
 			  (instance? Throwable a)  ::actual-exception
 			  (= ::true e) ::true
-			  (::in a) ::in
+			  (::in-flag a) ::in
 			  :default [(class e) (class a)])))
 
 (defmethod compare-expr :default [e a str-e str-a]
@@ -160,7 +160,8 @@
 			   :result [e "are not in" (::in a)]
 			   :message (when messages (str-join ", " messages))}))))
 	    :default (report {:type :fail :raw [str-e str-a]
-			      :result "You must supply a list, set, or map when using (in)"})))
+			      :result [(pr-str (::in a))]
+			      :message "You must supply a list, set, or map when using (in)"})))
 
 (defmethod compare-expr [Class Object] [e a str-e str-a]
 	   (if (instance? e a)
@@ -229,7 +230,7 @@
   ([bindings form & args]
      `(clojure.template/do-template ~bindings ~form ~@args)))
 
-(defn in [n] {::in n})
+(defn in [n] {::in n ::in-flag true})
 
 (->
  (Runtime/getRuntime)
