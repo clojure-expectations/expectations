@@ -1,5 +1,6 @@
 (ns expectations
-  (require clojure.template))
+  (:use clojure.set)
+  (:require clojure.template))
 
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
@@ -12,7 +13,8 @@
 ;;; UTILITIES FOR REPORTING FUNCTIONS
 
 (defn file-position []
-  (let [s (nth (.getStackTrace (new java.lang.Throwable)) 3)]
+					;  (doseq [x (.getStackTrace (new java.lang.Throwable))] (println x))
+  (let [s (nth (.getStackTrace (new java.lang.Throwable)) 5)]
     (str (.getFileName s) ":" (.getLineNumber s))))
 
 (defn inc-report-counter [name]
@@ -25,6 +27,9 @@
   (apply str (interpose separator (remove nil? coll))))
 
 (defn test-name [{:keys [file line]}] (str (last (re-seq #"[A-Za-z_\.]+" file)) ":" line))
+
+(defn raw-str [[e a]]
+  (str "(expect " e " " a ")"))
 
 (defn fail [_ msg] (println msg))
 (defn summary [msg] (println msg))
@@ -48,34 +53,28 @@
 	   (fail (file-position)
 		 (str-join "\n"
 			   [(str "\nFAIL in (" (file-position) ")")
-			    (when-let [msg (:expected m)] (str         "      raw: " msg))
-			    (when-let [msg (:actual m)] (str           "   result: " msg))
+			    (when-let [msg (:raw m)]      (str         "      raw: " (raw-str msg)))
+			    (when-let [msg (:result m)] (str           "   result: " (str-join " " msg)))
 			    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
 			    (when-let [msg (:actual-message m)] (str   "  act-msg: " msg))
 			    (when-let [msg (:message m)] (str          "  message: " msg))])))
 
-(defmethod report :error [{:keys [actual expected]}]
+(defmethod report :error [{:keys [result raw]}]
 	   (inc-report-counter :error)
 	   (fail (file-position)
 		 (str-join "\n"
-			[(str "\nERROR in (" (file-position) ")")
-			 (str "      raw:" (pr-str expected))
-			 (str "    threw: " (class actual) "-" (.getMessage actual))
-			 (str-join ""
-				   (map (fn [{:keys [className methodName fileName lineNumber]}]
-					  (str "    " className "." methodName " (" fileName ":" lineNumber ")\n"))
-					(remove ignored-fns (map bean (.getStackTrace actual)))))])))
+			   [(str "\nERROR in (" (file-position) ")")
+			    (str "      raw: " (raw-str raw))
+			    (str "    threw: " (class result) "-" (.getMessage result))
+			    (str-join ""
+				      (map (fn [{:keys [className methodName fileName lineNumber]}]
+					     (str "    " className "." methodName " (" fileName ":" lineNumber ")\n"))
+					   (remove ignored-fns (map bean (.getStackTrace result)))))])))
 
 (defmethod report :summary [m]
 	   (summary (str "\nRan " (:test m) " tests containing "
 			 (+ (:pass m) (:fail m) (:error m)) " assertions.\n"
 			 (:fail m) " failures, " (:error m) " errors.")))
-
-(defmethod report :begin-test-var [m]
-	   (started (test-name (meta (:var m)))))
-
-(defmethod report :end-test-var [m]
-	   (finished (test-name (meta (:var m)))))
 
 ;; TEST RUNNING
 
@@ -83,10 +82,10 @@
 
 (defn test-var [v]
   (when-let [t (var-get v)]
-    (report {:type :begin-test-var, :var v})
+    (started (test-name (meta v)))
     (inc-report-counter :test)
     (t)
-    (report {:type :end-test-var :var v})))
+    (finished (test-name (meta v)))))
 
 (defn test-all-vars [ns]
   (doseq [v (vals (ns-interns ns))]
@@ -107,128 +106,117 @@
   ([] (run-tests (all-ns)))
   ([re] (run-tests (filter #(re-matches re (name (ns-name %))) (all-ns)))))
 
-(defmulti assert-expr
-  (fn [e a]
-    (let [expected (try (eval e)
-			(catch Throwable t
-			  (throw (RuntimeException. "the expected value cannot throw an exception" t))))
-	  actual (try (eval a)
-		      (catch Throwable t nil))]
-      (cond
-       (isa? expected Throwable) expected
-       (::in actual) ::in
-       (::is actual) ::is
-       :default [(class expected) (class actual)]))))
+(defmulti compare-expr (fn [e a str-e str-a]
+			 (cond
+			  (isa? e Throwable) ::expected-exception
+			  (= ::true e) ::true
+			  (::in a) ::in
+			  :default [(class e) (class a)])))
 
+(defmethod compare-expr :default [e a str-e str-a]
+	   (if (= e a)
+	     (report {:type :pass})
+	     (report {:type :fail :raw [str-e str-a]
+		      :result [(pr-str e) "does not equal" (pr-str a)]})))
 
-(defmethod assert-expr ::in [e a]
-	   `(cond
-	     (instance? java.util.List (::in ~a))
-	     (if (seq (filter (fn [item#] (= ~e item#)) (::in ~a)))
-	       (report {:type :pass})
-	       (report {:type :fail,
-			:expected (list '~ 'expect '~e '~a),
-			:actual (str "value " ~e " not found in " (::in ~a))}))
-	     (instance? java.util.Set (::in ~a))
-	     (if (~e (::in ~a))
-	       (report {:type :pass})
-	       (report {:type :fail,
-			:expected (list '~ 'expect '~e '~a),
-			:actual (str "key " ~e " not found in " (::in ~a))}))
-	     (instance? java.util.Map (::in ~a))
-	     (let [sub-a# (select-keys (::in ~a) (keys ~e))] 
-	       (if (= ~e sub-a#)
-		 (report {:type :pass})
-		 (let [actual-nf# (keys (apply dissoc ~e (keys sub-a#)))
-		       in-both# (merge-with vector (select-keys ~e (keys sub-a#)) sub-a#)
-		       disagreeing# (filter (fn [[x# [y# z#]]] (not= y# z#)) in-both#)]
-		   (report {:type :fail
-			    :actual-message (when actual-nf#
-					      (str actual-nf# " are in expected, but not in actual"))
-			    :expected (list '~ 'expect '~e '~a)
-			    :actual (str-join " " [~e "are not in" (::in ~a)])
-			    :message (when (seq disagreeing#)
-				       (str-join ", "
-						 (map
-						  (fn [[key# [exp# act#]]]
-						    (str key# " expected " exp# " but was " act#))
-						  disagreeing#)))
-			    }))))
-	     :default (report {:type :fail,
-			       :expected (list '~ 'expect '~e '~a),
-			       :actual "You must supply a set or map when using (in ,,,)"})))
+(defmethod compare-expr ::true [e a str-e str-a]
+	   (if a
+	     (report {:type :pass})
+	     (report {:type :fail :raw [str-a]
+		      :result [(pr-str a)]})))
 
-(defmethod assert-expr ::is [e a]
-	   `(if ((::is ~a) ~e)
+(defmethod compare-expr ::in [e a str-e str-a]
+	   (cond
+	    (instance? java.util.List (::in a))
+	    (if (seq (filter (fn [item] (= e item)) (::in a)))
 	      (report {:type :pass})
-	      (report {:type :fail,
-		       :expected (list '~ 'expect '~e '~a),
-		       :actual (str ~e " is not " (last '~a))})))
-
-(defmethod assert-expr [java.util.regex.Pattern Object] [e a]
-	   `(if (re-seq ~e ~a)
+	      (report {:type :fail :raw [str-e str-a]
+		       :result ["value" (pr-str e) "not found in" (::in a)]}))
+	    (instance? java.util.Set (::in a))
+	    (if ((::in a) e)
 	      (report {:type :pass})
-	      (report {:type :fail,
-		       :expected (list '~ 'expect '~e '~a),
-		       :actual (str "regex #\"" ~e "\" not found in \"" ~a "\"")})))
+	      (report {:type :fail :raw [str-e str-a]
+		       :result ["key" (pr-str e) "not found in" (::in a)]}))
+	    (instance? java.util.Map (::in a))
+	    (let [sub-a (select-keys (::in a) (keys e))] 
+	      (if (= e sub-a)
+		(report {:type :pass})
+		(let [in-both (intersection (set (keys e)) (set (keys sub-a)))
+		      in-both-map (select-keys (merge-with vector e sub-a) in-both)
+		      disagreeing (filter (fn [[x [y z]]] (not= y z)) in-both-map)
+		      format-fn (fn [[x [y z]]] (str (pr-str x) " expected " (pr-str y) " but was " (pr-str z)))
+		      messages (seq (map format-fn disagreeing))
+		      diff-fn (fn [x y] (seq (difference (set (keys x)) (set (keys y)))))]
+		  (report {:type :fail
+			   :actual-message (when-let [v (diff-fn e sub-a)]
+					     (str (str-join ", " v) " are in expected, but not in actual"))
+			   :raw [str-e str-a]
+			   :result [e "are not in" (::in a)]
+			   :message (when messages (str-join ", " messages))}))))
+	    :default (report {:type :fail :raw [str-e str-a]
+			      :result "You must supply a list, set, or map when using (in)"})))
 
-(defmethod assert-expr Exception [e a]
-	   `(try ~a
-		 (report {:type :fail :expected (list '~ 'expect '~e '~a) :actual (str-join " " ['~a "did not throw" '~e])})
-		 (catch ~e e#
-		   (report {:type :pass}))))
+(defmethod compare-expr [Class Object] [e a str-e str-a]
+	   (if (instance? e a)
+	     (report {:type :pass})
+	     (report {:type :fail :raw [str-e str-a]
+		      :result [a "is not an instance of" e]})))
 
-(defmethod assert-expr [Class Object] [e a]
-	   `(if (instance? ~e ~a)
-	      (report {:type :pass})
-	      (report {:type :fail,
-		       :expected (list '~ 'expect '~e '~a),
-		       :actual (str-join " " ['~a "is not an instance of" '~e])})))
 
-(defmethod assert-expr [java.util.Map java.util.Map] [e a]
-	   `(if (= ~e ~a)
-	      (report {:type :pass})
-	      (let [expected-nf# (keys (apply dissoc ~a (keys ~e)))
-		    actual-nf# (keys (apply dissoc ~e (keys ~a)))
-		    in-both# (merge-with vector
-					 (apply dissoc ~e actual-nf#)
-					 (apply dissoc ~a expected-nf#))
-		    disagreeing# (filter (fn [[x# [y# z#]]] (not= y# z#)) in-both#)]
-		(report {:type :fail
-			 :actual-message (when actual-nf#
-					   (str actual-nf# " are in expected, but not in actual"))
-			 :expected-message (when expected-nf#
-					     (str expected-nf# " are in actual, but not in expected"))
-			 :expected (list '~ 'expect '~e '~a),
-			 :actual (str-join " " [~e "does not equal" ~a])
-			 :message (when (seq disagreeing#)
-				    (str-join ", "
-					      (map
-					       (fn [[key# [exp# act#]]]
-						 (str key# " expected " exp# " but was " act#))
-					       disagreeing#)))}))))
+(defmethod compare-expr [Object Exception] [e a str-e str-a]
+	   (report {:type :error
+		    :raw [str-e str-a]
+		    :result a}))
 
-(defmethod assert-expr :default [e a]
-	   `(if (= ~e ~a)
-	      (report {:type :pass})
-	      (report {:type :fail,
-		       :expected (list '~ 'expect '~e '~a),
-		       :actual (str-join " " [~e "does not equal" ~a])})))
+(defmethod compare-expr [java.util.regex.Pattern Object] [e a str-e str-a]
+	   (if (re-seq e a)
+	     (report {:type :pass})
+	     (report {:type :fail,
+		      :raw [str-e str-a]
+		      :result ["regex" (pr-str e) "not found in" (pr-str a)]})))
+
+(defmethod compare-expr ::expected-exception [e a str-e str-a]
+	   (if (instance? e a)
+	     (report {:type :pass})
+	     (report {:type :fail :raw [str-e str-a]
+		      :result [str-a "did not throw" str-e]})))
+
+(defmethod compare-expr [java.util.Map java.util.Map] [e a str-e str-a]
+	   (if (= e a)
+	     (report {:type :pass})
+	     (let [in-both (intersection (set (keys e)) (set (keys a)))
+		   in-both-map (select-keys (merge-with vector e a) in-both)
+		   disagreeing (filter (fn [[x [y z]]] (not= y z)) in-both-map)
+		   format-fn (fn [[x [y z]]] (str (pr-str x) " expected " (pr-str y) " but was " (pr-str z)))
+		   messages (seq (map format-fn disagreeing))
+		   diff-fn (fn [e a] (difference (set (keys e)) (set (keys a))))]
+	       (report {:type :fail
+			:actual-message (when-let [v (diff-fn e a)]
+					  (str (str-join ", " v) " are in expected, but not in actual"))
+			:expected-message (when-let [v (diff-fn a e)]
+					    (str (str-join ", " v) " are in actual, but not in expected"))
+			:raw [str-e str-a]
+			:result [e "does not equal" a]
+			:message (when messages (str-join ", " messages))}))))
 
 (defmacro doexpect [e a]
-  `(try ~(assert-expr e a)
-	(catch Throwable t#
-	  (report {:type :error, :expected (list '~ 'expect '~e '~a), :actual t#}))))
+  `(let [e# (try ~e (catch Throwable t# t#))
+	 a# (try ~a (catch Throwable t# t#))]
+     (compare-expr e# a# ~(str e) ~(str a))))
 
 (defmacro expect
   ([e a]
      `(def ~(vary-meta (gensym "test") assoc :expectation true)
 	   (fn [] (doexpect ~e ~a))))
-  ([bindings e a & args]
-     `(clojure.template/do-template ~bindings (expect ~e ~a) ~@args)))
+  ([a]
+     `(def ~(vary-meta (gensym "test") assoc :expectation true)
+	   (fn [] (doexpect ::true ~a)))))
+
+(defmacro given
+  ([bindings form & args]
+     `(clojure.template/do-template ~bindings ~form ~@args)))
 
 (defn in [n] {::in n})
-(defn is [n] {::is n})
 
 (->
  (Runtime/getRuntime)

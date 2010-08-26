@@ -2,7 +2,7 @@
   (:use expectations))
 
 ;; number equality
-(expect 1 (inc 0))
+(expect 1 (do 1))
 
 ;; string equality
 (expect "foo" (identity "foo"))
@@ -29,27 +29,27 @@
 (expect :foo (in (conj [:bar] :foo)))
 
 ;; expect boolean
-(expect (list) (is empty?))
+; (expect (list) (is empty?))
 
 ;; multiple expects with form
-(expect [x y] x (+ y y)
+(given [x y] (expect x (+ y y))
 	4 2
 	6 3
 	12 6)
 
-(expect [x y] 10 (+ x y)
+(given [x y] (expect 10 (+ x y))
 	4 6
 	6 4
 	12 -2)
 
-(expect [x y] x (in y)
+(given [x y] (expect x (in y))
 	:a #{:a :b}
 	{:a :b} {:a :b :c :d})
 
-(expect [x y] x (is y)
-	nil nil?
-	+ fn?
-	[] empty?)
+(given [x y] (expect (x y))
+	nil? nil
+	fn? +
+	empty? [])
 
 ;; todo
 ;; - loose match in hashes
