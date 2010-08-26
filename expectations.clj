@@ -202,7 +202,7 @@
 		   disagreeing (filter (fn [[x [y z]]] (not= y z)) in-both-map)
 		   format-fn (fn [[x [y z]]] (str (pr-str x) " expected " (pr-str y) " but was " (pr-str z)))
 		   messages (seq (map format-fn disagreeing))
-		   diff-fn (fn [e a] (difference (set (keys e)) (set (keys a))))]
+		   diff-fn (fn [e a] (seq (difference (set (keys e)) (set (keys a)))))]
 	       (report {:type :fail
 			:actual-message (when-let [v (diff-fn e a)]
 					  (str (str-join ", " v) " are in expected, but not in actual"))
