@@ -29,7 +29,9 @@
 (defn test-name [{:keys [file line]}] (str (last (re-seq #"[A-Za-z_\.]+" file)) ":" line))
 
 (defn raw-str [[e a]]
-  (str "(expect " e " " a ")"))
+  (if (or (= ::true e) (= ":expectations/true" e))
+    (str "(expect " a ")")
+    (str "(expect " e " " a ")")))
 
 (defn fail [_ msg] (println msg))
 (defn summary [msg] (println msg))
@@ -59,12 +61,14 @@
 			    (when-let [msg (:actual-message m)] (str   "  act-msg: " msg))
 			    (when-let [msg (:message m)] (str          "  message: " msg))])))
 
-(defmethod report :error [{:keys [result raw]}]
+(defmethod report :error [{:keys [result raw] :as m}]
 	   (inc-report-counter :error)
 	   (fail (file-position)
 		 (str-join "\n"
 			   [(str "\nERROR in (" (file-position) ")")
 			    (str "      raw: " (raw-str raw))
+			    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
+			    (when-let [msg (:actual-message m)] (str   "  act-msg: " msg))
 			    (str "    threw: " (class result) "-" (.getMessage result))
 			    (str-join ""
 				      (map (fn [{:keys [className methodName fileName lineNumber]}]
@@ -108,7 +112,9 @@
 
 (defmulti compare-expr (fn [e a str-e str-a]
 			 (cond
-			  (isa? e Throwable) ::expected-exception
+			  (isa? e Throwable) ::expect-exception
+			  (instance? Throwable e)  ::expected-exception
+			  (instance? Throwable a)  ::actual-exception
 			  (= ::true e) ::true
 			  (::in a) ::in
 			  :default [(class e) (class a)])))
@@ -122,7 +128,7 @@
 (defmethod compare-expr ::true [e a str-e str-a]
 	   (if a
 	     (report {:type :pass})
-	     (report {:type :fail :raw [str-a]
+	     (report {:type :fail :raw [::true str-a]
 		      :result [(pr-str a)]})))
 
 (defmethod compare-expr ::in [e a str-e str-a]
@@ -163,10 +169,17 @@
 		      :result [a "is not an instance of" e]})))
 
 
-(defmethod compare-expr [Object Exception] [e a str-e str-a]
+(defmethod compare-expr ::actual-exception [e a str-e str-a]
 	   (report {:type :error
 		    :raw [str-e str-a]
+		    :actual-message (str "exception in actual: " str-a)
 		    :result a}))
+
+(defmethod compare-expr ::expected-exception [e a str-e str-a]
+	   (report {:type :error
+		    :raw [str-e str-a]
+		    :expected-message (str "exception in expected: " str-e)
+		    :result e}))
 
 (defmethod compare-expr [java.util.regex.Pattern Object] [e a str-e str-a]
 	   (if (re-seq e a)
@@ -175,7 +188,7 @@
 		      :raw [str-e str-a]
 		      :result ["regex" (pr-str e) "not found in" (pr-str a)]})))
 
-(defmethod compare-expr ::expected-exception [e a str-e str-a]
+(defmethod compare-expr ::expect-exception [e a str-e str-a]
 	   (if (instance? e a)
 	     (report {:type :pass})
 	     (report {:type :fail :raw [str-e str-a]
