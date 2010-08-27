@@ -210,6 +210,46 @@
 			:result [e "does not equal" a]
 			:message (when messages (str-join ", " messages))}))))
 
+(defmethod compare-expr [java.util.Set java.util.Set] [e a str-e str-a]
+	   (if (= e a)
+	     (report {:type :pass})
+	     (let [diff-fn (fn [e a] (seq (difference e a)))]
+	       (report {:type :fail
+			:actual-message (when-let [v (diff-fn e a)]
+					  (str (str-join ", " v) " are in expected, but not in actual"))
+			:expected-message (when-let [v (diff-fn a e)]
+					    (str (str-join ", " v) " are in actual, but not in expected"))
+			:raw [str-e str-a]
+			:result [e "does not equal" a]}))))
+
+(defmethod compare-expr [java.util.List java.util.List] [e a str-e str-a]
+	   (if (= e a)
+	     (report {:type :pass})
+	     (let [diff-fn (fn [e a] (seq (difference (set e) (set a))))]
+	       (report {:type :fail
+			:actual-message (when-let [v (diff-fn e a)]
+					  (str (str-join ", " v) " are in expected, but not in actual"))
+			:expected-message (when-let [v (diff-fn a e)]
+					    (str (str-join ", " v) " are in actual, but not in expected"))
+			:raw [str-e str-a]
+			:result [e "does not equal" a]
+			:message (cond
+				  (and
+				   (= (set e) (set a))
+				   (= (count e) (count a))
+				   (= (count e) (count (set a))))
+				  "lists appears to contain the same items with different ordering"
+				  (and (= (set e) (set a)) (< (count e) (count a)))
+				  "some duplicate items in actual are not expected"
+				  (and (= (set e) (set a)) (> (count e) (count a)))
+				  "some duplicate items in expected are not actual"
+				  (< (count e) (count a))
+				  "actual is larger than expected"
+				  (> (count e) (count a))
+				  "expected is larger than actual")
+
+			}))))
+
 (defmacro doexpect [e a]
   `(let [e# (try ~e (catch Throwable t# t#))
 	 a# (try ~a (catch Throwable t# t#))]

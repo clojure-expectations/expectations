@@ -17,10 +17,16 @@
 ;; string equality
 (expect "foos" (identity "foo"))
 
-; map equality
+;; map equality
 (expect {:foo 2 :bar 3 :dog 3 :car 4} (assoc {} :foo 1 :bar "3" :cat 4))
 
-; lazy cons printing
+;; list equality
+(expect [1 2 3 2 4] [3 2 1 3])
+
+;; set equality
+(expect #{:foo :bar :dog :car} (conj #{} :foo :bar :cat))
+
+;; lazy cons printing
 (expect [1 2] (map - [1 2]))
 
 ;; is the regex in the string
