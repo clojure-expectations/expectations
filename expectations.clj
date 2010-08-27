@@ -12,9 +12,8 @@
 
 ;;; UTILITIES FOR REPORTING FUNCTIONS
 
-(defn file-position []
-					;  (doseq [x (.getStackTrace (new java.lang.Throwable))] (println x))
-  (let [s (nth (.getStackTrace (new java.lang.Throwable)) 5)]
+(defn stack->file&line [ex index]
+  (let [s (nth (.getStackTrace ex) index)]
     (str (.getFileName s) ":" (.getLineNumber s))))
 
 (defn inc-report-counter [name]
@@ -33,7 +32,7 @@
     (str "(expect " a ")")
     (str "(expect " e " " a ")")))
 
-(defn fail [_ msg] (println msg))
+(defn fail [file-pos msg] (println (str  "\nfailure in (" file-pos ")")) (println msg))
 (defn summary [msg] (println msg))
 (defn started [test-name])
 (defn finished [test-name])
@@ -52,10 +51,9 @@
 
 (defmethod report :fail [m]
 	   (inc-report-counter :fail)
-	   (fail (file-position)
+	   (fail (stack->file&line (new java.lang.Throwable) 4)
 		 (str-join "\n"
-			   [(str "\nFAIL in (" (file-position) ")")
-			    (when-let [msg (:raw m)]      (str         "      raw: " (raw-str msg)))
+			   [(when-let [msg (:raw m)]      (str         "      raw: " (raw-str msg)))
 			    (when-let [msg (:result m)] (str           "   result: " (str-join " " msg)))
 			    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
 			    (when-let [msg (:actual-message m)] (str   "  act-msg: " msg))
@@ -63,16 +61,15 @@
 
 (defmethod report :error [{:keys [result raw] :as m}]
 	   (inc-report-counter :error)
-	   (fail (file-position)
+	   (fail (stack->file&line result 4)
 		 (str-join "\n"
-			   [(str "\nERROR in (" (file-position) ")")
-			    (str "      raw: " (raw-str raw))
+			   [(when raw (str "      raw: " (raw-str raw)))
 			    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
 			    (when-let [msg (:actual-message m)] (str   "  act-msg: " msg))
 			    (str "    threw: " (class result) "-" (.getMessage result))
 			    (str-join ""
 				      (map (fn [{:keys [className methodName fileName lineNumber]}]
-					     (str "    " className "." methodName " (" fileName ":" lineNumber ")\n"))
+					     (str "           " className " (" fileName ":" lineNumber ")\n"))
 					   (remove ignored-fns (map bean (.getStackTrace result)))))])))
 
 (defmethod report :summary [m]
@@ -217,6 +214,21 @@
   `(let [e# (try ~e (catch Throwable t# t#))
 	 a# (try ~a (catch Throwable t# t#))]
      (compare-expr e# a# ~(str e) ~(str a))))
+
+(defmacro check
+  ([e a] `(binding [fail (fn [_# msg#] (throw (AssertionError. msg#)))]
+	    (doexpect ~e ~a)))
+  ([a] `(binding [fail (fn [_# msg#] (throw (AssertionError. msg#)))]
+	    (doexpect ::true ~a))))
+
+(defmacro scenario [& forms]
+  `(def ~(vary-meta (gensym "test") assoc :expectation true)
+	(fn []
+	  (try ~@forms
+	       (catch AssertionError e#
+		 (fail (stack->file&line e# 5) (.getMessage e#)))
+	       (catch Throwable t#
+		 (report {:type :error :result t#}))))))
 
 (defmacro expect
   ([e a]
