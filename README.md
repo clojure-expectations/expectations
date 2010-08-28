@@ -10,68 +10,189 @@ expectations is a minimalist's testing framework
  *  focused error & failure messages
 
 ## Success Examples
-<pre>   ;; number equality
-   (expect 1 (inc 0))
+<pre>;; number equality
+(expect 1 (do 1))
 
-   ;; string equality
-   (expect "foo" (identity "foo"))	
+;; string equality
+(expect "foo" (identity "foo"))
 
-   ; map equality
-   (expect {:foo 1 :bar 2 :car 4} (assoc {} :foo 1 :bar 2 :car 4))
+; map equality
+(expect {:foo 1 :bar 2 :car 4} (assoc {} :foo 1 :bar 2 :car 4))
 
-   ;; is the regex in the string
-   (expect #"foo" (str "boofoo"))
+;; is the regex in the string
+(expect #"foo" (str "boo" "foo" "ar"))
 
-   ;; does the form throw an expeted exception
-   (expect ArithmeticException (/ 12 0))
+;; does the form throw an expeted exception
+(expect ArithmeticException (/ 12 0))
 
-   ;; verify the type of the result
-   (expect String "foo")
+;; verify the type of the result
+(expect String "foo")
 
-   ;; k/v pair in map. matches subset
-   (expect {:foo 1} (in {:foo 1 :cat 4}))
+;; k/v pair in map. matches subset
+(expect {:foo 1} (in {:foo 1 :cat 4}))
 
-   ;; key in set
-   (expect :foo (in (conj #{:foo :bar} :cat)))</pre>
+;; key in set
+(expect :foo (in (conj #{:foo :bar} :cat)))
+
+;; val in list
+(expect :foo (in (conj [:bar] :foo)))
+
+;; expect boolean
+; (expect (list) (is empty?))
+
+;; multiple expects with form
+(given [x y] (expect x (+ y y))
+	4 2
+	6 3
+	12 6)
+
+(given [x y] (expect 10 (+ x y))
+	4 6
+	6 4
+	12 -2)
+
+(given [x y] (expect x (in y))
+	:a #{:a :b}
+	{:a :b} {:a :b :c :d})
+
+(given [x y] (expect (x y))
+	nil? nil
+	fn? +
+	empty? [])</pre>
 
 ## Failure Examples
-<pre>FAIL in expectations_test.clj:17
+<pre>failure in (expectations_failures_test.clj:24)
+      raw: (expect [1 2 3 2 4] [3 2 1 3])
+   result: [1 2 3 2 4] does not equal [3 2 1 3]
+  act-msg: 4 are in expected, but not in actual
+  message: expected is larger than actual
+
+failure in (expectations_failures_test.clj:33)
+      raw: (expect foo (str "boo" "fo" "ar"))
+   result: regex #"foo" not found in "boofoar"
+
+failure in (expectations_failures_test.clj:54)
+      raw: (expect (empty? (list 1)))
+   result: false
+
+failure in (expectations_failures_test.clj:39)
+      raw: (expect String 1)
+   result: 1 is not an instance of class java.lang.String
+
+failure in (expectations_failures_test.clj:10)
+      raw: (expect (one) 1)
+  exp-msg: exception in expected: (one)
+    threw: class java.lang.ArithmeticException-Divide by zero
+           expectations_test$two (expectations_failures_test.clj:4)
+           expectations_test$one (expectations_failures_test.clj:5)
+           expectations_test$test226$fn__227 (expectations_failures_test.clj:10)
+           expectations_test$test226 (expectations_failures_test.clj:10)
+
+
+failure in (expectations_failures_test.clj:48)
+      raw: (expect foo (in (conj ["bar"] :foo)))
+   result: value "foo" not found in ["bar" :foo]
+
+failure in (expectations_failures_test.clj:36)
       raw: (expect ArithmeticException (/ 12 12))
    result: (/ 12 12) did not throw ArithmeticException
 
-FAIL in expectations_test.clj:26
-      raw: (expect :fooee (in (conj #{:foo :bar} :cat)))
-   result: key :fooee not found in #{:foo :bar :cat}
+failure in (expectations_failures_test.clj:12)
+      raw: (expect (one))
+  act-msg: exception in actual: (one)
+    threw: class java.lang.ArithmeticException-Divide by zero
+           expectations_test$two (expectations_failures_test.clj:4)
+           expectations_test$one (expectations_failures_test.clj:5)
+           expectations_test$test234$fn__237 (expectations_failures_test.clj:12)
+           expectations_test$test234 (expectations_failures_test.clj:12)
 
-FAIL in expectations_test.clj:11
-      raw: (expect {:afoo 1, :bar 2, :car 4} (assoc {} :foo 1 :bar 3 :car 4))
-   result: {:afoo 1, :bar 2, :car 4} does not equal {:car 4, :bar 3, :foo 1}
-  exp-msg: (:foo) are in actual, but not in expected
-  act-msg: (:afoo) are in expected, but not in actual
-  message: :bar expected 2 but was 3
 
-FAIL in expectations_test.clj:5
-      raw: (expect 2 (inc 0))
-   result: 2 does not equal 1
+failure in (expectations_failures_test.clj:57)
+      raw: (expect 6 (+ 4 4))
+   result: 6 does not equal 8
 
-FAIL in expectations_test.clj:23
-      raw: (expect {:foox 1} (in {:foo 1, :cat 4}))
-   result: {:foox 1} are not in {:foo 1, :cat 4}
-  act-msg: (:foox) are in expected, but not in actual
+failure in (expectations_failures_test.clj:18)
+      raw: (expect foos (identity "foo"))
+   result: "foos" does not equal "foo"
 
-FAIL in expectations_test.clj:20
-      raw: (expect String 1)
-   result: 1 is not an instance of String
+failure in (expectations_failures_test.clj:61)
+      raw: (expect 10 (+ 6 3))
+   result: 10 does not equal 9
 
-FAIL in expectations_test.clj:14
-      raw: (expect #"afoo" (str boo foo ar))
-   result: regex #"afoo" not found in "boofooar"
+failure in (expectations_failures_test.clj:57)
+      raw: (expect 12 (+ 12 12))
+   result: 12 does not equal 24
 
-FAIL in expectations_test.clj:8
-      raw: (expect afoo (identity foo))
-   result: afoo does not equal foo
+failure in (expectations_failures_test.clj:15)
+      raw: (expect 1 (identity 2))
+   result: 1 does not equal 2
 
-ERROR in expectations_test.clj:5
-      raw: (expect 2 (/ 12 0))
-    threw:  java.lang.ArithmeticException - Divide by zero
-    expectations_test$test152.invoke (expectations_test.clj:5)</pre>
+failure in (expectations_failures_test.clj:42)
+      raw: (expect {:foos 1, :cat 5} (in {:foo 1, :cat 4}))
+   result: {:foos 1, :cat 5} are not in {:foo 1, :cat 4}
+  act-msg: :foos are in expected, but not in actual
+  message: :cat expected 5 but was 4
+
+failure in (expectations_failures_test.clj:45)
+      raw: (expect foos (in (conj #{:foo :bar} "cat")))
+   result: key "foos" not found in #{:foo :bar "cat"}
+
+failure in (expectations_failures_test.clj:69)
+      raw: (expect (empty? [1]))
+   result: false
+
+failure in (expectations_failures_test.clj:65)
+      raw: (expect {:a :z} (in {:a :b, :c :d}))
+   result: {:a :z} are not in {:a :b, :c :d}
+  message: :a expected :z but was :b
+
+failure in (expectations_failures_test.clj:27)
+      raw: (expect #{:foo :bar :dog :car} (conj #{} :foo :bar :cat))
+   result: #{:foo :bar :dog :car} does not equal #{:foo :bar :cat}
+  exp-msg: :cat are in actual, but not in expected
+  act-msg: :dog, :car are in expected, but not in actual
+
+failure in (expectations_failures_test.clj:30)
+      raw: (expect [1 2] (map - [1 2]))
+   result: [1 2] does not equal clojure.lang.LazySeq@3a0
+  exp-msg: -2, -1 are in actual, but not in expected
+  act-msg: 1, 2 are in expected, but not in actual
+
+failure in (expectations_failures_test.clj:69)
+      raw: (expect (nil? 1))
+   result: false
+
+failure in (expectations_failures_test.clj:69)
+      raw: (expect (fn? 1))
+   result: false
+
+failure in (expectations_failures_test.clj:21)
+      raw: (expect {:foo 2, :bar 3, :dog 3, :car 4} (assoc {} :foo 1 :bar "3" :cat 4))
+   result: {:foo 2, :bar 3, :dog 3, :car 4} does not equal {:cat 4, :bar "3", :foo 1}
+  exp-msg: :cat are in actual, but not in expected
+  act-msg: :dog, :car are in expected, but not in actual
+  message: :bar expected 3 but was "3", :foo expected 2 but was 1
+
+failure in (expectations_failures_test.clj:61)
+      raw: (expect 10 (+ 12 -20))
+   result: 10 does not equal -8
+
+failure in (expectations_failures_test.clj:51)
+      raw: (expect foo (in nil))
+   result: nil
+  message: You must supply a list, set, or map when using (in)
+
+failure in (expectations_failures_test.clj:8)
+      raw: (expect 1 (one))
+  act-msg: exception in actual: (one)
+    threw: class java.lang.ArithmeticException-Divide by zero
+           expectations_test$two (expectations_failures_test.clj:4)
+           expectations_test$one (expectations_failures_test.clj:5)
+           expectations_test$test218$fn__221 (expectations_failures_test.clj:8)
+           expectations_test$test218 (expectations_failures_test.clj:8)
+
+
+failure in (expectations_failures_test.clj:65)
+      raw: (expect :c (in #{:a :b}))
+   result: key :c not found in #{:a :b}
+</pre>
