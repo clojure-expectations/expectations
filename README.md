@@ -21,7 +21,7 @@ Expectations is fairly light-weight, and so is distribution. To use expectations
 By default the tests run on JVM shutdown, so all you need to do is run your clj file and you should see the expectations output. 
 
 (running your clj should be similar to: 
-  java -cp $CLOJURE_JAR:$CLOJURE_CONTRIB_JAR:.: clojure.main -i examples.clj)
+  `java -cp $CLOJURE_JAR:$CLOJURE_CONTRIB_JAR:.: clojure.main -i examples.clj`)
 
 If you can run the examples, you can start running your own tests.
 
