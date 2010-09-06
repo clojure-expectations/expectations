@@ -1,4 +1,4 @@
-(ns expectations-test
+(ns your-ns
   (:use expectations))
 
 ;; number equality
@@ -50,6 +50,3 @@
 	nil? nil
 	fn? +
 	empty? [])
-
-;; todo
-;; - loose match in hashes

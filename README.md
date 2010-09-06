@@ -14,8 +14,28 @@ expectations is a minimalist's testing framework
 Expectations is based on clojure.test. clojure.test is distributed under the Eclipse license, with
 ownership assigned to Rich Hickey.
 
+## Getting Started
+
+Expectations is fairly light-weight, and so is distribution. To use expectations, copy expectations.clj into your project. You should be able to run the example below once you've added expectations to your project.
+
+By default the tests run on JVM shutdown, so all you need to do is run your clj file and you should see the expectations output. 
+
+(running your clj should be similar to: 
+  java -cp $CLOJURE_JAR:$CLOJURE_CONTRIB_JAR:.: clojure.main -i examples.clj)
+
+If you can run the examples, you can start running your own tests.
+
+If you want to disable running the tests on shutdown all you need to do is call: `disable-run-on-shutdown`
+
+It makes sense to disable running tests on shutdown if you want to explicitly call the `run-all-tests` function when you want your tests run. For example, I've written a JUnit test runner that runs all the tests and provides output to IntelliJ. In that case, you'll want to run the tests explicitly and disable the shutdown hook.
+
+However, the vast majority of the time, allowing the framework to run the tests for you is the simplest option.
+
 ## Success Examples
-<pre>;; number equality
+<pre>(ns examples
+  (:use expectations))
+
+;; number equality
 (expect 1 (do 1))
 
 ;; string equality
