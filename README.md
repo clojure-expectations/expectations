@@ -9,6 +9,11 @@ expectations is a minimalist's testing framework
  *  stacktraces are trimmed of clojure library lines
  *  focused error & failure messages
 
+## Credit
+
+Expectations is based on clojure.test. clojure.test is distributed under the Eclipse license, with
+ownership assigned to Rich Hickey.
+
 ## Success Examples
 <pre>;; number equality
 (expect 1 (do 1))

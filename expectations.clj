@@ -107,6 +107,16 @@
   ([] (run-tests (all-ns)))
   ([re] (run-tests (filter #(re-matches re (name (ns-name %))) (all-ns)))))
 
+(defn test-vars [vars]
+  (binding [*report-counters* (ref *initial-report-counters*)]
+    (doseq [v vars] (test-var v))
+    @*report-counters*))
+
+(defn run-tests-in-vars [vars]
+  (let [summary (assoc (test-vars vars) :type :summary)]
+    (report summary)
+    summary))
+
 (defmulti compare-expr (fn [e a str-e str-a]
 			 (cond
 			  (isa? e Throwable) ::expect-exception
