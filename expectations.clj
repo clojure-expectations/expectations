@@ -256,29 +256,12 @@
 				  (< (count e) (count a))
 				  "actual is larger than expected"
 				  (> (count e) (count a))
-				  "expected is larger than actual")
-
-			}))))
+				  "expected is larger than actual")}))))
 
 (defmacro doexpect [e a]
   `(let [e# (try ~e (catch Throwable t# t#))
 	 a# (try ~a (catch Throwable t# t#))]
      (compare-expr e# a# ~(str e) ~(str a))))
-
-(defmacro check
-  ([e a] `(binding [fail (fn [_# msg#] (throw (AssertionError. msg#)))]
-	    (doexpect ~e ~a)))
-  ([a] `(binding [fail (fn [_# msg#] (throw (AssertionError. msg#)))]
-	    (doexpect ::true ~a))))
-
-(defmacro scenario [& forms]
-  `(def ~(vary-meta (gensym "test") assoc :expectation true)
-	(fn []
-	  (try ~@forms
-	       (catch AssertionError e#
-		 (fail (stack->file&line e# 5) (.getMessage e#)))
-	       (catch Throwable t#
-		 (report {:type :error :result t#}))))))
 
 (defmacro expect
   ([e a]

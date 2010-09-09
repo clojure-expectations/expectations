@@ -1,5 +1,5 @@
 (ns expectation-scenarios
-  (:use expectations))
+  (:use expectations-scenarios))
 
 (defn thr [] (/ 12 0))
 (defn two [] (thr))
@@ -8,19 +8,18 @@
 (scenario
  (let [a (atom 0)]
    (swap! a inc)
-   (check 1 @a)
+   (expect 1 @a)
    (swap! a inc)
-   (check 2 @a)
+   (expect 2 @a)
    (one)
-   (check 1 @a)
-   (check "1" "2")))
+   (expect 1 @a)
+   (expect "1" "2")))
 
 (scenario
  (let [a (atom 0)]
    (swap! a inc)
-   (check 1 @a)
+   (expect 1 @a)
    (swap! a inc)
-   (check 2 @a)
-;   (one)
-   (check 1 @a)
-   (check "1" "2")))
+   (expect 2 @a)
+   (expect 1 @a)
+   (expect "1" "2")))
