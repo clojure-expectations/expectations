@@ -222,7 +222,7 @@ failure in (expectations_failures_test.clj:65)
    result: key :c not found in #{:a :b}
 </pre>
 
-## Getting Started
+## License
 
 Copyright (c) 2010, Jay Fields
 All rights reserved.
