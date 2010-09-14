@@ -1,7 +1,6 @@
 <component name="libraryTable">
   <library name="clojure-1.1.0">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../emark/server/deps/3rd/clojure/clojure-1.1.0.zip!/" />
       <root url="jar://$PROJECT_DIR$/../emark/server/deps/3rd/clojure/clojure.jar!/" />
     </CLASSES>
     <JAVADOC />

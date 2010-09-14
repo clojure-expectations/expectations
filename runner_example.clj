@@ -1,8 +1,8 @@
 (ns runner-example
   (:require 
-    success-examples 
-    failure-examples
-    scenario-examples
+    examples.success-examples
+    examples.failure-examples
+    examples.scenario-examples
     expectations))
 
 (expectations/disable-run-on-shutdown)
