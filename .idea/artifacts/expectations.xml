@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="expectations">
+    <output-path>$PROJECT_DIR$/out/artifacts/expectations</output-path>
+    <root id="archive" name="expectations.jar">
+      <element id="module-output" name="expectations" />
+    </root>
+  </artifact>
+</component>
