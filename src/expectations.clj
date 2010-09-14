@@ -5,6 +5,8 @@
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
 
+(def *test-name* "test name unset")
+
 (def *report-counters* nil)	  ; bound to a ref of a map in test-ns
 
 (def *initial-report-counters*  ; used to initialize *report-counters*
@@ -32,7 +34,7 @@
     (str "(expect " a ")")
     (str "(expect " e " " a ")")))
 
-(defn fail [file-pos msg] (println (str  "\nfailure in (" file-pos ")")) (println msg))
+(defn fail [test-name msg] (println (str  "\nfailure in (" test-name ")")) (println msg))
 (defn summary [msg] (println msg))
 (defn started [test-name])
 (defn finished [test-name])
@@ -44,6 +46,12 @@
       (re-seq #"clojure.main" className)
       (re-seq #"java.lang" className)))
 
+(defn pruned-stack-trace [t]
+  (str-join "\n"
+				      (map (fn [{:keys [className methodName fileName lineNumber]}]
+					     (str "           " className " (" fileName ":" lineNumber ")"))
+					   (remove ignored-fns (map bean (.getStackTrace t))))))
+
 (defmulti report :type)
 
 (defmethod report :pass [m]
@@ -51,8 +59,8 @@
 
 (defmethod report :fail [m]
 	   (inc-report-counter :fail)
-	   (fail (stack->file&line (new java.lang.Throwable) 4)
-		 (str-join "\n"
+	   (fail *test-name*
+		  (str-join "\n"
 			   [(when-let [msg (:raw m)]      (str         "      raw: " (raw-str msg)))
 			    (when-let [msg (:result m)] (str           "   result: " (str-join " " msg)))
 			    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
@@ -61,16 +69,13 @@
 
 (defmethod report :error [{:keys [result raw] :as m}]
 	   (inc-report-counter :error)
-	   (fail (stack->file&line result 4)
-		 (str-join "\n"
+	   (fail *test-name*
+		  (str-join "\n"
 			   [(when raw (str "      raw: " (raw-str raw)))
 			    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
 			    (when-let [msg (:actual-message m)] (str   "  act-msg: " msg))
 			    (str "    threw: " (class result) "-" (.getMessage result))
-			    (str-join ""
-				      (map (fn [{:keys [className methodName fileName lineNumber]}]
-					     (str "           " className " (" fileName ":" lineNumber ")\n"))
-					   (remove ignored-fns (map bean (.getStackTrace result)))))])))
+			    (pruned-stack-trace result)])))
 
 (defmethod report :summary [m]
 	   (summary (str "\nRan " (:test m) " tests containing "
@@ -83,10 +88,12 @@
 
 (defn test-var [v]
   (when-let [t (var-get v)]
-    (started (test-name (meta v)))
-    (inc-report-counter :test)
-    (t)
-    (finished (test-name (meta v)))))
+    (let [tn (test-name (meta v))]
+      (started tn)
+      (inc-report-counter :test)
+      (binding [*test-name* tn]
+        (t))
+      (finished tn))))
 
 (defn test-all-vars [ns]
   (doseq [v (vals (ns-interns ns))]

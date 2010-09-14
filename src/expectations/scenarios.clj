@@ -5,9 +5,9 @@
 (defn in [n] {:expectations/in n :expectations/in-flag true})
 
 (defmacro expect
-  ([e a] `(binding [fail (fn [_# msg#] (throw (AssertionError. msg#)))]
+  ([e a] `(binding [fail (fn [name# msg#] (throw (expectations.junit.ScenarioError. name# msg#)))]
 	    (doexpect ~e ~a)))
-  ([a] `(binding [fail (fn [_# msg#] (throw (AssertionError. msg#)))]
+  ([a] `(binding [fail (fn [name# msg#] (throw (expectations.junit.ScenarioError name# msg#)))]
 	  (doexpect :expectations/true ~a))))
 
 (defmacro scenario [& forms]
@@ -16,6 +16,6 @@
 	  (try
 	    ~@forms
 	    (catch AssertionError e#
-	      (fail (stack->file&line e# 5) (.getMessage e#)))
+	      (fail (.name e#) (str (.getMessage e#) "\n" (expectations/pruned-stack-trace e#))))
 	    (catch Throwable t#
 	      (report {:type :error :result t#}))))))
