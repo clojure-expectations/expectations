@@ -1,4 +1,4 @@
-package expectations;
+package expectations.junit;
 
 import clojure.lang.RT;
 import org.junit.runner.Description;
@@ -10,8 +10,8 @@ public class ExpectationsTestRunner extends Runner {
 
     public ExpectationsTestRunner(Class<TestSource> testSourceClass) throws Exception {
         TestSource source = testSourceClass.newInstance();
-        RT.loadResourceScript("expectations/junit_runner.clj");
-        clojureRunner = (Runner) RT.var("expectations.junit-runner", "create-runner").invoke(source);
+        RT.loadResourceScript("expectations/junit/runner.clj");
+        clojureRunner = (Runner) RT.var("expectations.junit.runner", "create-runner").invoke(source);
     }
 
     @Override

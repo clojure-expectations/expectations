@@ -1,4 +1,4 @@
-package expectations;
+package expectations.junit;
 
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;

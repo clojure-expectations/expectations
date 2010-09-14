@@ -1,4 +1,4 @@
-(ns expectations.junit-runner
+(ns expectations.junit.runner
   (:require expectations)
   (:import
     [java.io File]
@@ -16,10 +16,8 @@
   (.fireTestFinished notifier (descs (str test-name " ()"))))
 
 (defn failure [notifier descs file-pos info]
-  (println file-pos)
-  (println info)
   (.fireTestFailure notifier
-    (expectations.ExpectationsFailure. (descs (str file-pos " ()")) (str "failure in (" file-pos ")\n" info "\n"))))
+    (expectations.junit.ExpectationsFailure. (descs (str file-pos " ()")) (str "failure in (" file-pos ")\n" info "\n"))))
 
 (defn create-desc [accum v]
   (let [test-name (str (expectations/test-name (meta v)) " ()")]
@@ -60,5 +58,5 @@
           (expectations/run-all-tests))]
           (.fireTestStarted notifier suite-description)
           (when (or (< 0 (:error results)) (< 0 (:fail results)))
-            (.fireTestFailure notifier (expectations.ExpectationsFailure. suite-description "")))
+            (.fireTestFailure notifier (expectations.junit.ExpectationsFailure. suite-description "")))
           (.fireTestFinished notifier suite-description))))))
