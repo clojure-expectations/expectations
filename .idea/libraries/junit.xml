@@ -3,6 +3,7 @@
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/../emark/server/deps/3rd/junit/junit-4.7-src.jar!/" />
       <root url="jar://$PROJECT_DIR$/../emark/server/deps/3rd/junit/junit-dep-4.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/../emark/server/deps/3rd/hamcrest/hamcrest-all-1.2.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
