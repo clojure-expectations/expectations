@@ -55,7 +55,7 @@
                                 expectations/fail (partial failure notifier descs)
                                 expectations/ignored-fns ignored-fns
                                 expectations/summary (fn [_])]
-          (expectations/run-all-tests))]
+          (expectations/run-tests-in-vars filtered-vars))]
           (.fireTestStarted notifier suite-description)
           (when (or (< 0 (:error results)) (< 0 (:fail results)))
             (.fireTestFailure notifier (expectations.junit.ExpectationsFailure. suite-description "")))
