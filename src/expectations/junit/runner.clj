@@ -9,18 +9,18 @@
 
 (def empty-ann-arr (make-array Annotation 0))
 
-(defn start [notifier descs test-name]
-  (.fireTestStarted notifier (descs (str test-name " ()"))))
+(defn start [notifier descs test-name test-meta]
+  (.fireTestStarted notifier (descs (str test-name " (" (:name test-meta) ")"))))
 
-(defn finish [notifier descs test-name]
-  (.fireTestFinished notifier (descs (str test-name " ()"))))
+(defn finish [notifier descs test-name test-meta]
+  (.fireTestFinished notifier (descs (str test-name " (" (:name test-meta) ")"))))
 
-(defn failure [notifier descs file-pos info]
+(defn failure [notifier descs test-name test-meta info]
   (.fireTestFailure notifier
-    (expectations.junit.ExpectationsFailure. (descs (str file-pos " ()")) (str "failure in (" file-pos ")\n" info "\n"))))
+    (expectations.junit.ExpectationsFailure. (descs (str test-name " (" (:name test-meta) ")")) (str "failure in (" test-name ")\n" info "\n"))))
 
 (defn create-desc [accum v]
-  (let [test-name (str (expectations/test-name (meta v)) " ()")]
+  (let [test-name (str (expectations/test-name (meta v)) " (" (:name (meta v)) ")")]
     (assoc accum test-name (Description/createSuiteDescription test-name empty-ann-arr))))
 
 (defn ignored-fns [{:keys [className fileName]}]

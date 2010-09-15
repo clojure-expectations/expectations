@@ -6,6 +6,7 @@
 (def run-tests-on-shutdown (atom true))
 
 (def *test-name* "test name unset")
+(def *test-meta* {})
 
 (def *report-counters* nil)	  ; bound to a ref of a map in test-ns
 
@@ -34,10 +35,10 @@
     (str "(expect " a ")")
     (str "(expect " e " " a ")")))
 
-(defn fail [test-name msg] (println (str  "\nfailure in (" test-name ")")) (println msg))
+(defn fail [test-name test-meta msg] (println (str  "\nfailure in (" test-name ")")) (println msg))
 (defn summary [msg] (println msg))
-(defn started [test-name])
-(defn finished [test-name])
+(defn started [test-name test-meta])
+(defn finished [test-name test-meta])
 
 (defn ignored-fns [{:keys [className fileName]}]
   (or (= fileName "expectations.clj")
@@ -59,7 +60,7 @@
 
 (defmethod report :fail [m]
 	   (inc-report-counter :fail)
-	   (fail *test-name*
+	   (fail *test-name* *test-meta*
 		  (str-join "\n"
 			   [(when-let [msg (:raw m)]      (str         "      raw: " (raw-str msg)))
 			    (when-let [msg (:result m)] (str           "   result: " (str-join " " msg)))
@@ -69,7 +70,7 @@
 
 (defmethod report :error [{:keys [result raw] :as m}]
 	   (inc-report-counter :error)
-	   (fail *test-name*
+	   (fail *test-name* *test-meta*
 		  (str-join "\n"
 			   [(when raw (str "      raw: " (raw-str raw)))
 			    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
@@ -88,12 +89,14 @@
 
 (defn test-var [v]
   (when-let [t (var-get v)]
-    (let [tn (test-name (meta v))]
-      (started tn)
+    (let [tn (test-name (meta v))
+          tm (meta v)]
+      (started tn tm)
       (inc-report-counter :test)
-      (binding [*test-name* tn]
+      (binding [*test-name* tn
+                *test-meta* tm]
         (t))
-      (finished tn))))
+      (finished tn tm))))
 
 (defn test-all-vars [ns]
   (doseq [v (vals (ns-interns ns))]
