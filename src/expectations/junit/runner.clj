@@ -38,8 +38,11 @@
     (re-seq #"sun.reflect" className)
     (re-seq #"java.lang" className)))
 
+(defn clj-file? [file-name]
+  (re-seq #".clj$" (:absolutePath file-name)))
+
 (defn create-runner [source]
-  (let [files (->> source .testPath File. file-seq (map bean) (remove :hidden) (remove :directory))
+  (let [files (->> source .testPath File. file-seq (map bean) (remove :hidden) (remove :directory) (filter clj-file?))
         _ (doseq [{:keys [absolutePath]} files] (load-file absolutePath))
         file-names (set (map :absolutePath files))
         suite-description (Description/createSuiteDescription (-> source class .getName) empty-ann-arr)
