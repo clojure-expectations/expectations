@@ -97,62 +97,7 @@
   </component>
   <component name="FileColors" enabled="true" enabledForTabs="true" />
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="runner.clj" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/expectations/junit/runner.clj">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="22" column="112" selection-start="912" selection-end="912" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="failure_examples.clj" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/test/clojure/failure/failure_examples.clj">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="56" column="0" selection-start="1043" selection-end="1043" vertical-scroll-proportion="0.6113537">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="expectations.clj" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/expectations.clj">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="41" column="89" selection-start="1198" selection-end="1198" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ExpectationsTestRunner.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/expectations/junit/ExpectationsTestRunner.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="23" column="0" selection-start="755" selection-end="755" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="success_examples.clj" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/clojure/success/success_examples.clj">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="35" column="5" selection-start="730" selection-end="730" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="scenario_examples.clj" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/clojure/failure/scenario_examples.clj">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="23" column="0" selection-start="384" selection-end="384" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -812,44 +757,44 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/clojure/failure/scenario_examples.clj">
+    <entry file="file://$PROJECT_DIR$/test/clojure/failure/failure_examples.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="0" selection-start="384" selection-end="384" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/expectations/junit/ExpectationsTestRunner.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="0" selection-start="755" selection-end="755" vertical-scroll-proportion="0.0">
+        <state line="74" column="46" selection-start="1297" selection-end="1297" vertical-scroll-proportion="0.80786026">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/expectations/junit/runner.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="22" column="112" selection-start="912" selection-end="912" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/clojure/success/success_examples.clj">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="35" column="5" selection-start="730" selection-end="730" vertical-scroll-proportion="0.0">
+        <state line="22" column="112" selection-start="912" selection-end="912" vertical-scroll-proportion="0.24017467">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/expectations.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="41" column="89" selection-start="1198" selection-end="1198" vertical-scroll-proportion="0.0">
+        <state line="41" column="89" selection-start="1198" selection-end="1198" vertical-scroll-proportion="0.2576419">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/clojure/failure/failure_examples.clj">
+    <entry file="file://$PROJECT_DIR$/src/expectations/junit/ExpectationsTestRunner.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="0" selection-start="1043" selection-end="1043" vertical-scroll-proportion="0.6113537">
+        <state line="23" column="0" selection-start="755" selection-end="755" vertical-scroll-proportion="0.2183406">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/clojure/success/success_examples.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="35" column="5" selection-start="730" selection-end="730" vertical-scroll-proportion="0.38209608">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/clojure/failure/scenario_examples.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="0" selection-start="384" selection-end="384" vertical-scroll-proportion="0.2510917">
           <folding />
         </state>
       </provider>
