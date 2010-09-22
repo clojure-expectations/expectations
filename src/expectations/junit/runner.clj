@@ -9,34 +9,37 @@
 
 (def empty-ann-arr (make-array Annotation 0))
 
+(defn format-test-name [test-name test-meta]
+  (str test-name " (" (:file test-meta) ":" (:line test-meta) " " (:name test-meta) ")"))
+
 (defn start [notifier descs test-name test-meta]
-  (.fireTestStarted notifier (descs (str test-name " (" (:name test-meta) ")"))))
+  (.fireTestStarted notifier (descs (format-test-name test-name test-meta))))
 
 (defn finish [notifier descs test-name test-meta]
-  (.fireTestFinished notifier (descs (str test-name " (" (:name test-meta) ")"))))
+  (.fireTestFinished notifier (descs (format-test-name test-name test-meta))))
 
 (defn failure [notifier descs test-name test-meta info]
   (.fireTestFailure notifier
-    (expectations.junit.ExpectationsFailure. (descs (str test-name " (" (:name test-meta) ")")) (str "failure in (" test-name ")\n" info "\n"))))
+    (expectations.junit.ExpectationsFailure. (descs (format-test-name test-name test-meta)) (str "failure in (" (expectations/test-file test-meta) ")\n" info "\n"))))
 
 (defn create-desc [accum v]
-  (let [test-name (str (expectations/test-name (meta v)) " (" (:name (meta v)) ")")]
+  (let [test-name (format-test-name (expectations/test-name (meta v)) (meta v))]
     (assoc accum test-name (Description/createSuiteDescription test-name empty-ann-arr))))
 
 (defn ignored-fns [{:keys [className fileName]}]
   (or (= fileName "expectations.clj")
-      (re-seq #"clojure.lang" className)
-      (re-seq #"clojure.core" className)
-      (re-seq #"clojure.main" className)
-      (re-seq #"expectations.junit.runner" className)
-      (re-seq #"expectations.junit.ExpectationsTestRunner" className)
-      (re-seq #"com.intellij" className)
-      (re-seq #"org.junit.runner.JUnitCore" className)
-      (re-seq #"sun.reflect" className)
-      (re-seq #"java.lang" className)))
+    (re-seq #"clojure.lang" className)
+    (re-seq #"clojure.core" className)
+    (re-seq #"clojure.main" className)
+    (re-seq #"expectations.junit.runner" className)
+    (re-seq #"expectations.junit.ExpectationsTestRunner" className)
+    (re-seq #"com.intellij" className)
+    (re-seq #"org.junit.runner.JUnitCore" className)
+    (re-seq #"sun.reflect" className)
+    (re-seq #"java.lang" className)))
 
 (defn create-runner [source]
-  (let [files (remove :hidden (->> source .testPath (File.) .listFiles (map bean)))
+  (let [files (->> source .testPath File. file-seq (map bean) (remove :hidden) (remove :directory))
         _ (doseq [{:keys [absolutePath]} files] (load-file absolutePath))
         file-names (set (map :absolutePath files))
         suite-description (Description/createSuiteDescription (-> source class .getName) empty-ann-arr)

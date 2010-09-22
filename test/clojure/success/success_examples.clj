@@ -1,4 +1,4 @@
-(ns examples.success-examples
+(ns success.success-examples
   (:use expectations))
 
 ;; number equality

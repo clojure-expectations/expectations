@@ -1,4 +1,4 @@
-(ns examples.failure-examples
+(ns failure.failure-examples
   (:use expectations))
 
 (defn two [] (/ 12 0))
