@@ -20,7 +20,7 @@
 
 (defn failure [notifier descs test-name test-meta info]
   (.fireTestFailure notifier
-    (expectations.junit.ExpectationsFailure. (descs (format-test-name test-name test-meta)) (str "failure in (" (expectations/test-file test-meta) ")\n" info "\n"))))
+    (expectations.junit.ExpectationsFailure. (descs (format-test-name test-name test-meta)) (str "failure in (" (expectations/test-file test-meta) ") : " (:ns test-meta) "\n" info "\n"))))
 
 (defn create-desc [accum v]
   (let [test-name (format-test-name (expectations/test-name (meta v)) (meta v))]

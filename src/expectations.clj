@@ -39,7 +39,7 @@
     (str "(expect " a ")")
     (str "(expect " e " " a ")")))
 
-(defn fail [test-name test-meta msg] (println (str  "\nfailure in (" (test-file test-meta) ")")) (println msg))
+(defn fail [test-name test-meta msg] (println (str  "\nfailure in (" (test-file test-meta) ") : " (:ns test-meta))) (println msg))
 (defn summary [msg] (println msg))
 (defn started [test-name test-meta])
 (defn finished [test-name test-meta])
