@@ -31,6 +31,16 @@
 ;; expect boolean
 (expect (empty? (list)))
 
+;; allow Double/NaN equality
+(expect {:a Double/NaN :b {:c Double/NaN}} {:a Double/NaN :b {:c Double/NaN}})
+
+;; allow Double/NaN equality
+(expect {:a Double/NaN :b {:c Double/NaN}} (in {:a Double/NaN :b {:c Double/NaN} :d "other stuff"}))
+
+(expect #{1 Double/NaN} #{1 Double/NaN})
+
+;(expect [1 Double/NaN] [1 Double/NaN])
+
 ;; multiple expects with form
 (given [x y] (expect x (+ y y))
 	4 2

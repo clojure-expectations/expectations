@@ -53,6 +53,9 @@
 ;; expect boolean
 (expect (empty? (list 1)))
 
+;; double nan fail
+(expect {:a Double/NaN :b {:c 9}} {:a Double/NaN :b {:c Double/NaN}})
+
 ;; multiple expects with form
 (given [x y] (expect x (+ y y))
 	6 4

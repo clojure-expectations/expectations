@@ -131,6 +131,10 @@
     (report summary)
     summary))
 
+(defn keyword-replace-nan [m]
+  (let [f (fn [[k v]] [k (if (and (number? v) (Double/isNaN v)) :DoubleNaN v)])]
+    (clojure.walk/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m)))
+
 (defmulti compare-expr (fn [e a str-e str-a]
 			 (cond
 			  (isa? e Throwable) ::expect-exception
@@ -166,7 +170,7 @@
 		       :result ["key" (pr-str e) "not found in" (::in a)]}))
 	    (instance? java.util.Map (::in a))
 	    (let [sub-a (select-keys (::in a) (keys e))] 
-	      (if (= e sub-a)
+	      (if (= (keyword-replace-nan e) (keyword-replace-nan sub-a))
 		(report {:type :pass})
 		(let [in-both (intersection (set (keys e)) (set (keys sub-a)))
 		      in-both-map (select-keys (merge-with vector e sub-a) in-both)
@@ -217,7 +221,7 @@
 		      :result [str-a "did not throw" str-e]})))
 
 (defmethod compare-expr [java.util.Map java.util.Map] [e a str-e str-a]
-	   (if (= e a)
+	   (if (= (keyword-replace-nan e) (keyword-replace-nan a))
 	     (report {:type :pass})
 	     (let [in-both (intersection (set (keys e)) (set (keys a)))
 		   in-both-map (select-keys (merge-with vector e a) in-both)
