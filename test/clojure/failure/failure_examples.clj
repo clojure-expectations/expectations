@@ -53,8 +53,23 @@
 ;; expect boolean
 (expect (empty? (list 1)))
 
-;; double nan fail
+;; Double/NaN equality in a map
 (expect {:a Double/NaN :b {:c 9}} {:a Double/NaN :b {:c Double/NaN}})
+
+;; Double/NaN equality with in fn and map
+(expect {:a Double/NaN :b {:c 9}} (in {:a Double/NaN :b {:c Double/NaN} :d "other stuff"}))
+
+;; Double/NaN equality in a set
+(expect #{1 9} #{1 Double/NaN})
+
+;; Double/NaN equality with in fn and set
+(expect Double/NaN (in #{1}))
+
+;; Double/NaN equality in a list
+(expect [1 Double/NaN] [1])
+
+;; Double/NaN equality with in fn and list
+(expect Double/NaN (in [1]))
 
 ;; multiple expects with form
 (given [x y] (expect x (+ y y))
@@ -73,6 +88,24 @@
 	nil? 1
 	fn? 1
 	empty? [1])
+
+;; multiple expects on a java instance
+(given (java.util.ArrayList.)
+       (expect
+	.size 1
+	.isEmpty false))
+
+;; multiple expects on an instance
+(given [1 2 3]
+       (expect
+	first 0
+	last 4))
+
+(given {:1 2 :3 4}
+       (expect 
+	:1 99
+	:3 100))
+
 
 ;; todo
 ;; - loose match in hashes

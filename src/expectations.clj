@@ -53,9 +53,9 @@
 
 (defn pruned-stack-trace [t]
   (str-join "\n"
-				      (map (fn [{:keys [className methodName fileName lineNumber]}]
-					     (str "           " className " (" fileName ":" lineNumber ")"))
-					   (remove ignored-fns (map bean (.getStackTrace t))))))
+	    (map (fn [{:keys [className methodName fileName lineNumber]}]
+		   (str "           " className " (" fileName ":" lineNumber ")"))
+		 (remove ignored-fns (map bean (.getStackTrace t))))))
 
 (defmulti report :type)
 
@@ -65,7 +65,7 @@
 (defmethod report :fail [m]
 	   (inc-report-counter :fail)
 	   (fail *test-name* *test-meta*
-		  (str-join "\n"
+		 (str-join "\n"
 			   [(when-let [msg (:raw m)]      (str         "      raw: " (raw-str msg)))
 			    (when-let [msg (:result m)] (str           "   result: " (str-join " " msg)))
 			    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
@@ -75,7 +75,7 @@
 (defmethod report :error [{:keys [result raw] :as m}]
 	   (inc-report-counter :error)
 	   (fail *test-name* *test-meta*
-		  (str-join "\n"
+		 (str-join "\n"
 			   [(when raw (str "      raw: " (raw-str raw)))
 			    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
 			    (when-let [msg (:actual-message m)] (str   "  act-msg: " msg))
@@ -102,8 +102,11 @@
         (t))
       (finished tn tm))))
 
+(defn sort-by-str [vs]
+  (sort #(.compareTo (str %1) (str %2)) vs))
+
 (defn test-all-vars [ns]
-  (doseq [v (vals (ns-interns ns))]
+  (doseq [v (-> ns ns-interns vals sort-by-str)]
     (when (:expectation (meta v))
       (test-var v))))
 
@@ -131,9 +134,17 @@
     (report summary)
     summary))
 
-(defn keyword-replace-nan [m]
-  (let [f (fn [[k v]] [k (if (and (number? v) (Double/isNaN v)) :DoubleNaN v)])]
-    (clojure.walk/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m)))
+(defmulti nan->keyword class :default :default)
+
+(defmethod nan->keyword java.util.Map [m]
+	   (let [f (fn [[k v]] [k (if (and (number? v) (Double/isNaN v)) :DoubleNaN v)])]
+	     (clojure.walk/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m)))
+
+(defmethod nan->keyword java.util.List [m]
+	   (map #(if (Double/isNaN %) :DoubleNaN %) m))
+
+(defmethod nan->keyword :default [m]
+	   (if (and (instance? Double m) (Double/isNaN m)) :DoubleNaN m))
 
 (defmulti compare-expr (fn [e a str-e str-a]
 			 (cond
@@ -156,10 +167,16 @@
 	     (report {:type :fail :raw [::true str-a]
 		      :result [(pr-str a)]})))
 
+(defmethod compare-expr ::=> [e a str-e str-a]
+	   (if true
+	     (report {:type :pass})
+	     (report {:type :fail :raw [::true str-a]
+		      :result [(pr-str a)]})))
+
 (defmethod compare-expr ::in [e a str-e str-a]
 	   (cond
 	    (instance? java.util.List (::in a))
-	    (if (seq (filter (fn [item] (= e item)) (::in a)))
+	    (if (seq (filter (fn [item] (= (nan->keyword e) (nan->keyword item))) (::in a)))
 	      (report {:type :pass})
 	      (report {:type :fail :raw [str-e str-a]
 		       :result ["value" (pr-str e) "not found in" (::in a)]}))
@@ -170,7 +187,7 @@
 		       :result ["key" (pr-str e) "not found in" (::in a)]}))
 	    (instance? java.util.Map (::in a))
 	    (let [sub-a (select-keys (::in a) (keys e))] 
-	      (if (= (keyword-replace-nan e) (keyword-replace-nan sub-a))
+	      (if (= (nan->keyword e) (nan->keyword sub-a))
 		(report {:type :pass})
 		(let [in-both (intersection (set (keys e)) (set (keys sub-a)))
 		      in-both-map (select-keys (merge-with vector e sub-a) in-both)
@@ -221,7 +238,7 @@
 		      :result [str-a "did not throw" str-e]})))
 
 (defmethod compare-expr [java.util.Map java.util.Map] [e a str-e str-a]
-	   (if (= (keyword-replace-nan e) (keyword-replace-nan a))
+	   (if (= (nan->keyword e) (nan->keyword a))
 	     (report {:type :pass})
 	     (let [in-both (intersection (set (keys e)) (set (keys a)))
 		   in-both-map (select-keys (merge-with vector e a) in-both)
@@ -251,7 +268,7 @@
 			:result [e "does not equal" a]}))))
 
 (defmethod compare-expr [java.util.List java.util.List] [e a str-e str-a]
-	   (if (= e a)
+	   (if (= (nan->keyword e) (nan->keyword a))
 	     (report {:type :pass})
 	     (let [diff-fn (fn [e a] (seq (difference (set e) (set a))))]
 	       (report {:type :fail
@@ -283,15 +300,16 @@
 
 (defmacro expect
   ([e a]
-     `(def ~(vary-meta (gensym "test") assoc :expectation true)
+     `(def ~(vary-meta (gensym) assoc :expectation true)
 	   (fn [] (doexpect ~e ~a))))
   ([a]
-     `(def ~(vary-meta (gensym "test") assoc :expectation true)
+     `(def ~(vary-meta (gensym) assoc :expectation true)
 	   (fn [] (doexpect ::true ~a)))))
 
-(defmacro given
-  ([bindings form & args]
-     `(clojure.template/do-template ~bindings ~form ~@args)))
+(defmacro given [bindings form & args]
+  (if args
+    `(clojure.template/do-template ~bindings ~form ~@args)
+    `(clojure.template/do-template [~'x ~'y] ~(list 'expect 'y (list 'x bindings)) ~@(rest form))))
 
 (defn in [n] {::in n ::in-flag true})
 

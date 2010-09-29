@@ -31,15 +31,40 @@
 ;; expect boolean
 (expect (empty? (list)))
 
-;; allow Double/NaN equality
+;; allow Double/NaN equality in a map
 (expect {:a Double/NaN :b {:c Double/NaN}} {:a Double/NaN :b {:c Double/NaN}})
 
-;; allow Double/NaN equality
+;; allow Double/NaN equality with in fn and map
 (expect {:a Double/NaN :b {:c Double/NaN}} (in {:a Double/NaN :b {:c Double/NaN} :d "other stuff"}))
 
+;; allow Double/NaN equality in a set
 (expect #{1 Double/NaN} #{1 Double/NaN})
 
-;(expect [1 Double/NaN] [1 Double/NaN])
+;; allow Double/NaN equality with in fn and set
+(expect Double/NaN (in #{1 Double/NaN}))
+
+;; allow Double/NaN equality in a list
+(expect [1 Double/NaN] [1 Double/NaN])
+
+;; allow Double/NaN equality with in fn and list
+(expect Double/NaN (in [1 Double/NaN]))
+
+;; easy java object return value testing
+(given (java.util.ArrayList.)
+       (expect
+	.size 0
+	.isEmpty true))
+
+;; multiple expects on an instance
+(given [1 2 3]
+       (expect
+	first 1
+	last 3))
+
+(given {:1 2 :3 4}
+       (expect 
+	:1 2
+	:3 4))
 
 ;; multiple expects with form
 (given [x y] (expect x (+ y y))
