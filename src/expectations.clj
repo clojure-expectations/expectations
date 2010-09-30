@@ -155,12 +155,22 @@
 
 (defmethod extended-not= :default [x y] (not= x y))
 
-(defn map-diff-message [e a]
-       (let [in-both (intersection (set (keys e)) (set (keys a)))
-	     in-both-map (select-keys (merge-with vector e a) in-both)
-	     disagreeing (filter (fn [[x [y z]]] (extended-not= y z)) in-both-map)
-	     format-fn (fn [[x [y z]]] (str (pr-str x) " expected " (pr-str y) " but was " (pr-str z)))]
-	     (seq (map format-fn disagreeing))))
+(defn map-intersection [e a]
+  (let [in-both (intersection (set (keys e)) (set (keys a)))]
+    (select-keys (merge-with vector e a) in-both)))
+
+(defn ->disagreement [[k [v1 v2]]]
+  (if (and (map? v1) (map? v2))
+    (str-join "\n           " (remove nil? (map ->disagreement (map-intersection v1 v2))))
+    (when (extended-not= v1 v2)
+      (str (pr-str k) " expected " (pr-str v1) " but was " (pr-str v2)))))
+
+(defn map-diff-message [e a padding]
+  (->>
+   (map ->disagreement (map-intersection e a))
+   (remove nil?)
+   (remove empty?)
+   ))
 
 (defn map-compare [e a str-e str-a original-a]
   (if (= (nan->keyword e) (nan->keyword a))
@@ -170,7 +180,7 @@
 			       (str (str-join ", " v) " are in expected, but not in actual"))
 	     :raw [str-e str-a]
 	     :result [e "are not in" original-a]
-	     :message (when-let [messages (map-diff-message e a)] (str-join "\n           " messages))})))
+	     :message (when-let [messages (map-diff-message e a "")] (str-join "\n           " messages))})))
 
 (defmulti compare-expr (fn [e a str-e str-a]
 			 (cond

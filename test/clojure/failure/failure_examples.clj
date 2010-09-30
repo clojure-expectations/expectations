@@ -107,4 +107,7 @@
 	:3 100))
 
 ;; nested issues
+(expect {:a 9 :b {:c Double/NaN :d 1}} {:a Double/NaN :b {:c Double/NaN :d 2}})
+
+;; nested issues
 (expect {:a 9 :b {:c Double/NaN}} {:a Double/NaN :b {:c Double/NaN}})
