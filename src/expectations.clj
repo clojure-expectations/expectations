@@ -155,6 +155,22 @@
 
 (defmethod extended-not= :default [x y] (not= x y))
 
+(def map-compare [e a str-e str-a original-a]
+     (if (= (nan->keyword e) (nan->keyword a))
+       (report {:type :pass})
+       (let [in-both (intersection (set (keys e)) (set (keys a)))
+	     in-both-map (select-keys (merge-with vector e a) in-both)
+	     disagreeing (filter (fn [[x [y z]]] (extended-not= y z)) in-both-map)
+	     format-fn (fn [[x [y z]]] (str (pr-str x) " expected " (pr-str y) " but was " (pr-str z)))
+	     messages (seq (map format-fn disagreeing))
+	     diff-fn (fn [x y] (seq (difference (set (keys x)) (set (keys y)))))]
+	 (report {:type :fail
+		  :actual-message (when-let [v (diff-fn e a)]
+				    (str (str-join ", " v) " are in expected, but not in actual"))
+		  :raw [str-e str-a]
+		  :result [e "are not in" original-a]
+		  :message (when messages (str-join "\n           " messages))}))))
+
 (defmulti compare-expr (fn [e a str-e str-a]
 			 (cond
 			  (isa? e Throwable) ::expect-exception
@@ -195,21 +211,7 @@
 	      (report {:type :fail :raw [str-e str-a]
 		       :result ["key" (pr-str e) "not found in" (::in a)]}))
 	    (instance? java.util.Map (::in a))
-	    (let [sub-a (select-keys (::in a) (keys e))] 
-	      (if (= (nan->keyword e) (nan->keyword sub-a))
-		(report {:type :pass})
-		(let [in-both (intersection (set (keys e)) (set (keys sub-a)))
-		      in-both-map (select-keys (merge-with vector e sub-a) in-both)
-		      disagreeing (filter (fn [[x [y z]]] (extended-not= y z)) in-both-map)
-		      format-fn (fn [[x [y z]]] (str (pr-str x) " expected " (pr-str y) " but was " (pr-str z)))
-		      messages (seq (map format-fn disagreeing))
-		      diff-fn (fn [x y] (seq (difference (set (keys x)) (set (keys y)))))]
-		  (report {:type :fail
-			   :actual-message (when-let [v (diff-fn e sub-a)]
-					     (str (str-join ", " v) " are in expected, but not in actual"))
-			   :raw [str-e str-a]
-			   :result [e "are not in" (::in a)]
-			   :message (when messages (str-join "\n           " messages))}))))
+	    (map-compare e (select-keys (::in a) (keys e)) str-e str-a (::in a))
 	    :default (report {:type :fail :raw [str-e str-a]
 			      :result [(pr-str (::in a))]
 			      :message "You must supply a list, set, or map when using (in)"})))
