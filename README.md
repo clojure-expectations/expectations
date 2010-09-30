@@ -33,7 +33,7 @@ However, the vast majority of the time, allowing the framework to run the tests 
 
 ## Success Examples
 
-http://github.com/jaycfields/expectations/blob/master/test/clojure/success/success_examples.clj
+[available here](http://github.com/jaycfields/expectations/blob/master/test/clojure/success/success_examples.clj)
 
 ## Failure Examples
 <pre>failure in (failure_examples.clj:8) : failure.failure-examples
