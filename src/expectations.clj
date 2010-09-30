@@ -155,21 +155,22 @@
 
 (defmethod extended-not= :default [x y] (not= x y))
 
-(defn map-compare [e a str-e str-a original-a]
-     (if (= (nan->keyword e) (nan->keyword a))
-       (report {:type :pass})
+(defn map-diff-message [e a]
        (let [in-both (intersection (set (keys e)) (set (keys a)))
 	     in-both-map (select-keys (merge-with vector e a) in-both)
 	     disagreeing (filter (fn [[x [y z]]] (extended-not= y z)) in-both-map)
 	     format-fn (fn [[x [y z]]] (str (pr-str x) " expected " (pr-str y) " but was " (pr-str z)))
-	     messages (seq (map format-fn disagreeing))
-	     diff-fn (fn [x y] (seq (difference (set (keys x)) (set (keys y)))))]
-	 (report {:type :fail
-		  :actual-message (when-let [v (diff-fn e a)]
-				    (str (str-join ", " v) " are in expected, but not in actual"))
-		  :raw [str-e str-a]
-		  :result [e "are not in" original-a]
-		  :message (when messages (str-join "\n           " messages))}))))
+	     messages (seq (map format-fn disagreeing))]))
+
+(defn map-compare [e a str-e str-a original-a]
+  (if (= (nan->keyword e) (nan->keyword a))
+    (report {:type :pass})
+    (report {:type :fail
+	     :actual-message (when-let [v (seq (difference (set (keys e)) (set (keys a))))]
+			       (str (str-join ", " v) " are in expected, but not in actual"))
+	     :raw [str-e str-a]
+	     :result [e "are not in" original-a]
+	     :message (when messages (str-join "\n           " (map-diff-message e a)))})))
 
 (defmulti compare-expr (fn [e a str-e str-a]
 			 (cond
@@ -188,12 +189,6 @@
 
 (defmethod compare-expr ::true [e a str-e str-a]
 	   (if a
-	     (report {:type :pass})
-	     (report {:type :fail :raw [::true str-a]
-		      :result [(pr-str a)]})))
-
-(defmethod compare-expr ::=> [e a str-e str-a]
-	   (if true
 	     (report {:type :pass})
 	     (report {:type :fail :raw [::true str-a]
 		      :result [(pr-str a)]})))
