@@ -188,7 +188,10 @@
   (difference (set (normalize-keys e)) (set (normalize-keys a))))
 
 (defn map-missing-message [e a msg]
-    (map (partial ->missing-message msg) (map-difference e a)))
+    (->>
+      (map-difference e a)
+      (map (partial ->missing-message msg))
+      seq))
 
 (defn map-compare [e a str-e str-a original-a]
   (if (= (nan->keyword e) (nan->keyword a))

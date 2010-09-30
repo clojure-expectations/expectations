@@ -110,4 +110,3 @@
 (expect
   {:z 1 :a 9          :b {:c Double/NaN :d 1 :e 2 :f {:g 10 :i 22}}}
   {:x 1 :a Double/NaN :b {:c Double/NaN :d 2 :e 4 :f {:g 11 :h 12}}})
-
