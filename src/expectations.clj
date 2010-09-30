@@ -159,7 +159,7 @@
        (let [in-both (intersection (set (keys e)) (set (keys a)))
 	     in-both-map (select-keys (merge-with vector e a) in-both)
 	     disagreeing (filter (fn [[x [y z]]] (extended-not= y z)) in-both-map)
-	     format-fn (fn [[x [y z]]] (str (pr-str x) " expected " (pr-str y) " but was " (pr-str z)))]
+	     format-fn (fn [[x [y z]]] (str (pr-str x) " => " (pr-str y) " not= " (pr-str z)))]
 	     (seq (map format-fn disagreeing))))
 
 (defn map-compare [e a str-e str-a original-a]
