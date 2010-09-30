@@ -101,13 +101,13 @@
 	first 0
 	last 4))
 
-(given {:1 2 :3 4}
+(given {:a 2 :b 4}
        (expect 
-	:1 99
-	:3 100))
+	:a 99
+	:b 100))
 
 ;; nested issues
-(expect {:a 9 :b {:c Double/NaN :d 1}} {:a Double/NaN :b {:c Double/NaN :d 2}})
+(expect
+  {:z 1 :a 9          :b {:c Double/NaN :d 1 :e 2 :f {:g 10 :i 22}}}
+  {:x 1 :a Double/NaN :b {:c Double/NaN :d 2 :e 4 :f {:g 11 :h 12}}})
 
-;; nested issues
-(expect {:a 9 :b {:c Double/NaN}} {:a Double/NaN :b {:c Double/NaN}})

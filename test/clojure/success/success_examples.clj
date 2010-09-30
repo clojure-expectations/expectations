@@ -61,10 +61,10 @@
 	first 1
 	last 3))
 
-(given {:1 2 :3 4}
+(given {:a 2 :b 4}
        (expect 
-	:1 2
-	:3 4))
+	:a 2
+	:b 4))
 
 ;; multiple expects with form
 (given [x y] (expect x (+ y y))
