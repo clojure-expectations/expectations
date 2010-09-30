@@ -155,7 +155,7 @@
 
 (defmethod extended-not= :default [x y] (not= x y))
 
-(def map-compare [e a str-e str-a original-a]
+(defn map-compare [e a str-e str-a original-a]
      (if (= (nan->keyword e) (nan->keyword a))
        (report {:type :pass})
        (let [in-both (intersection (set (keys e)) (set (keys a)))
@@ -249,22 +249,7 @@
 		      :result [str-a "did not throw" str-e]})))
 
 (defmethod compare-expr [java.util.Map java.util.Map] [e a str-e str-a]
-	   (if (= (nan->keyword e) (nan->keyword a))
-	     (report {:type :pass})
-	     (let [in-both (intersection (set (keys e)) (set (keys a)))
-		   in-both-map (select-keys (merge-with vector e a) in-both)
-		   disagreeing (filter (fn [[x [y z]]] (extended-not= y z)) in-both-map)
-		   format-fn (fn [[x [y z]]] (str (pr-str x) " expected " (pr-str y) " but was " (pr-str z)))
-		   messages (seq (map format-fn disagreeing))
-		   diff-fn (fn [e a] (seq (difference (set (keys e)) (set (keys a)))))]
-	       (report {:type :fail
-			:actual-message (when-let [v (diff-fn e a)]
-					  (str (str-join ", " v) " are in expected, but not in actual"))
-			:expected-message (when-let [v (diff-fn a e)]
-					    (str (str-join ", " v) " are in actual, but not in expected"))
-			:raw [str-e str-a]
-			:result [e "does not equal" a]
-			:message (when messages (str-join "\n           " messages))}))))
+	   (map-compare e a str-e str-a a))
 
 (defmethod compare-expr [java.util.Set java.util.Set] [e a str-e str-a]
 	   (if (= e a)
