@@ -53,12 +53,6 @@
 ;; expect boolean
 (expect (empty? (list 1)))
 
-;; Double/NaN equality in a map
-(expect {:a Double/NaN :b {:c 9}} {:a Double/NaN :b {:c Double/NaN}})
-
-;; Double/NaN equality with in fn and map
-(expect {:a Double/NaN :b {:c 9}} (in {:a Double/NaN :b {:c Double/NaN} :d "other stuff"}))
-
 ;; Double/NaN equality in a set
 (expect #{1 9} #{1 Double/NaN})
 
@@ -70,6 +64,12 @@
 
 ;; Double/NaN equality with in fn and list
 (expect Double/NaN (in [1]))
+
+;; Double/NaN equality in a map
+(expect {:a Double/NaN :b {:c 9}} {:a Double/NaN :b {:c Double/NaN}})
+
+;; Double/NaN equality with in fn and map
+(expect {:a Double/NaN :b {:c 9}} (in {:a Double/NaN :b {:c Double/NaN} :d "other stuff"}))
 
 ;; multiple expects with form
 (given [x y] (expect x (+ y y))
@@ -106,6 +106,5 @@
 	:1 99
 	:3 100))
 
-
-;; todo
-;; - loose match in hashes
+;; nested issues
+(expect {:a 9 :b {:c Double/NaN}} {:a Double/NaN :b {:c Double/NaN}})

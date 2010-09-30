@@ -146,6 +146,15 @@
 (defmethod nan->keyword :default [m]
 	   (if (and (instance? Double m) (Double/isNaN m)) :DoubleNaN m))
 
+(defmulti extended-not= (fn [x y] [(class x) (class y)]) :default :default)
+
+(defmethod extended-not= [Double Double] [x y]
+	   (if (and (Double/isNaN x) (Double/isNaN y))
+	     false
+	     (not= x y)))
+
+(defmethod extended-not= :default [x y] (not= x y))
+
 (defmulti compare-expr (fn [e a str-e str-a]
 			 (cond
 			  (isa? e Throwable) ::expect-exception
@@ -191,7 +200,7 @@
 		(report {:type :pass})
 		(let [in-both (intersection (set (keys e)) (set (keys sub-a)))
 		      in-both-map (select-keys (merge-with vector e sub-a) in-both)
-		      disagreeing (filter (fn [[x [y z]]] (not= y z)) in-both-map)
+		      disagreeing (filter (fn [[x [y z]]] (extended-not= y z)) in-both-map)
 		      format-fn (fn [[x [y z]]] (str (pr-str x) " expected " (pr-str y) " but was " (pr-str z)))
 		      messages (seq (map format-fn disagreeing))
 		      diff-fn (fn [x y] (seq (difference (set (keys x)) (set (keys y)))))]
@@ -200,7 +209,7 @@
 					     (str (str-join ", " v) " are in expected, but not in actual"))
 			   :raw [str-e str-a]
 			   :result [e "are not in" (::in a)]
-			   :message (when messages (str-join ", " messages))}))))
+			   :message (when messages (str-join "\n           " messages))}))))
 	    :default (report {:type :fail :raw [str-e str-a]
 			      :result [(pr-str (::in a))]
 			      :message "You must supply a list, set, or map when using (in)"})))
@@ -242,7 +251,7 @@
 	     (report {:type :pass})
 	     (let [in-both (intersection (set (keys e)) (set (keys a)))
 		   in-both-map (select-keys (merge-with vector e a) in-both)
-		   disagreeing (filter (fn [[x [y z]]] (not= y z)) in-both-map)
+		   disagreeing (filter (fn [[x [y z]]] (extended-not= y z)) in-both-map)
 		   format-fn (fn [[x [y z]]] (str (pr-str x) " expected " (pr-str y) " but was " (pr-str z)))
 		   messages (seq (map format-fn disagreeing))
 		   diff-fn (fn [e a] (seq (difference (set (keys e)) (set (keys a)))))]
@@ -253,7 +262,7 @@
 					    (str (str-join ", " v) " are in actual, but not in expected"))
 			:raw [str-e str-a]
 			:result [e "does not equal" a]
-			:message (when messages (str-join ", " messages))}))))
+			:message (when messages (str-join "\n           " messages))}))))
 
 (defmethod compare-expr [java.util.Set java.util.Set] [e a str-e str-a]
 	   (if (= e a)
