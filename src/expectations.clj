@@ -141,10 +141,10 @@
 	     (clojure.walk/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m)))
 
 (defmethod nan->keyword java.util.List [m]
-	   (map #(if (Double/isNaN %) :DoubleNaN %) m))
+	   (map #(if (and (number? %) (Double/isNaN %)) :DoubleNaN %) m))
 
 (defmethod nan->keyword :default [m]
-	   (if (and (instance? Double m) (Double/isNaN m)) :DoubleNaN m))
+	   (if (and (number? m) (Double/isNaN m)) :DoubleNaN m))
 
 (defmulti extended-not= (fn [x y] [(class x) (class y)]) :default :default)
 

@@ -85,3 +85,5 @@
 	nil? nil
 	fn? +
 	empty? [])
+
+(expect [:type :id :data] (keys {:type :modify-working-basket :id 2223 :data 0}))
