@@ -40,8 +40,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="e9a5a87b-6b13-4511-9195-f035f1b63684" name="Default" comment="" />
-    <ignored path=".idea/workspace.xml" />
     <ignored path="expectations.iws" />
+    <ignored path=".idea/workspace.xml" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,61 +97,17 @@
   </component>
   <component name="FileColors" enabled="true" enabledForTabs="true" />
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5">
-      <split-first>
-        <leaf>
-          <file leaf-file-name="expectations.clj" pinned="false" current="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/src/expectations.clj">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="193" column="9" selection-start="6150" selection-end="6150" vertical-scroll-proportion="0.014520813">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="SuccessTest.java" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test/java/SuccessTest.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="4" column="13" selection-start="155" selection-end="155" vertical-scroll-proportion="0.0">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-first>
-      <split-second>
-        <leaf>
-          <file leaf-file-name="success_examples.clj" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test/clojure/success/success_examples.clj">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="86" column="12" selection-start="1776" selection-end="1776" vertical-scroll-proportion="0.0">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="README.md" pinned="false" current="true" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/README.md">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="35" column="112" selection-start="1696" selection-end="1696" vertical-scroll-proportion="0.2907662">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="failure_examples.clj" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test/clojure/failure/failure_examples.clj">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="78" column="64" selection-start="1632" selection-end="1632" vertical-scroll-proportion="0.0">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-second>
-    </splitter>
+    <leaf>
+      <file leaf-file-name="expectations.clj" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/expectations.clj">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="178" column="20" selection-start="5730" selection-end="5730" vertical-scroll-proportion="0.46450305">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FindManager">
     <FindUsagesManager>
@@ -165,7 +121,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/src/expectations/junit/ExpectationsTestRunner.java" />
         <option value="$PROJECT_DIR$/test/java/ExampleTest.java" />
         <option value="$PROJECT_DIR$/test/clojure/failure_examples.clj" />
         <option value="$PROJECT_DIR$/test/clojure/success_examples.clj" />
@@ -177,10 +132,11 @@
         <option value="$PROJECT_DIR$/test/clojure/success/nested/success_examples.clj" />
         <option value="$PROJECT_DIR$/src/expectations/junit/runner.clj" />
         <option value="$PROJECT_DIR$/test/clojure/success/dd.clj" />
-        <option value="$PROJECT_DIR$/src/expectations.clj" />
-        <option value="$PROJECT_DIR$/test/clojure/failure/failure_examples.clj" />
         <option value="$PROJECT_DIR$/test/clojure/success/success_examples.clj" />
         <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/test/clojure/failure/failure_examples.clj" />
+        <option value="$PROJECT_DIR$/test/clojure/failure/foo.clj" />
+        <option value="$PROJECT_DIR$/src/expectations.clj" />
       </list>
     </option>
   </component>
@@ -424,18 +380,7 @@
       <recent name="$PROJECT_DIR$/expectations" />
     </key>
   </component>
-  <component name="RunManager" selected="Clojure Script.failure_examples">
-    <configuration default="false" name="dd" type="ClojureScriptRunConfiguration" factoryName="Clojure Script" temporary="true">
-      <module name="expectations" />
-      <setting name="path" value="$PROJECT_DIR$/test/clojure/success/dd.clj" />
-      <setting name="vmparams" value="" />
-      <setting name="params" value="" />
-      <setting name="workDir" value="$PROJECT_DIR$/test/clojure/success" />
-      <setting name="repl" value="false" />
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method />
-    </configuration>
+  <component name="RunManager" selected="JUnit.All in expectations">
     <configuration default="false" name="SuccessTest" type="JUnit" factoryName="JUnit" temporary="true">
       <extension name="coverage" enabled="false" merge="false" />
       <module name="expectations" />
@@ -494,6 +439,17 @@
     <configuration default="false" name="failure_examples" type="ClojureScriptRunConfiguration" factoryName="Clojure Script" temporary="true">
       <module name="expectations" />
       <setting name="path" value="$PROJECT_DIR$/test/clojure/failure/failure_examples.clj" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workDir" value="$PROJECT_DIR$/test/clojure/failure" />
+      <setting name="repl" value="false" />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="foo" type="ClojureScriptRunConfiguration" factoryName="Clojure Script" temporary="true">
+      <module name="expectations" />
+      <setting name="path" value="$PROJECT_DIR$/test/clojure/failure/foo.clj" />
       <setting name="vmparams" value="" />
       <setting name="params" value="" />
       <setting name="workDir" value="$PROJECT_DIR$/test/clojure/failure" />
@@ -682,11 +638,11 @@
     </configuration>
     <list size="6">
       <item index="0" class="java.lang.String" itemvalue="JUnit.All in expectations" />
-      <item index="1" class="java.lang.String" itemvalue="Clojure Script.dd" />
-      <item index="2" class="java.lang.String" itemvalue="JUnit.SuccessTest" />
-      <item index="3" class="java.lang.String" itemvalue="Clojure Script.success_examples" />
-      <item index="4" class="java.lang.String" itemvalue="JUnit.FailureTest" />
-      <item index="5" class="java.lang.String" itemvalue="Clojure Script.failure_examples" />
+      <item index="1" class="java.lang.String" itemvalue="JUnit.SuccessTest" />
+      <item index="2" class="java.lang.String" itemvalue="Clojure Script.success_examples" />
+      <item index="3" class="java.lang.String" itemvalue="JUnit.FailureTest" />
+      <item index="4" class="java.lang.String" itemvalue="Clojure Script.failure_examples" />
+      <item index="5" class="java.lang.String" itemvalue="Clojure Script.foo" />
     </list>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
       <Host>localhost</Host>
@@ -712,8 +668,8 @@
     <supportedVersion>125</supportedVersion>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="25" width="2556" height="1550" extended-state="0" />
-    <editor active="true" />
+    <frame x="4" y="25" width="2556" height="1550" extended-state="0" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -727,9 +683,9 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.14234306" sideWeight="0.7562366" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.14234306" sideWeight="0.722737" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23877406" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2722737" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32881597" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -772,11 +728,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar:///usr/lib/jvm/java-6-sun-1.6.0.20/jre/lib/rt.jar!/java/io/File.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="83" selection-start="1124" selection-end="1124" vertical-scroll-proportion="0.013605442" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test/clojure/failure/not.clj.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" />
@@ -785,11 +736,6 @@
     <entry file="file://$PROJECT_DIR$/src/expectations/junit/ScenarioError.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="4" column="13" selection-start="65" selection-end="65" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/java/FailureTest.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="92" selection-start="244" selection-end="244" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/expectations/junit/ExpectationsFailure.java">
@@ -804,9 +750,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/expectations/junit/runner.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="67" column="68" selection-start="3399" selection-end="3399" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="67" column="68" selection-start="3399" selection-end="3399" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/expectations/scenarios.clj">
@@ -816,28 +760,37 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/clojure/failure/scenario_examples.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="63" selection-start="424" selection-end="424" vertical-scroll-proportion="0.42402828">
-          <folding />
-        </state>
+        <state line="24" column="63" selection-start="424" selection-end="424" vertical-scroll-proportion="0.42402828" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test/clojure/success/nested/success_examples.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="35" column="5" selection-start="737" selection-end="737" vertical-scroll-proportion="0.6183746">
-          <folding />
-        </state>
+        <state line="35" column="5" selection-start="737" selection-end="737" vertical-scroll-proportion="0.6183746" />
       </provider>
     </entry>
     <entry file="jar://$PROJECT_DIR$/../emark/server/deps/3rd/clojure/clojure.jar!/clojure/core.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2153" column="6" selection-start="71297" selection-end="71297" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+        <state line="2153" column="6" selection-start="71297" selection-end="71297" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/expectations.clj">
+    <entry file="file://$PROJECT_DIR$/test/clojure/success/success_examples.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="193" column="9" selection-start="6150" selection-end="6150" vertical-scroll-proportion="0.014520813">
+        <state line="86" column="12" selection-start="1776" selection-end="1776" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="35" column="112" selection-start="1696" selection-end="1696" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/java/FailureTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="0" selection-start="323" selection-end="323" vertical-scroll-proportion="0.0" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/clojure/failure/failure_examples.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="55" column="37" selection-start="1044" selection-end="1044" vertical-scroll-proportion="0.32363635">
           <folding />
         </state>
       </provider>
@@ -847,23 +800,9 @@
         <state line="4" column="13" selection-start="155" selection-end="155" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/clojure/success/success_examples.clj">
+    <entry file="file://$PROJECT_DIR$/src/expectations.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="86" column="12" selection-start="1776" selection-end="1776" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/clojure/failure/failure_examples.clj">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="78" column="64" selection-start="1632" selection-end="1632" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="35" column="112" selection-start="1696" selection-end="1696" vertical-scroll-proportion="0.2907662">
+        <state line="178" column="20" selection-start="5730" selection-end="5730" vertical-scroll-proportion="0.46450305">
           <folding />
         </state>
       </provider>

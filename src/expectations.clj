@@ -176,7 +176,7 @@
 
 (defn normalize-keys* [a ks m]
   (if (map? m)
-    (reduce into (map (fn [[k v]] (normalize-keys* a (conj ks k) v)) (seq m)))
+    (reduce into [] (map (fn [[k v]] (normalize-keys* a (conj ks k) v)) (seq m)))
     (conj a ks)))
 
 (defn normalize-keys [m] (normalize-keys* [] [] m))
