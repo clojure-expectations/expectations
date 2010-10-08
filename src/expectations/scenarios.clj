@@ -4,11 +4,9 @@
 
 (defn in [n] {:expectations/in n :expectations/in-flag true})
 
-(defmacro expect
-  ([e a] `(binding [fail (fn [name# v# msg#] (throw (expectations.junit.ScenarioError. name# v# msg#)))]
-	    (doexpect ~e ~a)))
-  ([a] `(binding [fail (fn [name# v# msg#] (throw (expectations.junit.ScenarioError name# v# msg#)))]
-	  (doexpect :expectations/true ~a))))
+(defmacro expect [e a]
+  `(binding [fail (fn [name# v# msg#] (throw (expectations.junit.ScenarioError. name# v# msg#)))]
+     (doexpect ~e ~a)))
 
 (defmacro scenario [& forms]
   `(def ~(vary-meta (gensym "test") assoc :expectation true)

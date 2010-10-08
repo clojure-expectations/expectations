@@ -9,8 +9,6 @@
 
 (expect (one) 1)
 
-(expect (one))
-
 ;; number equality
 (expect 1 (identity 2))
 
@@ -51,7 +49,7 @@
 (expect "foo" (in nil))
 
 ;; expect boolean
-(expect (empty? (list 1)))
+(expect empty? (list 1))
 
 ;; Double/NaN equality in a set
 (expect #{1 9} #{1 Double/NaN})
@@ -84,7 +82,7 @@
 	:c #{:a :b}
 	{:a :z} {:a :b :c :d})
 
-(given [x y] (expect (x y))
+(given [x y] (expect x y)
 	nil? 1
 	fn? 1
 	empty? [1])

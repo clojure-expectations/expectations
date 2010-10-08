@@ -29,7 +29,7 @@
 (expect :foo (in (conj [:bar] :foo)))
 
 ;; expect boolean
-(expect (empty? (list)))
+(expect empty? (list))
 
 ;; multiple expects with form
 (given [x y] (expect x (+ y y))
@@ -46,7 +46,7 @@
 	:a #{:a :b}
 	{:a :b} {:a :b :c :d})
 
-(given [x y] (expect (x y))
+(given [x y] (expect x y)
 	nil? nil
 	fn? +
 	empty? [])

@@ -29,7 +29,7 @@
 (expect :foo (in (conj [:bar] :foo)))
 
 ;; expect boolean
-(expect (empty? (list)))
+(expect empty? (list))
 
 ;; allow Double/NaN equality in a map
 (expect {:a Double/NaN :b {:c Double/NaN}} {:a Double/NaN :b {:c Double/NaN}})
@@ -47,7 +47,7 @@
 (expect [1 Double/NaN] [1 Double/NaN])
 
 ;; allow Double/NaN equality with in fn and list
-(expect Double/NaN (in [1 Double/NaN]))
+(expect-focused Double/NaN (in [1 Double/NaN]))
 
 ;; easy java object return value testing
 (given (java.util.ArrayList.)
@@ -81,7 +81,7 @@
 	:a #{:a :b}
 	{:a :b} {:a :b :c :d})
 
-(given [x y] (expect (x y))
+(given [x y] (expect x y)
 	nil? nil
 	fn? +
 	empty? [])

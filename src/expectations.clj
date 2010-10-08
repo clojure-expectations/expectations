@@ -102,6 +102,16 @@
         (t))
       (finished tn tm))))
 
+(defn test-vars [vars]
+  (binding [*report-counters* (ref *initial-report-counters*)]
+    (doseq [v vars] (test-var v))
+    @*report-counters*))
+
+(defn run-tests-in-vars [vars]
+  (let [summary (assoc (test-vars vars) :type :summary)]
+    (report summary)
+    summary))
+
 (defn sort-by-str [vs]
   (sort #(.compareTo (str %1) (str %2)) vs))
 
@@ -115,6 +125,10 @@
     (test-all-vars ns)
     @*report-counters*))
 
+;; (defn run-tests [namespaces]
+;;  (println (ns-interns namespaces))
+;;  (run-tests-in-vars (filter #(:expectations (meta %)) (-> namespaces ns-interns vals sort-by-str))))
+
 (defn run-tests [namespaces]
   (let [summary (assoc (apply merge-with + (map test-ns namespaces)) :type :summary)]
     (report summary)
@@ -123,16 +137,6 @@
 (defn run-all-tests
   ([] (run-tests (all-ns)))
   ([re] (run-tests (filter #(re-matches re (name (ns-name %))) (all-ns)))))
-
-(defn test-vars [vars]
-  (binding [*report-counters* (ref *initial-report-counters*)]
-    (doseq [v vars] (test-var v))
-    @*report-counters*))
-
-(defn run-tests-in-vars [vars]
-  (let [summary (assoc (test-vars vars) :type :summary)]
-    (report summary)
-    summary))
 
 (defmulti nan->keyword class :default :default)
 
@@ -169,8 +173,7 @@
   (->>
    (map ->disagreement (map-intersection e a))
    (remove nil?)
-   (remove empty?)
-   ))
+   (remove empty?)))
 
 (defn map-compare [e a str-e str-a original-a]
   (if (= (nan->keyword e) (nan->keyword a))
@@ -187,6 +190,7 @@
 			  (isa? e Throwable) ::expect-exception
 			  (instance? Throwable e)  ::expected-exception
 			  (instance? Throwable a)  ::actual-exception
+			  (fn? e) ::fn
 			  (= ::true e) ::true
 			  (::in-flag a) ::in
 			  :default [(class e) (class a)])))
@@ -196,6 +200,12 @@
 	     (report {:type :pass})
 	     (report {:type :fail :raw [str-e str-a]
 		      :result [(pr-str e) "does not equal" (pr-str a)]})))
+
+(defmethod compare-expr ::fn [e a str-e str-a]
+	   (if (e a)
+	     (report {:type :pass})
+	     (report {:type :fail :raw [str-e str-a]
+		      :result [(pr-str a) "is not" str-e]})))
 
 (defmethod compare-expr ::true [e a str-e str-a]
 	   (if a
@@ -299,13 +309,13 @@
 	 a# (try ~a (catch Throwable t# t#))]
      (compare-expr e# a# ~(str e) ~(str a))))
 
-(defmacro expect
-  ([e a]
-     `(def ~(vary-meta (gensym) assoc :expectation true)
-	   (fn [] (doexpect ~e ~a))))
-  ([a]
-     `(def ~(vary-meta (gensym) assoc :expectation true)
-	   (fn [] (doexpect ::true ~a)))))
+(defmacro expect [e a]
+  `(def ~(vary-meta (gensym) assoc :expectation true)
+	(fn [] (doexpect ~e ~a))))
+
+(defmacro expect-focused [e a]
+  `(def ~(vary-meta (gensym) assoc :expectation true :focused true)
+	(fn [] (doexpect ~e ~a))))
 
 (defmacro given [bindings form & args]
   (if args
