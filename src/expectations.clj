@@ -145,10 +145,10 @@
 	     (clojure.walk/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m)))
 
 (defmethod nan->keyword java.util.List [m]
-	   (map #(if (Double/isNaN %) :DoubleNaN %) m))
+	   (map #(if (and (number? %) (Double/isNaN %)) :DoubleNaN %) m))
 
 (defmethod nan->keyword :default [m]
-	   (if (and (instance? Double m) (Double/isNaN m)) :DoubleNaN m))
+	   (if (and (number? m) (Double/isNaN m)) :DoubleNaN m))
 
 (defmulti extended-not= (fn [x y] [(class x) (class y)]) :default :default)
 
@@ -163,24 +163,51 @@
   (let [in-both (intersection (set (keys e)) (set (keys a)))]
     (select-keys (merge-with vector e a) in-both)))
 
-(defn ->disagreement [[k [v1 v2]]]
+(defn ->disagreement [prefix [k [v1 v2]]]
   (if (and (map? v1) (map? v2))
-    (str-join "\n           " (remove nil? (map ->disagreement (map-intersection v1 v2))))
+    (str-join
+      "\n           "
+      (remove nil? (map (partial ->disagreement (str (when prefix (str prefix " {")) k)) (map-intersection v1 v2))))
     (when (extended-not= v1 v2)
-      (str (pr-str k) " expected " (pr-str v1) " but was " (pr-str v2)))))
+      (str (when prefix (str prefix " {")) (pr-str k) " expected " (pr-str v1) " but was " (pr-str v2)))))
 
 (defn map-diff-message [e a padding]
   (->>
-   (map ->disagreement (map-intersection e a))
+   (map (partial ->disagreement nil) (map-intersection e a))
    (remove nil?)
-   (remove empty?)))
+   (remove empty?)
+    seq))
+
+(defn normalize-keys* [a ks m]
+  (if (map? m)
+    (reduce into [] (map (fn [[k v]] (normalize-keys* a (conj ks k) v)) (seq m)))
+    (conj a ks)))
+
+(defn normalize-keys [m] (normalize-keys* [] [] m))
+
+(defn ->missing-message [msg item]
+  (str (str-join " {" item) msg))
+
+(defn map-difference [e a]
+  (difference (set (normalize-keys e)) (set (normalize-keys a))))
+
+(defn map-missing-message [e a msg]
+    (->>
+      (map-difference e a)
+      (map (partial ->missing-message msg))
+      seq))
+>>>>>>> a3302e2d62cac746b992e4b231ae91cc30e74fc7:src/expectations.clj
 
 (defn map-compare [e a str-e str-a original-a]
   (if (= (nan->keyword e) (nan->keyword a))
     (report {:type :pass})
     (report {:type :fail
-	     :actual-message (when-let [v (seq (difference (set (keys e)) (set (keys a))))]
-			       (str (str-join ", " v) " are in expected, but not in actual"))
+	     :actual-message
+       (when-let [messages (map-missing-message e a " is in expected, but not in actual")]
+         (str-join "\n           " messages))
+	     :expected-message
+       (when-let [messages (map-missing-message a e " is in actual, but not in expected")]
+         (str-join "\n           " messages))
 	     :raw [str-e str-a]
 	     :result [e "are not in" original-a]
 	     :message (when-let [messages (map-diff-message e a "")] (str-join "\n           " messages))})))
