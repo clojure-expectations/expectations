@@ -47,7 +47,7 @@
 (expect [1 Double/NaN] [1 Double/NaN])
 
 ;; allow Double/NaN equality with in fn and list
-(expect-focused Double/NaN (in [1 Double/NaN]))
+(expect Double/NaN (in [1 Double/NaN]))
 
 ;; easy java object return value testing
 (given (java.util.ArrayList.)

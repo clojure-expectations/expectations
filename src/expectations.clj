@@ -116,7 +116,10 @@
   (sort #(.compareTo (str %1) (str %2)) vs))
 
 (defn test-ns [ns]
-  (test-vars (filter #(:expectation (meta %)) (-> ns ns-interns vals sort-by-str))))
+  (let [expectations (filter #(:expectation (meta %)) (-> ns ns-interns vals sort-by-str))]
+    (if-let [focused (->> expectations (filter #(:focused (meta %))) seq)]
+      (test-vars focused)
+      (test-vars expectations))))
 
 (defn run-tests [namespaces]
   (let [summary (assoc (apply merge-with + (map test-ns namespaces)) :type :summary)]
