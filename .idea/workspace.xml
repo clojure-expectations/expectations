@@ -355,7 +355,7 @@
       <recent name="$PROJECT_DIR$/expectations" />
     </key>
   </component>
-  <component name="RunManager" selected="Clojure Script.scenario_examples">
+  <component name="RunManager" selected="JUnit.All in expectations">
     <configuration default="false" name="success_examples" type="ClojureScriptRunConfiguration" factoryName="Clojure Script" temporary="true">
       <module name="expectations" />
       <setting name="path" value="$PROJECT_DIR$/test/clojure/success/success_examples.clj" />
