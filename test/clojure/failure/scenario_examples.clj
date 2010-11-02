@@ -23,3 +23,8 @@
     (expect 2 @a)
     (expect 1 @a)
     (expect "1" "2")))
+
+(scenario
+  (given [x y] (expect x y)
+    1 2
+    3 4))

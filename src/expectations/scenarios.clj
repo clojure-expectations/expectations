@@ -3,6 +3,11 @@
   (:use [expectations :only [doexpect fail stack->file&line report]]))
 
 (defn in [n] {:expectations/in n :expectations/in-flag true})
+(defmacro given [bindings form & args]
+  (if args
+    `(clojure.template/do-template ~bindings ~form ~@args)
+    `(clojure.template/do-template [~'x ~'y] ~(list 'expect 'y (list 'x bindings)) ~@(rest form))))
+
 
 (defmacro expect [e a]
   `(binding [fail (fn [name# v# msg#] (throw (expectations.junit.ScenarioError. name# v# msg#)))]
