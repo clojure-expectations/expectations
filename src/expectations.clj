@@ -161,7 +161,9 @@
       "\n           "
       (remove nil? (map (partial ->disagreement (str (when prefix (str prefix " {")) k)) (map-intersection v1 v2))))
     (when (extended-not= v1 v2)
-      (str (when prefix (str prefix " {")) (pr-str k) " expected " (pr-str v1) " but was " (pr-str v2)))))
+      (let [prefix-desc (str (when prefix (str prefix " {")) (pr-str k))
+	    prefix-space (apply str (take (count prefix-desc) (repeat " ")))]
+	(str prefix-desc " expected: " (pr-str v1) "\n           " prefix-space "      was: " (pr-str v2))))))
 
 (defn map-diff-message [e a padding]
   (->>
@@ -189,7 +191,7 @@
     (map (partial ->missing-message msg))
     seq))
 
-(defn map-compare [e a str-e str-a original-a]
+(defn map-compare [e a str-e str-a original-a but-string]
   (if (= (nan->keyword e) (nan->keyword a))
     (report {:type :pass})
     (report {:type :fail
@@ -200,7 +202,7 @@
              (when-let [messages (map-missing-message a e " is in actual, but not in expected")]
                (str-join "\n           " messages))
              :raw [str-e str-a]
-             :result [e "are not in" original-a]
+             :result ["expected:" e "\n" but-string original-a]
              :message (when-let [messages (map-diff-message e a "")] (str-join "\n           " messages))})))
 
 (defmulti compare-expr (fn [e a str-e str-a]
@@ -217,7 +219,7 @@
   (if (= e a)
     (report {:type :pass})
     (report {:type :fail :raw [str-e str-a]
-             :result [(pr-str e) "does not equal" (pr-str a)]})))
+             :result ["expected:" (pr-str e) "\n                was:" (pr-str a)]})))
 
 (defmethod compare-expr ::fn [e a str-e str-a]
   (if (e a)
@@ -244,7 +246,7 @@
       (report {:type :fail :raw [str-e str-a]
                :result ["key" (pr-str e) "not found in" (::in a)]}))
     (instance? java.util.Map (::in a))
-    (map-compare e (select-keys (::in a) (keys e)) str-e str-a (::in a))
+    (map-compare e (select-keys (::in a) (keys e)) str-e str-a (::in a) "                in:")
     :default (report {:type :fail :raw [str-e str-a]
                       :result [(pr-str (::in a))]
                       :message "You must supply a list, set, or map when using (in)"})))
@@ -282,7 +284,7 @@
              :result [str-a "did not throw" str-e]})))
 
 (defmethod compare-expr [java.util.Map java.util.Map] [e a str-e str-a]
-  (map-compare e a str-e str-a a))
+	   (map-compare e a str-e str-a a "               was:"))
 
 (defmethod compare-expr [java.util.Set java.util.Set] [e a str-e str-a]
   (if (= e a)
@@ -294,7 +296,7 @@
                :expected-message (when-let [v (diff-fn a e)]
                  (str (str-join ", " v) " are in actual, but not in expected"))
                :raw [str-e str-a]
-               :result [e "does not equal" (pr-str a)]}))))
+               :result ["expected:" e "\n                was:" (pr-str a)]}))))
 
 (defmethod compare-expr [java.util.List java.util.List] [e a str-e str-a]
   (if (= (nan->keyword e) (nan->keyword a))
@@ -306,7 +308,7 @@
                :expected-message (when-let [v (diff-fn a e)]
                  (str (str-join ", " v) " are in actual, but not in expected"))
                :raw [str-e str-a]
-               :result [e "does not equal" (pr-str a)]
+               :result ["expected:" e "\n                was:" (pr-str a)]
                :message (cond
                  (and
                    (= (set e) (set a))
