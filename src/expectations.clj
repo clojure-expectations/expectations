@@ -219,7 +219,8 @@
   (if (= e a)
     (report {:type :pass})
     (report {:type :fail :raw [str-e str-a]
-             :result ["expected:" (pr-str e) "\n                was:" (pr-str a)]})))
+             :result ["expected:" (pr-str e)
+		      "\n                was:" (pr-str a)]})))
 
 (defmethod compare-expr ::fn [e a str-e str-a]
   (if (e a)

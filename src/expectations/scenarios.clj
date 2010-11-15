@@ -8,17 +8,23 @@
     `(clojure.template/do-template ~bindings ~form ~@args)
     `(clojure.template/do-template [~'x ~'y] ~(list 'expect 'y (list 'x bindings)) ~@(rest form))))
 
-
 (defmacro expect [e a]
-  `(binding [fail (fn [name# v# msg#] (throw (expectations.junit.ScenarioError. name# v# msg#)))]
+  `(binding [fail (fn [name# v# msg#] (throw (vary-meta (AssertionError. msg#) assoc :test-name name# :test-id v#)))]
      (doexpect ~e ~a)))
 
+(defmacro doscenario [forms]
+  `(try
+     ~@forms
+     (catch AssertionError e#
+       (let [{name# :test-name id# :test-id} (meta e#)]
+	 (fail name# id# (str (.getMessage e#) "\n" (expectations/pruned-stack-trace e#)))))
+     (catch Throwable t#
+       (report {:type :error :result t#}))))
+
 (defmacro scenario [& forms]
-  `(def ~(vary-meta (gensym "test") assoc :expectation true)
-	(fn []
-	  (try
-	    ~@forms
-	    (catch AssertionError e#
-	      (fail (.name e#) (.uniqueId e#) (str (.getMessage e#) "\n" (expectations/pruned-stack-trace e#))))
-	    (catch Throwable t#
-	      (report {:type :error :result t#}))))))
+  `(def ~(vary-meta (gensym) assoc :expectation true)
+	(fn [] (doscenario ~forms))))
+
+(defmacro scenario-focused [& forms]
+  `(def ~(vary-meta (gensym) assoc :expectation true :focused true)
+	(fn [] (doscenario ~forms))))
