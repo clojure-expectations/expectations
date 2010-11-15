@@ -7,6 +7,7 @@
 
 (def *test-name* "test name unset")
 (def *test-meta* {})
+(def *prune-stacktrace* true)
 
 (def *report-counters* nil) ; bound to a ref of a map in test-ns
 
@@ -34,17 +35,21 @@
 (defn test-file [{:keys [file line]}]
   (str (last (re-seq #"[A-Za-z_\.]+" file)) ":" line))
 
+(defn raw-str [[e a]]
+    (str "(expect " e (when (> (count e) 30) "\n                  ") " " a ")"))
+
 (defn fail [test-name test-meta msg] (println (str "\nfailure in (" (test-file test-meta) ") : " (:ns test-meta))) (println msg))
 (defn summary [msg] (println msg))
 (defn started [test-name test-meta])
 (defn finished [test-name test-meta])
 
 (defn ignored-fns [{:keys [className fileName]}]
-  (or (= fileName "expectations.clj")
-    (re-seq #"clojure.lang" className)
-    (re-seq #"clojure.core" className)
-    (re-seq #"clojure.main" className)
-    (re-seq #"java.lang" className)))
+  (when *prune-stacktrace*
+    (or (= fileName "expectations.clj")
+      (re-seq #"clojure.lang" className)
+      (re-seq #"clojure.core" className)
+      (re-seq #"clojure.main" className)
+      (re-seq #"java.lang" className))))
 
 (defn pruned-stack-trace [t]
   (str-join "\n"
@@ -61,18 +66,20 @@
   (inc-report-counter :fail)
   (fail *test-name* *test-meta*
     (str-join "\n"
-      [(when-let [msg (:result m)] (str "   result: " (str-join " " msg)))
-       (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
-       (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
-       (when-let [msg (:message m)] (str "  message: " msg))])))
+      [(when-let [msg (:raw m)] (str "           " (raw-str msg)))
+       (when-let [msg (:result m)] (str "           " (str-join " " msg) "\n"))
+       (when-let [msg (:expected-message m)] (str "           " msg))
+       (when-let [msg (:actual-message m)] (str "           " msg))
+       (when-let [msg (:message m)] (str "           " msg))])))
 
-(defmethod report :error [{:keys [result] :as m}]
+(defmethod report :error [{:keys [result raw] :as m}]
   (inc-report-counter :error)
   (fail *test-name* *test-meta*
     (str-join "\n"
-      [(when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
+      [(when raw (str "           " (raw-str raw)))
+       (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
        (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
-       (str "    threw: " (class result) "-" (.getMessage result))
+       (str "    threw: " (class result) " - " (.getMessage result))
        (pruned-stack-trace result)])))
 
 (defmethod report :summary [m]
@@ -194,6 +201,7 @@
              :expected-message
              (when-let [messages (map-missing-message a e " is in actual, but not in expected")]
                (str-join "\n           " messages))
+             :raw [str-e str-a]
              :result ["expected:" e "\n" but-string original-a]
              :message (when-let [messages (map-diff-message e a "")] (str-join "\n           " messages))})))
 
@@ -209,14 +217,14 @@
 (defmethod compare-expr :default [e a str-e str-a]
   (if (= e a)
     (report {:type :pass})
-    (report {:type :fail 
+    (report {:type :fail :raw [str-e str-a]
              :result ["expected:" (pr-str e)
 		      "\n                was:" (pr-str a)]})))
 
 (defmethod compare-expr ::fn [e a str-e str-a]
   (if (e a)
     (report {:type :pass})
-    (report {:type :fail 
+    (report {:type :fail :raw [str-e str-a]
              :result [(pr-str a) "is not" str-e]})))
 
 (defmethod compare-expr ::in [e a str-e str-a]
@@ -224,33 +232,35 @@
     (instance? java.util.List (::in a))
     (if (seq (filter (fn [item] (= (nan->keyword e) (nan->keyword item))) (::in a)))
       (report {:type :pass})
-      (report {:type :fail 
+      (report {:type :fail :raw [str-e str-a]
                :result ["value" (pr-str e) "not found in" (::in a)]}))
     (instance? java.util.Set (::in a))
     (if ((::in a) e)
       (report {:type :pass})
-      (report {:type :fail 
+      (report {:type :fail :raw [str-e str-a]
                :result ["key" (pr-str e) "not found in" (::in a)]}))
     (instance? java.util.Map (::in a))
     (map-compare e (select-keys (::in a) (keys e)) str-e str-a (::in a) "                in:")
-    :default (report {:type :fail 
-                      :result [(pr-str (::in a))]
+    :default (report {:type :fail :raw [str-e str-a]
+                      :result ["You supplied:" (pr-str (::in a))]
                       :message "You must supply a list, set, or map when using (in)"})))
 
 (defmethod compare-expr [Class Object] [e a str-e str-a]
   (if (instance? e a)
     (report {:type :pass})
-    (report {:type :fail 
+    (report {:type :fail :raw [str-e str-a]
              :result [a "is not an instance of" e]})))
 
 
 (defmethod compare-expr ::actual-exception [e a str-e str-a]
   (report {:type :error
+           :raw [str-e str-a]
            :actual-message (str "exception in actual: " str-a)
            :result a}))
 
 (defmethod compare-expr ::expected-exception [e a str-e str-a]
   (report {:type :error
+           :raw [str-e str-a]
            :expected-message (str "exception in expected: " str-e)
            :result e}))
 
@@ -258,12 +268,13 @@
   (if (re-seq e a)
     (report {:type :pass})
     (report {:type :fail,
+             :raw [str-e str-a]
              :result ["regex" (pr-str e) "not found in" (pr-str a)]})))
 
 (defmethod compare-expr ::expect-exception [e a str-e str-a]
   (if (instance? e a)
     (report {:type :pass})
-    (report {:type :fail
+    (report {:type :fail :raw [str-e str-a]
              :result [str-a "did not throw" str-e]})))
 
 (defmethod compare-expr [java.util.Map java.util.Map] [e a str-e str-a]
@@ -278,6 +289,7 @@
                  (str (str-join ", " v) " are in expected, but not in actual"))
                :expected-message (when-let [v (diff-fn a e)]
                  (str (str-join ", " v) " are in actual, but not in expected"))
+               :raw [str-e str-a]
                :result ["expected:" e "\n                was:" (pr-str a)]}))))
 
 (defmethod compare-expr [java.util.List java.util.List] [e a str-e str-a]
@@ -289,6 +301,7 @@
                  (str (str-join ", " v) " are in expected, but not in actual"))
                :expected-message (when-let [v (diff-fn a e)]
                  (str (str-join ", " v) " are in actual, but not in expected"))
+               :raw [str-e str-a]
                :result ["expected:" e "\n                was:" (pr-str a)]
                :message (cond
                  (and

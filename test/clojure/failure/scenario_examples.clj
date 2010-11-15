@@ -28,3 +28,9 @@
   (given [x y] (expect x y)
     1 2
     3 4))
+
+; a passing one helps too
+(scenario
+  (given [x y] (expect x y)
+    1 1
+    3 3))
