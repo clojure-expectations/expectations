@@ -87,10 +87,12 @@
 	 (str "    threw: " (class result) " - " (.getMessage result)))
        (pruned-stack-trace result)])))
 
-(defmethod report :summary [m]
-  (summary (str "\nRan " (:test m) " tests containing "
-    (+ (:pass m) (:fail m) (:error m)) " assertions in " (:run-time m) " msecs\n"
-    (:fail m) " failures, " (:error m) " errors.")))
+(defmethod report :summary [{:keys [test pass fail error run-time ignored-expectations]}]
+  (summary (str "\nRan " test " tests containing "
+    (+ pass fail error) " assertions in "
+    run-time " msecs\n"
+    (when (> ignored-expectations 0) (str "IGNORED " ignored-expectations " EXPECTATIONS\n"))
+    fail " failures, " error " errors.")))
 
 ;; TEST RUNNING
 
@@ -107,23 +109,25 @@
         (t))
       (finished tn tm))))
 
-(defn test-vars [vars]
+(defn test-vars [vars ignored-expectations]
   (binding [*report-counters* (ref *initial-report-counters*)]
     (let [start (System/nanoTime)]
       (doseq [v vars] (test-var v))
 ;;;      (dorun (pmap test-var vars))
-      (assoc @*report-counters* :run-time (int (/ (- (System/nanoTime) start) 1000000))))))
+      (assoc @*report-counters*
+        :run-time (int (/ (- (System/nanoTime) start) 1000000))
+        :ignored-expectations ignored-expectations))))
 
 (defn run-tests-in-vars [vars]
-  (let [summary (assoc (test-vars vars) :type :summary)]
+  (let [summary (assoc (test-vars vars 0) :type :summary)]
     (report summary)
     summary))
 
 (defn test-ns [ns]
   (let [expectations (filter #(:expectation (meta %)) (->> ns ns-interns vals (sort-by str)))]
     (if-let [focused (->> expectations (filter #(:focused (meta %))) seq)]
-      (test-vars focused)
-      (test-vars expectations))))
+      (test-vars focused (- (count expectations) (count focused)))
+      (test-vars expectations 0))))
 
 (defn run-tests [namespaces]
   (let [summary (assoc (apply merge-with + (map test-ns namespaces)) :type :summary)]

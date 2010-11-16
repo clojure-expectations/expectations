@@ -39,8 +39,10 @@
     </TreeState>
   </component>
   <component name="ChangeListManager">
-    <list default="true" readonly="true" id="e9a5a87b-6b13-4511-9195-f035f1b63684" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/expectations/junit/ScenarioError.java" afterPath="" />
+    <list default="true" readonly="true" id="e9a5a87b-6b13-4511-9195-f035f1b63684" name="Default" comment="fixing the scenario not failing correctly issue">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/clojure/failure/failure_examples.clj" afterPath="$PROJECT_DIR$/test/clojure/failure/failure_examples.clj" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/expectations.clj" afterPath="$PROJECT_DIR$/src/expectations.clj" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path=".idea/workspace.xml" />
     <ignored path="expectations.iws" />
@@ -123,34 +125,25 @@
           <file leaf-file-name="expectations.clj" pinned="false" current="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/src/expectations.clj">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="339" column="26" selection-start="12548" selection-end="12548" vertical-scroll-proportion="0.0">
+                <state line="93" column="80" selection-start="3384" selection-end="3396" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="template.clj" pinned="false" current="true" current-in-tab="true">
+          <file leaf-file-name="template.clj" pinned="false" current="false" current-in-tab="false">
             <entry file="jar://$PROJECT_DIR$/../emark/server/deps/3rd/clojure/clojure.jar!/clojure/template.clj">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="44" column="10" selection-start="1514" selection-end="1514" vertical-scroll-proportion="0.68085104">
+                <state line="44" column="10" selection-start="1514" selection-end="1514" vertical-scroll-proportion="0.0">
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="failure_examples.clj" pinned="false" current="false" current-in-tab="false">
+          <file leaf-file-name="failure_examples.clj" pinned="false" current="true" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/test/clojure/failure/failure_examples.clj">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="101" column="4" selection-start="1955" selection-end="1955" vertical-scroll-proportion="0.0">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="scenario_examples.clj" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/test/clojure/failure/scenario_examples.clj">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="13" column="0" selection-start="230" selection-end="230" vertical-scroll-proportion="0.0">
+                <state line="36" column="7" selection-start="699" selection-end="699" vertical-scroll-proportion="0.23779725">
                   <folding />
                 </state>
               </provider>
@@ -169,19 +162,10 @@
       </split-first>
       <split-second>
         <leaf>
-          <file leaf-file-name="expectations.clj" pinned="false" current="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/src/expectations.clj">
-              <provider selected="true" editor-type-id="text-editor">
-                <state line="67" column="36" selection-start="2127" selection-end="2127" vertical-scroll-proportion="0.0">
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
           <file leaf-file-name="runner.clj" pinned="false" current="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/expectations/junit/runner.clj">
               <provider selected="true" editor-type-id="text-editor">
-                <state line="43" column="67" selection-start="1788" selection-end="1788" vertical-scroll-proportion="0.8227041">
+                <state line="62" column="60" selection-start="3050" selection-end="3050" vertical-scroll-proportion="1.1862245">
                   <folding />
                 </state>
               </provider>
@@ -210,15 +194,15 @@
         <option value="$PROJECT_DIR$/test/java/SuccessTest.java" />
         <option value="$PROJECT_DIR$/src/expectations/junit/ScenarioError.java" />
         <option value="$PROJECT_DIR$/test/clojure/success/nested/success_examples.clj" />
-        <option value="$PROJECT_DIR$/src/expectations/junit/runner.clj" />
         <option value="$PROJECT_DIR$/test/clojure/success/dd.clj" />
         <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/test/clojure/failure/failure_examples.clj" />
         <option value="$PROJECT_DIR$/test/clojure/failure/foo.clj" />
         <option value="$PROJECT_DIR$/test/clojure/success/success_examples.clj" />
+        <option value="$PROJECT_DIR$/src/expectations/scenarios.clj" />
+        <option value="$PROJECT_DIR$/src/expectations/junit/runner.clj" />
         <option value="$PROJECT_DIR$/test/clojure/failure/scenario_examples.clj" />
         <option value="$PROJECT_DIR$/src/expectations.clj" />
-        <option value="$PROJECT_DIR$/src/expectations/scenarios.clj" />
+        <option value="$PROJECT_DIR$/test/clojure/failure/failure_examples.clj" />
       </list>
     </option>
   </component>
@@ -260,7 +244,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -397,6 +380,7 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
       <pane id="PackagesPane" />
       <pane id="Favorites" />
     </panes>
@@ -404,14 +388,14 @@
   <component name="PropertiesComponent">
     <property name="project.structure.last.edited" value="Artifacts" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth0" value="360" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="409" />
-    <property name="project.structure.proportion" value="0.15" />
     <property name="OverrideImplement.combined" value="true" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth1" value="409" />
     <property name="options.splitter.main.proportions" value="0.3" />
-    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
-    <property name="MemberChooser.sorted" value="false" />
-    <property name="recentsLimit" value="5" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth0" value="371" />
+    <property name="recentsLimit" value="5" />
+    <property name="MemberChooser.sorted" value="false" />
+    <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder1" value="1" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatOrder0" value="0" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_flatWidth2" value="390" />
     <property name="FileHistory.git4idea.history.GitHistoryProvider_treeWidth3" value="1289" />
@@ -433,8 +417,8 @@
     <property name="options.lastSelected" value="preferences.fileTypes" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="MemberChooser.copyJavadoc" value="false" />
-    <property name="dynamic.classpath" value="false" />
     <property name="options.searchVisible" value="true" />
+    <property name="dynamic.classpath" value="false" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -654,7 +638,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="25" width="2550" height="1550" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32929438" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -668,7 +652,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.12304609" sideWeight="0.5894512" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.12304609" sideWeight="0.5894512" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.4055595" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
@@ -756,24 +740,21 @@
         <state line="54" column="96" selection-start="1875" selection-end="1875" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/test/clojure/failure/scenario_examples.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="12" column="0" selection-start="212" selection-end="212" vertical-scroll-proportion="0.2252816">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test/java/FailureTest.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="10" column="0" selection-start="323" selection-end="323" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/java/SuccessTest.java">
+    <entry file="jar://$PROJECT_DIR$/../emark/server/deps/3rd/clojure/clojure.jar!/clojure/template.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="4" column="13" selection-start="155" selection-end="155" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test/clojure/failure/scenario_examples.clj">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="0" selection-start="230" selection-end="230" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/expectations/junit/runner.clj">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="67" selection-start="1788" selection-end="1788" vertical-scroll-proportion="0.8227041">
+        <state line="44" column="10" selection-start="1514" selection-end="1514" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -785,23 +766,28 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/clojure/failure/failure_examples.clj">
+    <entry file="file://$PROJECT_DIR$/src/expectations/junit/runner.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="101" column="4" selection-start="1955" selection-end="1955" vertical-scroll-proportion="0.0">
+        <state line="62" column="60" selection-start="3050" selection-end="3050" vertical-scroll-proportion="1.1862245">
           <folding />
         </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/java/SuccessTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4" column="13" selection-start="155" selection-end="155" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/expectations.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="339" column="26" selection-start="12548" selection-end="12548" vertical-scroll-proportion="0.0">
+        <state line="93" column="80" selection-start="3384" selection-end="3396" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/../emark/server/deps/3rd/clojure/clojure.jar!/clojure/template.clj">
+    <entry file="file://$PROJECT_DIR$/test/clojure/failure/failure_examples.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="44" column="10" selection-start="1514" selection-end="1514" vertical-scroll-proportion="0.68085104">
+        <state line="36" column="7" selection-start="699" selection-end="699" vertical-scroll-proportion="0.23779725">
           <folding />
         </state>
       </provider>

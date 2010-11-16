@@ -100,7 +100,7 @@
 	last 4))
 
 (given {:a 2 :b 4}
-       (expect 
+       (expect
 	:a 99
 	:b 100))
 
