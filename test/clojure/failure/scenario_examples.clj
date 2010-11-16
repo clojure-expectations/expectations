@@ -21,7 +21,7 @@
     (expect 1 @a)
     (swap! a inc)
     (expect 2 @a)
-    (expect 1 @a)
+    (expect 1 (deref a))
     (expect "1" "2")))
 
 (scenario

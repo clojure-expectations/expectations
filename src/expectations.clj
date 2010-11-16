@@ -53,9 +53,11 @@
 
 (defn pruned-stack-trace [t]
   (str-join "\n"
-    (map (fn [{:keys [className methodName fileName lineNumber]}]
-      (str "           " className " (" fileName ":" lineNumber ")"))
-      (remove ignored-fns (map bean (.getStackTrace t))))))
+	    (distinct (map (fn [{:keys [className methodName fileName lineNumber] :as m}]
+		   (if (= methodName "invoke")
+		     (str "           on (" fileName ":" lineNumber ")")
+		     (str "           " className "$" methodName " (" fileName ":" lineNumber ")")))
+		 (remove ignored-fns (map bean (.getStackTrace t)))))))
 
 (defmulti report :type)
 
