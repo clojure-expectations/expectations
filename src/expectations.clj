@@ -69,7 +69,8 @@
   (fail *test-name* *test-meta*
     (str-join "\n"
       [(when-let [msg (:raw m)] (str "           " (raw-str msg)))
-       (when-let [msg (:result m)] (str "           " (str-join " " msg) "\n"))
+       (when-let [msg (:result m)] (str "           " (str-join " " msg)))
+       (when (or (:expected-message m) (:actual-message m) (:message m)) " ")
        (when-let [msg (:expected-message m)] (str "           " msg))
        (when-let [msg (:actual-message m)] (str "           " msg))
        (when-let [msg (:message m)] (str "           " msg))])))
