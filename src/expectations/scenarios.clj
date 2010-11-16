@@ -9,7 +9,7 @@
     `(clojure.template/do-template [~'x ~'y] ~(list 'expect 'y (list 'x bindings)) ~@(rest form))))
 
 (defmacro expect [e a]
-  `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. (str "\n" msg#))))]
+  `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]
     (doexpect ~e ~a)))
 
 (defmacro doscenario [forms]

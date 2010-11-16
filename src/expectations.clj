@@ -12,7 +12,7 @@
 (def *report-counters* nil) ; bound to a ref of a map in test-ns
 
 (def *initial-report-counters* ; used to initialize *report-counters*
-  {:test 0, :pass 0, :fail 0, :error 0})
+  {:test 0, :pass 0, :fail 0, :error 0 :run-time 0})
 
 ;;; UTILITIES FOR REPORTING FUNCTIONS
 
@@ -82,12 +82,14 @@
       [(when raw (str "           " (raw-str raw)))
        (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
        (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
-       (str "    threw: " (class result) " - " (.getMessage result))
+       (if (instance? AssertionError result)
+	 (.getMessage result)
+	 (str "    threw: " (class result) " - " (.getMessage result)))
        (pruned-stack-trace result)])))
 
 (defmethod report :summary [m]
   (summary (str "\nRan " (:test m) " tests containing "
-    (+ (:pass m) (:fail m) (:error m)) " assertions.\n"
+    (+ (:pass m) (:fail m) (:error m)) " assertions in " (:run-time m) " msecs\n"
     (:fail m) " failures, " (:error m) " errors.")))
 
 ;; TEST RUNNING
@@ -107,19 +109,18 @@
 
 (defn test-vars [vars]
   (binding [*report-counters* (ref *initial-report-counters*)]
-    (doseq [v vars] (test-var v))
-    @*report-counters*))
+    (let [start (System/nanoTime)]
+      (doseq [v vars] (test-var v))
+;;;      (dorun (pmap test-var vars))
+      (assoc @*report-counters* :run-time (int (/ (- (System/nanoTime) start) 1000000))))))
 
 (defn run-tests-in-vars [vars]
   (let [summary (assoc (test-vars vars) :type :summary)]
     (report summary)
     summary))
 
-(defn sort-by-str [vs]
-  (sort #(.compareTo (str %1) (str %2)) vs))
-
 (defn test-ns [ns]
-  (let [expectations (filter #(:expectation (meta %)) (-> ns ns-interns vals sort-by-str))]
+  (let [expectations (filter #(:expectation (meta %)) (->> ns ns-interns vals (sort-by str)))]
     (if-let [focused (->> expectations (filter #(:focused (meta %))) seq)]
       (test-vars focused)
       (test-vars expectations))))
