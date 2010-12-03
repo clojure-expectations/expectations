@@ -85,3 +85,35 @@
 	nil? nil
 	fn? +
 	empty? [])
+
+(defn foo [] (println "hi"))
+(defn bar [] (foo))
+
+(defn foo2 [a b] (println a b))
+(defn bar2 [a b] (foo2 (* a a) (* b b)))
+
+(defn foo3 [& args] (println args))
+(defn bar3 [a b] (foo3))
+
+;(expect-focused (foo3 1 2)
+;  (during (bar3 1 2)))
+
+(expect-focused (foo)
+  (during
+    (bar)
+    (identity 3)))
+
+(expect-focused (foo2 1 4)
+  (during
+    (bar2 1 2)
+    (identity 3)))
+
+;(expect-focused (foo)
+;  (during
+;    (identity 3)))
+;
+;(expect-focused (foo2 1 (/ 4 0))
+;  (during
+;    (bar2 2 2)
+;    (identity 3)))
+;

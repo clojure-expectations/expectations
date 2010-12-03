@@ -36,7 +36,7 @@
   (str (last (re-seq #"[A-Za-z_\.]+" file)) ":" line))
 
 (defn raw-str [[e a]]
-    (str "(expect " e (when (> (count e) 30) "\n                  ") " " a ")"))
+  (str "(expect " e (when (> (count e) 30) "\n                  ") " " a ")"))
 
 (defn fail [test-name test-meta msg] (println (str "\nfailure in (" (test-file test-meta) ") : " (:ns test-meta))) (println msg))
 (defn summary [msg] (println msg))
@@ -53,11 +53,11 @@
 
 (defn pruned-stack-trace [t]
   (str-join "\n"
-	    (distinct (map (fn [{:keys [className methodName fileName lineNumber] :as m}]
-		   (if (= methodName "invoke")
-		     (str "           on (" fileName ":" lineNumber ")")
-		     (str "           " className "$" methodName " (" fileName ":" lineNumber ")")))
-		 (remove ignored-fns (map bean (.getStackTrace t)))))))
+    (distinct (map (fn [{:keys [className methodName fileName lineNumber] :as m}]
+      (if (= methodName "invoke")
+        (str "           on (" fileName ":" lineNumber ")")
+        (str "           " className "$" methodName " (" fileName ":" lineNumber ")")))
+      (remove ignored-fns (map bean (.getStackTrace t)))))))
 
 (defmulti report :type)
 
@@ -83,8 +83,8 @@
        (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
        (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
        (if (instance? AssertionError result)
-	 (.getMessage result)
-	 (str "    threw: " (class result) " - " (.getMessage result)))
+         (.getMessage result)
+         (str "    threw: " (class result) " - " (.getMessage result)))
        (pruned-stack-trace result)])))
 
 (defmethod report :summary [{:keys [test pass fail error run-time ignored-expectations]}]
@@ -113,7 +113,7 @@
   (binding [*report-counters* (ref *initial-report-counters*)]
     (let [start (System/nanoTime)]
       (doseq [v vars] (test-var v))
-;;;      (dorun (pmap test-var vars))
+      ;;;      (dorun (pmap test-var vars))
       (assoc @*report-counters*
         :run-time (int (/ (- (System/nanoTime) start) 1000000))
         :ignored-expectations ignored-expectations))))
@@ -170,8 +170,8 @@
       (remove nil? (map (partial ->disagreement (str (when prefix (str prefix " {")) k)) (map-intersection v1 v2))))
     (when (extended-not= v1 v2)
       (let [prefix-desc (str (when prefix (str prefix " {")) (pr-str k))
-	    prefix-space (apply str (take (count prefix-desc) (repeat " ")))]
-	(str prefix-desc " expected: " (pr-str v1) "\n           " prefix-space "      was: " (pr-str v2))))))
+            prefix-space (apply str (take (count prefix-desc) (repeat " ")))]
+        (str prefix-desc " expected: " (pr-str v1) "\n           " prefix-space "      was: " (pr-str v2))))))
 
 (defn map-diff-message [e a padding]
   (->>
@@ -227,7 +227,7 @@
     (report {:type :pass})
     (report {:type :fail :raw [str-e str-a]
              :result ["expected:" (pr-str e)
-		      "\n                was:" (pr-str a)]})))
+                      "\n                was:" (pr-str a)]})))
 
 (defmethod compare-expr ::fn [e a str-e str-a]
   (if (e a)
@@ -286,7 +286,7 @@
              :result [str-a "did not throw" str-e]})))
 
 (defmethod compare-expr [java.util.Map java.util.Map] [e a str-e str-a]
-	   (map-compare e a str-e str-a a "               was:"))
+  (map-compare e a str-e str-a a "               was:"))
 
 (defmethod compare-expr [java.util.Set java.util.Set] [e a str-e str-a]
   (if (= e a)
@@ -326,10 +326,42 @@
                  (> (count e) (count a))
                  "expected is larger than actual")}))))
 
-(defmacro doexpect [e a]
+(defmacro do-state-based-expect [e a]
   `(let [e# (try ~e (catch Throwable t# t#))
          a# (try ~a (catch Throwable t# t#))]
     (compare-expr e# a# ~(str e) ~(str a))))
+
+(defmacro do-behavior-based-expect [[f & args] [head & the-rest]]
+  `(let [local-atom# (atom ::never-called)
+         arg-vec# ~(if (seq args) (vec args) nil)]
+    (if
+      (= 
+        arg-vec#
+        (binding [~f (fn [& as#]
+          (reset! local-atom# as#))]
+          ~@the-rest
+          @local-atom#))
+      (report {:type :pass})
+      (if (not= ::never-called @local-atom#)
+        (report {:type :fail
+                 :result ["expected:" (str "(" '~f (when arg-vec# " ") (str-join " " arg-vec#) ")")
+                          "\n                was:" (str "(" '~f (when @local-atom# " ") (str-join " " @local-atom#) ")")]})
+        (report {:type :fail
+                 :result ["expected:" (str "(" '~f (when arg-vec# " ") (str-join " " arg-vec#) ")")
+                          "\n                but:" '~f "was never called"]})))))
+
+;  `(println ~(str (vec a)) ~(class (first a))))
+;  `(let [e# (try ~e (catch Throwable t# t#))
+;         a# (try ~a (catch Throwable t# t#))]
+;    (compare-expr e# a# ~(str e) ~(str a))))
+
+(defmacro doexpect [e a]
+  (if
+    (and
+      (instance? clojure.lang.PersistentList a)
+      (= (symbol "during") (first a)))
+    `(do-behavior-based-expect ~e ~a)
+    `(do-state-based-expect ~e ~a)))
 
 (defmacro expect [e a]
   `(def ~(vary-meta (gensym) assoc :expectation true)
