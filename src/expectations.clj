@@ -362,30 +362,31 @@
 		    :result e}))
 
 (defmethod compare-args ::default [f e a _ _]
-	   (if (= e a)
+	   (if (contains? a e)
 	     (report {:type :pass})
-	     (if (not= ::never-called a)
+	     (if (empty? a)
 	       (report {:type :fail
 			:result ["expected:" (fn-string f e)
-				 "\n                was:" (fn-string f a)]})
+				 "\n                but:" f "was never called"]})
 	       (report {:type :fail
-			:result ["expected:" (fn-string f e)
-				 "\n                but:" f "was never called"]}))))
+			:result (apply
+				 list
+				 "expected:" (fn-string f e)
+				 "\n                got:" (fn-string f (first a))
+				 (map
+				  (comp (partial str "\n                  &: ")
+					(partial fn-string f))
+				  (rest a)))}))))
 
 
 (defmacro do-behavior-based-expect [[f & args] [during & forms]]
-  `(let [actual-args# (atom ::never-called)
+  `(let [actual-args# (atom #{})
          expected-args# (try ~(if (seq args) (vec args) nil) (catch Throwable t# t#))]
-     (binding [~f (fn [& as#] (reset! actual-args# as#))]
+     (binding [~f (fn [& as#] (swap! actual-args# conj as#))]
        (try ~@forms
 	    (catch Throwable t#
 	      (reset! actual-args# t#))))
      (compare-args '~f expected-args# @actual-args# ~(fn-string f args) ~(fn-string during forms))))
-
-					;  `(println ~(str (vec a)) ~(class (first a))))
-					;  `(let [e# (try ~e (catch Throwable t# t#))
-					;         a# (try ~a (catch Throwable t# t#))]
-					;    (compare-expr e# a# ~(str e) ~(str a))))
 
 (defmacro doexpect [e a]
   (if

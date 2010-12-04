@@ -101,3 +101,9 @@
   (during
     (bar2 1 2)
     (identity 3)))
+
+(expect (foo2 1 4)
+  (during
+    (bar2 1 2)
+    (bar2 2 2)
+    (identity 3)))

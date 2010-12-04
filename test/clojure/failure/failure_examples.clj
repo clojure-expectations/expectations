@@ -126,6 +126,7 @@
 (expect (foo2 1 (/ 4 1))
   (during
     (bar2 2 2)
+    (bar2 3 2)
     (identity 3)))
 
 (expect (foo2 1 (/ 4 0))
