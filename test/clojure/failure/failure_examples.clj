@@ -108,3 +108,35 @@
 (expect
   {:z 1 :a 9          :b {:c Double/NaN :d 1 :e 2 :f {:g 10 :i 22}}}
   {:x 1 :a Double/NaN :b {:c Double/NaN :d 2 :e 4 :f {:g 11 :h 12}}})
+
+;; behavior based tests
+(defn foo [] (println "hi"))
+(defn bar [] (foo))
+
+(defn foo2 [a b] (println a b))
+(defn bar2 [a b] (foo2 (* a a) (* b b)))
+
+(defn foo3 [& args] (println args))
+(defn bar3 [a b] (foo3))
+
+(expect (foo)
+  (during
+    (identity 3)))
+
+(expect (foo2 1 (/ 4 1))
+  (during
+    (bar2 2 2)
+    (identity 3)))
+
+(expect (foo2 1 (/ 4 0))
+  (during
+    (bar2 2 2)
+    (identity 3)))
+
+(expect (foo2 1 (/ 4 1))
+  (during
+    (bar2 (/ 2 0) 2)
+    (identity 3)))
+
+(expect (foo3 1 2)
+  (during (bar3 1 2)))
