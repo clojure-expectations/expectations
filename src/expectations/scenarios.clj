@@ -6,7 +6,12 @@
 (defmacro given [bindings form & args]
   (if args
     `(clojure.template/do-template ~bindings ~form ~@args)
-    `(clojure.template/do-template [~'x ~'y] ~(list 'expect 'y (list 'x bindings)) ~@(rest form))))
+    `(clojure.template/do-template [~'x ~'y]
+                                   ~(list 'expect 'y (list 'x bindings)) ~@(rest form))))
+
+(defmacro stubbing [bindings & forms]
+  (let [new-bindings (reduce (fn [a [x y]] (conj a x `(fn [& _#] ~y))) [] (partition 2 bindings))]
+    `(binding ~new-bindings ~@forms)))
 
 (defmacro expect [e a]
   `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]

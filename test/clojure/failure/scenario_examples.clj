@@ -29,6 +29,14 @@
     1 2
     3 4))
 
+(scenario
+ (stubbing [one 1
+            two 2
+            thr nil]
+           (expect 1 (one))
+           (expect 2 (two))
+           (expect nil? (thr))))
+
 ; a passing one helps too
 (scenario
   (given [x y] (expect x y)
