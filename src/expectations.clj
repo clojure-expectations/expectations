@@ -344,7 +344,7 @@
                                        a
                                        str-e
                                        str-a]
-  (if (or (and (empty? expected-args) (seq interactions))
+  (if (or (and (empty? expected-args) (some #{nil} interactions))
           (some #{expected-args} interactions))
     (report {:type :pass})
     (if (empty? interactions)
