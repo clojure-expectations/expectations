@@ -86,24 +86,3 @@
 	fn? +
 	empty? [])
 
-(defn foo [] (println "hi"))
-(defn bar [] (foo))
-
-(defn foo2 [a b] (println a b))
-(defn bar2 [a b] (foo2 (* a a) (* b b)))
-
-(expect (foo)
-  (during
-    (bar)
-    (identity 3)))
-
-(expect (foo2 1 4)
-  (during
-    (bar2 1 2)
-    (identity 3)))
-
-(expect (foo2 1 4)
-  (during
-    (bar2 1 2)
-    (bar2 2 2)
-    (identity 3)))

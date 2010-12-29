@@ -224,6 +224,7 @@
 			  (instance? Throwable a) ::actual-exception
 			  (fn? e) ::fn
 			  (::in-flag a) ::in
+                          (::interaction-flag e) ::interaction
 			  :default [(class e) (class a)])))
 
 (defmethod compare-expr :default [e a str-e str-a]
@@ -298,9 +299,11 @@
     (let [diff-fn (fn [e a] (seq (difference e a)))]
       (report {:type :fail
                :actual-message (when-let [v (diff-fn e a)]
-                                 (str (string-join ", " v) " are in expected, but not in actual"))
+                                 (str (string-join ", " v)
+                                      " are in expected, but not in actual"))
                :expected-message (when-let [v (diff-fn a e)]
-                                   (str (string-join ", " v) " are in actual, but not in expected"))
+                                   (str (string-join ", " v)
+                                        " are in actual, but not in expected"))
                :raw [str-e str-a]
                :result ["expected:" e "\n                was:" (pr-str a)]}))))
 
@@ -310,9 +313,11 @@
     (let [diff-fn (fn [e a] (seq (difference (set e) (set a))))]
       (report {:type :fail
                :actual-message (when-let [v (diff-fn e a)]
-                                 (str (string-join ", " v) " are in expected, but not in actual"))
+                                 (str (string-join ", " v)
+                                      " are in expected, but not in actual"))
                :expected-message (when-let [v (diff-fn a e)]
-                                   (str (string-join ", " v) " are in actual, but not in expected"))
+                                   (str (string-join ", " v)
+                                        " are in actual, but not in expected"))
                :raw [str-e str-a]
                :result ["expected:" e "\n                was:" (pr-str a)]
                :message (cond
@@ -330,69 +335,36 @@
                          (> (count e) (count a))
                          "expected is larger than actual")}))))
 
-(defmacro do-state-based-expect [e a]
-  `(let [e# (try ~e (catch Throwable t# t#))
-         a# (try ~a (catch Throwable t# t#))]
-     (compare-expr e# a# ~(str e) ~(str a))))
-
 (defn fn-string [f-name f-args]
-  (str "(" f-name (when f-args " ") (string-join " " f-args) ")"))
+  (str "(" f-name (when (seq f-args) " ") (string-join " " f-args) ")"))
 
-(defmulti compare-args (fn [_ e a _ _]
-			 (cond
-			  (instance? Throwable e) ::expected-exception
-			  (instance? Throwable a) ::actual-exception
-			  :default ::default)))
-
-(defmethod compare-args ::actual-exception [f e a str-e str-a]
-  (report {:type :error
-           :raw [str-e str-a]
-           :actual-message (str "an exception occurred while evaluating the forms within (during)"
-                                "\n           "
-                                str-a)
-           :result a}))
-
-(defmethod compare-args ::expected-exception [f e a str-e str-a]
-  (report {:type :error
-           :raw [str-e str-a]
-           :expected-message (str "an exception occurred while evaluating the expected args"
-                                  "\n           "
-                                  str-e)
-           :result e}))
-
-(defmethod compare-args ::default [f e a _ _]
-  (if (contains? a e)
+(defmethod compare-expr ::interaction [{:keys [function
+                                               interactions
+                                               expected-args]}
+                                       a
+                                       str-e
+                                       str-a]
+  (if (or (and (empty? expected-args) (seq interactions))
+          (some #{expected-args} interactions))
     (report {:type :pass})
-    (if (empty? a)
+    (if (empty? interactions)
       (report {:type :fail
-               :result ["expected:" (fn-string f e)
-                        "\n                but:" f "was never called"]})
+               :result ["expected:" (fn-string function expected-args)
+                        "\n                but:" function "was never called"]})
       (report {:type :fail
                :result (apply
                         list
-                        "expected:" (fn-string f e)
-                        "\n                got:" (fn-string f (first a))
+                        "expected:" (fn-string function expected-args)
+                        "\n                got:" (fn-string function (first interactions))
                         (map
                          (comp (partial str "\n                  &: ")
-                               (partial fn-string f))
-                         (rest a)))}))))
-
-(defmacro do-behavior-based-expect [[f & args] [during & forms]]
-  `(let [actual-args# (atom #{})
-         expected-args# (try ~(if (seq args) (vec args) nil) (catch Throwable t# t#))]
-     (binding [~f (fn [& as#] (swap! actual-args# conj as#))]
-       (try ~@forms
-	    (catch Throwable t#
-	      (reset! actual-args# t#))))
-     (compare-args '~f expected-args# @actual-args# ~(fn-string f args) ~(fn-string during forms))))
+                               (partial fn-string function))
+                         (rest interactions)))}))))
 
 (defmacro doexpect [e a]
-  (if
-      (and
-       (instance? clojure.lang.PersistentList a)
-       (= (symbol "during") (first a)))
-    `(do-behavior-based-expect ~e ~a)
-    `(do-state-based-expect ~e ~a)))
+  `(let [e# (try ~e (catch Throwable t# t#))
+         a# (try ~a (catch Throwable t# t#))]
+     (compare-expr e# a# ~(str e) ~(str a))))
 
 (defmacro expect [e a]
   `(def ~(vary-meta (gensym) assoc :expectation true)
