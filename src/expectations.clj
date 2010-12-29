@@ -341,25 +341,28 @@
 (defmethod compare-expr ::interaction [{:keys [function
                                                interactions
                                                expected-args]}
-                                       a
+                                       expected-times-keyword
                                        str-e
                                        str-a]
-  (if (or (and (empty? expected-args) (seq interactions))
-          (some #{expected-args} interactions))
-    (report {:type :pass})
-    (if (empty? interactions)
-      (report {:type :fail
-               :result ["expected:" (fn-string function expected-args)
-                        "\n                but:" function "was never called"]})
-      (report {:type :fail
-               :result (apply
-                        list
-                        "expected:" (fn-string function expected-args)
-                        "\n                got:" (fn-string function (first interactions))
-                        (map
-                         (comp (partial str "\n                  &: ")
-                               (partial fn-string function))
-                         (rest interactions)))}))))
+  (let [actual-times (count (filter #(= % (seq expected-args)) interactions))
+        expected-times (expected-times-keyword {:never 0 :once 1 :twice 2})]
+    (if (= expected-times actual-times)
+      (report {:type :pass})
+      (if (empty? interactions)
+        (report {:type :fail
+                 :result ["expected:" (fn-string function expected-args)
+                          (name expected-times-keyword)                          
+                          "\n                but:" function "was never called"]})
+        (report {:type :fail
+                 :result (apply
+                          list
+                          "expected:" (fn-string function expected-args)
+                          (name expected-times-keyword)
+                          "\n                got:" (fn-string function (first interactions))
+                          (map
+                           (comp (partial str "\n                  &: ")
+                                 (partial fn-string function))
+                           (rest interactions)))})))))
 
 (defmacro doexpect [e a]
   `(let [e# (try ~e (catch Throwable t# t#))
