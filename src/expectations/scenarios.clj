@@ -19,7 +19,7 @@
   `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]
      (doexpect ~e ~a)))
 
-(defmacro interaction [[f & args]]
+(defmacro interaction [f & args]
   `(hash-map :expectations/interaction-flag true
              :function ~(str f)
              :interactions (@*interactions* ~(str f))
