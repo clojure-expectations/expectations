@@ -45,27 +45,27 @@
 
 ;; failure interaction tests
 (scenario
- (expect (interaction foo) :once))
+ (expect (interaction (foo)) :once))
 
 (scenario
  (bar2 1 2)
- (expect (interaction foo2 1 4) :twice))
+ (expect (interaction (foo2 1 4)) :twice))
 
 (scenario
  (bar2 1 2)
- (expect (interaction foo2 1 4) :never))
+ (expect (interaction (foo2 1 4)) :never))
 
 (scenario
  (bar2 3 2)
  (bar2 2 2)
- (expect (interaction foo2 1 4) :once))
+ (expect (interaction (foo2 1 4)) :once))
 
 (scenario
- (expect (interaction foo2 1 (/ 4 0)) :once))
+ (expect (interaction (foo2 1 (/ 4 0))) :once))
 
 (scenario
  (bar3 1 2)
- (expect (interaction foo3 1 2) :once))
+ (expect (interaction (foo3 1 2)) :once))
 
-;; (scenario
-;;  (expect (interaction )))
+(scenario
+ (expect (interaction foo 1 2) :once))

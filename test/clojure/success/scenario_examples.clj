@@ -31,21 +31,21 @@
 ;; success interaction tests
 (scenario
  (bar)
- (expect (interaction foo) :once))
+ (expect (interaction (foo)) :once))
 
 (scenario
- (expect (interaction foo) :never))
-
-(scenario
- (bar2 1 2)
- (expect (interaction foo2 1 4) :once))
+ (expect (interaction (foo)) :never))
 
 (scenario
  (bar2 1 2)
+ (expect (interaction (foo2 1 4)) :once))
+
+(scenario
  (bar2 1 2)
- (expect (interaction foo2 1 4) :twice))
+ (bar2 1 2)
+ (expect (interaction (foo2 1 4)) :twice))
 
 (scenario
  (bar2 1 2)
  (bar2 2 2)
- (expect (interaction foo2 1 4) :once))
+ (expect (interaction (foo2 1 4)) :once))
