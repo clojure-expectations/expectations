@@ -14,7 +14,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="clojure-1.1.0" level="project" />
+    <orderEntry type="library" name="clojure" level="project" />
     <orderEntry type="library" name="junit" level="project" />
   </component>
 </module>
