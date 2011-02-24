@@ -5,6 +5,6 @@ import org.junit.runner.RunWith;
 public class SuccessTest implements ExpectationsTestRunner.TestSource{
 
     public String testPath() {
-        return "/home/jfields/dev/expectations/test/clojure/success";
+        return "test/clojure/success";
     }
 }
