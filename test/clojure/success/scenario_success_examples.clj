@@ -22,7 +22,7 @@
         1 1
         3 3))
 
-(scenario-focused
+(scenario
   (let [a (atom 1)]
     (given (swap! a inc)
       (expect
