@@ -378,9 +378,12 @@
      (fn [] (doexpect ~e ~a))))
 
 (defmacro given [bindings form & args]
-  (if args
-    `(clojure.template/do-template ~bindings ~form ~@args)
-    `(clojure.template/do-template [~'x ~'y] ~(list 'expect 'y (list 'x bindings)) ~@(rest form))))
+  (let [s (gensym "local")]
+    (if args
+      `(clojure.template/do-template ~bindings ~form ~@args)
+      `(let [~s ~bindings]
+        (clojure.template/do-template [~'f ~'expected]
+          ~(list 'expect 'expected (list 'f s)) ~@(rest form))))))
 
 (defn in [n] {::in n ::in-flag true})
 

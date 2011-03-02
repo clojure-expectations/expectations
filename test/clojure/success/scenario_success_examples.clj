@@ -1,4 +1,4 @@
-(ns success.scenario-examples
+(ns success.scenario_success_examples
   (:use expectations.scenarios))
 
 (defn foo [] (println "hi"))
@@ -21,6 +21,18 @@
  (given [x y] (expect x y)
         1 1
         3 3))
+
+(scenario-focused
+  (let [a (atom 1)]
+    (given (swap! a inc)
+      (expect
+        identity 2
+        identity 2))))
+
+(println (macroexpand '(given (swap! a inc)
+      (expect
+        identity 1
+        identity 1))))
 
 (scenario
  (stubbing [foo 1

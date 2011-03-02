@@ -1,4 +1,4 @@
-(ns failure.scenario-examples
+(ns failure.scenario_failure_examples
   (:use expectations.scenarios))
 
 (defn thr [] (/ 12 0))

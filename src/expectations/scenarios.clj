@@ -4,12 +4,15 @@
         [expectations :only [doexpect fail test-file stack->file&line report]]))
 
 (declare *interactions*)
-(defn in [n] {:expectations/in n :expectations/in-flag true})
+(def in expectations/in)
+
 (defmacro given [bindings form & args]
-  (if args
-    `(clojure.template/do-template ~bindings ~form ~@args)
-    `(clojure.template/do-template [~'x ~'y]
-                                   ~(list 'expect 'y (list 'x bindings)) ~@(rest form))))
+  (let [s (gensym "local")]
+    (if args
+      `(clojure.template/do-template ~bindings ~form ~@args)
+      `(let [~s ~bindings]
+        (clojure.template/do-template [~'f ~'expected]
+          ~(list 'expect 'expected (list 'f s)) ~@(rest form))))))
 
 (defmacro stubbing [bindings & forms]
   (let [new-bindings (reduce (fn [a [x y]] (conj a x `(fn [& _#] ~y))) [] (partition 2 bindings))]
