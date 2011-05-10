@@ -56,3 +56,5 @@
 (defmacro scenario-focused [& forms]
   `(def ~(vary-meta (gensym) assoc :expectation true :focused true)
      (fn [] (doscenario ~forms))))
+
+(defn no-op [& _])

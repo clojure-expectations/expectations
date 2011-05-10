@@ -29,10 +29,9 @@
         identity 2
         identity 2))))
 
-(println (macroexpand '(given (swap! a inc)
-      (expect
-        identity 1
-        identity 1))))
+(scenario
+  (binding [bar2 no-op]
+    (expect nil? (bar2 3 4))))
 
 (scenario
  (stubbing [foo 1
