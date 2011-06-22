@@ -58,3 +58,5 @@
      (fn [] (doscenario ~forms))))
 
 (defn no-op [& _])
+
+(def placeholder-fn)
