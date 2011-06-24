@@ -58,5 +58,9 @@
 
 (scenario
  (bar2 1 2)
+ (expect (interaction (foo2 anything 4)) :once))
+
+(scenario
+ (bar2 1 2)
  (bar2 2 2)
  (expect (interaction (foo2 1 4)) :once))

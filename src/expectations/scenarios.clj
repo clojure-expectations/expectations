@@ -60,3 +60,5 @@
 (defn no-op [& _])
 
 (def placeholder-fn)
+
+(def anything :anything)

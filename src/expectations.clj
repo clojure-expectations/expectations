@@ -338,20 +338,29 @@
 (defn fn-string [f-name f-args]
   (str "(" f-name (when (seq f-args) " ") (string-join " " f-args) ")"))
 
+(defn matches? [a b]
+  (if (or (= a :anything) (= b :anything))
+    true
+    (= a b)))
+
+(defn matching [expected-args]
+  (fn [interaction]
+    (every? true? (map matches? interaction (seq expected-args)))))
+
 (defmethod compare-expr ::interaction [{:keys [function
                                                interactions
                                                expected-args]}
                                        expected-times-keyword
                                        str-e
                                        str-a]
-  (let [actual-times (count (filter #(= % (seq expected-args)) interactions))
+  (let [actual-times (count (filter (matching expected-args) interactions))
         expected-times (expected-times-keyword {:never 0 :once 1 :twice 2})]
     (if (= expected-times actual-times)
       (report {:type :pass})
       (if (empty? interactions)
         (report {:type :fail
                  :result ["expected:" (fn-string function expected-args)
-                          (name expected-times-keyword)                          
+                          (name expected-times-keyword)
                           "\n                but:" function "was never called"]})
         (report {:type :fail
                  :result (apply
