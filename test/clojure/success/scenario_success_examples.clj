@@ -45,6 +45,10 @@
  (expect (interaction (foo)) :once))
 
 (scenario
+ (bar)
+ (expect (interaction (foo))))
+
+(scenario
  (expect (interaction (foo)) :never))
 
 (scenario

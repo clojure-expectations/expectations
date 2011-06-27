@@ -345,7 +345,9 @@
 
 (defn matching [expected-args]
   (fn [interaction]
-    (every? true? (map matches? interaction (seq expected-args)))))
+    (and
+      (= (count interaction) (count expected-args))
+      (every? true? (map matches? interaction (seq expected-args))))))
 
 (defmethod compare-expr ::interaction [{:keys [function
                                                interactions

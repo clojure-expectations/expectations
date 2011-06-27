@@ -48,6 +48,12 @@
  (expect (interaction (foo)) :once))
 
 (scenario
+ (expect (interaction (foo))))
+
+(scenario
+ (expect (interaction (foo)) 4 4))
+
+(scenario
  (bar2 1 2)
  (expect (interaction (foo2 1 4)) :twice))
 
@@ -63,8 +69,9 @@
 (scenario
  (expect (interaction (foo2 1 (/ 4 0))) :once))
 
-(scenario
+(scenario-focused
  (bar3 1 2)
+  (println "hi")
  (expect (interaction (foo3 1 2)) :once))
 
 (scenario

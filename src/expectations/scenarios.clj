@@ -18,9 +18,13 @@
   (let [new-bindings (reduce (fn [a [x y]] (conj a x `(fn [& _#] ~y))) [] (partition 2 bindings))]
     `(binding ~new-bindings ~@forms)))
 
-(defmacro expect [e a]
-  `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]
-     (doexpect ~e ~a)))
+(defmacro expect [& args]
+  (condp = (count args)
+    1 `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]
+        (doexpect ~(first args) :once))
+    2 `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]
+        (doexpect ~(first args) ~(second args)))
+    (println (str "ignoring (expect" (apply str (interleave (repeat " ") args)) ") -- expect takes 1 or 2 args"))))
 
 (defmacro interaction [[f & args]]
   `(hash-map :expectations/interaction-flag true
@@ -45,7 +49,7 @@
     `(try
        (binding [*interactions* (ref {})]
          (binding ~binds
-           ~@forms))
+             ~@forms))
        (catch Throwable t#
          (report {:type :error :result t#})))))
 
