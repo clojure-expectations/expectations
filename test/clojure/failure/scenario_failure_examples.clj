@@ -69,7 +69,7 @@
 (scenario
  (expect (interaction (foo2 1 (/ 4 0))) :once))
 
-(scenario-focused
+(scenario
  (bar3 1 2)
   (println "hi")
  (expect (interaction (foo3 1 2)) :once))
