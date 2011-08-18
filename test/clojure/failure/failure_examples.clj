@@ -71,41 +71,41 @@
 
 ;; multiple expects with form
 (given [x y] (expect x (+ y y))
-	6 4
-	12 12)
+  6 4
+  12 12)
 
 (given [x y] (expect 10 (+ x y))
-	6 3
-	12 -20)
+  6 3
+  12 -20)
 
 (given [x y] (expect x (in y))
-	:c #{:a :b}
-	{:a :z} {:a :b :c :d})
+  :c #{:a :b}
+  {:a :z} {:a :b :c :d})
 
 (given [x y] (expect x y)
-	nil? 1
-	fn? 1
-	empty? [1])
+  nil? 1
+  fn? 1
+  empty? [1])
 
 ;; multiple expects on a java instance
 (given (java.util.ArrayList.)
-       (expect
-	.size 1
-	.isEmpty false))
+  (expect
+    .size 1
+    .isEmpty false))
 
 ;; multiple expects on an instance
 (given [1 2 3]
-       (expect
-	first 0
-	last 4))
+  (expect
+    first 0
+    last 4))
 
 (given {:a 2 :b 4}
-       (expect
-	:a 99
-	:b 100))
+  (expect
+    :a 99
+    :b 100))
 
 ;; nested issues
 (expect
-  {:z 1 :a 9          :b {:c Double/NaN :d 1 :e 2 :f {:g 10 :i 22}}}
+  {:z 1 :a 9 :b {:c Double/NaN :d 1 :e 2 :f {:g 10 :i 22}}}
   {:x 1 :a Double/NaN :b {:c Double/NaN :d 2 :e 4 :f {:g 11 :h 12}}})
 

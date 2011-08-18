@@ -6,33 +6,33 @@
 (defn one [] (two))
 
 (scenario
- (let [a (atom 0)]
-   (swap! a inc)
-   (expect 1 @a)
-   (swap! a inc)
-   (expect 2 @a)
-   (one)
-   (expect 1 @a)
-   (expect "1" "2")))
+  (let [a (atom 0)]
+    (swap! a inc)
+    (expect 1 @a)
+    (swap! a inc)
+    (expect 2 @a)
+    (one)
+    (expect 1 @a)
+    (expect "1" "2")))
 
 (scenario
- (let [a (atom 0)]
-   (swap! a inc)
-   (expect 1 @a)
-   (swap! a inc)
-   (expect 2 @a)
-   (expect 1 (deref a))
-   (expect "1" "2")))
+  (let [a (atom 0)]
+    (swap! a inc)
+    (expect 1 @a)
+    (swap! a inc)
+    (expect 2 @a)
+    (expect 1 (deref a))
+    (expect "1" "2")))
 
 (scenario
- (given [x y] (expect x y)
-        1 88
-        3 77))
+  (given [x y] (expect x y)
+    1 88
+    3 77))
 
 ;;; a passing one helps too
 (scenario
- (stubbing [one 99]
-           (expect 1 (one))))
+  (stubbing [one 99]
+    (expect 1 (one))))
 
 (defn foo [] (println "hi"))
 (defn bar [] (foo))
@@ -45,34 +45,30 @@
 
 ;; failure interaction tests
 (scenario
- (expect (interaction (foo)) :once))
+  (expect (interaction (foo)) :once))
 
 (scenario
- (expect (interaction (foo))))
+  (expect (interaction (foo))))
 
 (scenario
- (expect (interaction (foo)) 4 4))
+  (bar2 1 2)
+  (expect (interaction (foo2 1 4)) :twice))
 
 (scenario
- (bar2 1 2)
- (expect (interaction (foo2 1 4)) :twice))
+  (bar2 1 2)
+  (expect (interaction (foo2 1 4)) :never))
 
 (scenario
- (bar2 1 2)
- (expect (interaction (foo2 1 4)) :never))
+  (bar2 3 2)
+  (bar2 2 2)
+  (expect (interaction (foo2 1 4)) :once))
 
 (scenario
- (bar2 3 2)
- (bar2 2 2)
- (expect (interaction (foo2 1 4)) :once))
+  (expect (interaction (foo2 1 (/ 4 0))) :once))
 
 (scenario
- (expect (interaction (foo2 1 (/ 4 0))) :once))
+  (bar3 1 2)
+  (expect (interaction (foo3 1 2)) :once))
 
 (scenario
- (bar3 1 2)
-  (println "hi")
- (expect (interaction (foo3 1 2)) :once))
-
-(scenario
- (expect (interaction (foo 1 2)) :once))
+  (expect (interaction (foo 1 2)) :once))

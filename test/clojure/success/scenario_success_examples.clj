@@ -52,6 +52,11 @@
  (expect (interaction (foo)) :never))
 
 (scenario
+  ; if you expect an interaction the result of the interaction is the fn name + " result"
+ (expect "foo result" (foo 2 4 5))
+ (expect (interaction (foo 2 4 5))))
+
+(scenario
  (bar2 1 2)
  (expect (interaction (foo2 1 4)) :once))
 

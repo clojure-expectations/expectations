@@ -1,7 +1,7 @@
 (ns expectations.scenarios
   (:require expectations)
   (:use clojure.walk
-        [expectations :only [doexpect fail test-file stack->file&line report]]))
+    [expectations :only [doexpect fail test-file stack->file&line report]]))
 
 (declare *interactions*)
 (def in expectations/in)
@@ -21,16 +21,15 @@
 (defmacro expect [& args]
   (condp = (count args)
     1 `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]
-        (doexpect ~(first args) :once))
-    2 `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]
-        (doexpect ~(first args) ~(second args)))
-    (println (str "ignoring (expect" (apply str (interleave (repeat " ") args)) ") -- expect takes 1 or 2 args"))))
+    (doexpect ~(first args) :once))
+    `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]
+      (doexpect ~@args))))
 
 (defmacro interaction [[f & args]]
   `(hash-map :expectations/interaction-flag true
-             :function ~(str f)
-             :interactions (@*interactions* ~(str f))
-             :expected-args  (vector ~@args)))
+    :function ~(str f)
+    :interactions (@*interactions* ~(str f))
+    :expected-args (vector ~@args)))
 
 (defn detect-interactions [v]
   (when (seq? v)
@@ -41,25 +40,26 @@
       v)))
 
 (defn append-interaction [f-name]
-  (fn [& args] (dosync (commute *interactions* update-in [f-name] conj args))))
+  (fn [& args] (dosync (commute *interactions* update-in [f-name] conj args))
+    (str f-name " result")))
 
 (defmacro doscenario [forms]
   (let [fns (distinct (remove nil? (flatten (prewalk detect-interactions forms))))
         binds (reduce (fn [a f] (conj a f `(append-interaction ~(str f)))) [] fns)]
     `(try
-       (binding [*interactions* (ref {})]
-         (binding ~binds
-             ~@forms))
-       (catch Throwable t#
-         (report {:type :error :result t#})))))
+      (binding [*interactions* (ref {})]
+        (binding ~binds
+          ~@forms))
+      (catch Throwable t#
+        (report {:type :error :result t#})))))
 
 (defmacro scenario [& forms]
   `(def ~(vary-meta (gensym) assoc :expectation true)
-     (fn [] (doscenario ~forms))))
+    (fn [] (doscenario ~forms))))
 
 (defmacro scenario-focused [& forms]
   `(def ~(vary-meta (gensym) assoc :expectation true :focused true)
-     (fn [] (doscenario ~forms))))
+    (fn [] (doscenario ~forms))))
 
 (defn no-op [& _])
 
