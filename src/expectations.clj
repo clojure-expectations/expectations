@@ -336,7 +336,7 @@
                  "expected is larger than actual")}))))
 
 (defn fn-string [f-name f-args]
-  (str "(" f-name (when (seq f-args) " ") (string-join " " f-args) ")"))
+  (str "(" f-name (when (seq f-args) " ") (string-join " " (map pr-str f-args)) ")"))
 
 (defn matches? [a b]
   (if (or (= a :anything) (= b :anything))

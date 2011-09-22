@@ -57,6 +57,10 @@
  (expect (interaction (foo 2 4 5))))
 
 (scenario
+ (foo (pr-str [2 4 5]))
+ (expect (interaction (foo "[2 4 5]"))))
+
+(scenario
  (bar2 1 2)
  (expect (interaction (foo2 1 4)) :once))
 
