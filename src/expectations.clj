@@ -78,7 +78,8 @@
        (when-let [msg (:message m)] (str "           " msg))])))
 
 (defmethod report :error [{:keys [result raw] :as m}]
-  (inc-report-counter :error)
+  (when-not (instance? AssertionError result)
+    (inc-report-counter :error))
   (fail *test-name* *test-meta*
     (string-join "\n"
       [(when raw (str "           " (raw-str raw)))
