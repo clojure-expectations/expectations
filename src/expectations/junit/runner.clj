@@ -35,6 +35,7 @@
     (re-seq #"expectations.junit.ExpectationsTestRunner" className)
     (re-seq #"com.intellij" className)
     (re-seq #"org.junit.runner.JUnitCore" className)
+    (re-seq #"org.junit.runners" className)
     (re-seq #"sun.reflect" className)
     (re-seq #"java.lang" className)))
 

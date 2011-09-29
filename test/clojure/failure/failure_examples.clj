@@ -22,7 +22,7 @@
 (expect [1 2 3 2 4] [3 2 1 3])
 
 ;; set equality
-(expect #{:foo :bar :dog :car} (conj #{} :foo :bar :cat))
+(expect #{:foo :bar :dog :car } (conj #{} :foo :bar :cat ))
 
 ;; lazy cons printing
 (expect [1 2] (map - [1 2]))
@@ -40,10 +40,10 @@
 (expect {:foos 1 :cat 5} (in {:foo 1 :cat 4}))
 
 ;; key in set
-(expect "foos" (in (conj #{:foo :bar} "cat")))
+(expect "foos" (in (conj #{:foo :bar } "cat")))
 
 ;; val in list
-(expect "foo" (in (conj ["bar"] :foo)))
+(expect "foo" (in (conj ["bar"] :foo )))
 
 ;; val in nil
 (expect "foo" (in nil))
@@ -79,7 +79,7 @@
   12 -20)
 
 (given [x y] (expect x (in y))
-  :c #{:a :b}
+  :c #{:a :b }
   {:a :z} {:a :b :c :d})
 
 (given [x y] (expect x y)
@@ -109,3 +109,4 @@
   {:z 1 :a 9 :b {:c Double/NaN :d 1 :e 2 :f {:g 10 :i 22}}}
   {:x 1 :a Double/NaN :b {:c Double/NaN :d 2 :e 4 :f {:g 11 :h 12}}})
 
+(expect "the cat jumped over the moon" "the cat jumped under the moon")

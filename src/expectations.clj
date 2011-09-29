@@ -284,6 +284,20 @@
              :raw [str-e str-a]
              :result ["regex" (pr-str e) "not found in" (pr-str a)]})))
 
+(defmethod compare-expr [String String] [e a str-e str-a]
+  (if (= e a)
+    (report {:type :pass})
+    (let [matches (->> (map vector e a) (take-while (partial apply =)) (map first) (apply str))
+          e-diverges (clojure.string/replace e matches "")
+          a-diverges (clojure.string/replace a matches "")]
+      (report {:type :fail :raw [str-e str-a]
+               :result ["expected:" (pr-str e)
+                        "\n                was:" (pr-str a)
+                        "\n\n            matches:" (pr-str matches)
+                        "\n           diverges:" (pr-str e-diverges)
+                        "\n                  &:" (pr-str a-diverges)
+                        ]}))))
+
 (defmethod compare-expr ::expect-exception [e a str-e str-a]
   (if (instance? e a)
     (report {:type :pass})
