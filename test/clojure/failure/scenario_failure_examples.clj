@@ -71,4 +71,8 @@
   (expect (interaction (foo3 1 2)) :once))
 
 (scenario
+  (foo3 "1" 2)
+  (expect (interaction (foo3 1 2)) :once))
+
+(scenario
   (expect (interaction (foo 1 2)) :once))
