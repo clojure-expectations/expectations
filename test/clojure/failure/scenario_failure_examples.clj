@@ -43,6 +43,10 @@
 (defn foo3 [& args] (println args))
 (defn bar3 [a b] (foo3))
 
+(def atom1 (atom 1))
+(def ref1 (ref 1))
+
+
 ;; failure interaction tests
 (scenario
   (expect (interaction (foo)) :once))
@@ -76,3 +80,25 @@
 
 (scenario
   (expect (interaction (foo 1 2)) :once))
+
+(scenario
+  (localize-state failure.scenario_failure_examples
+    (swap! atom1 inc)
+    (expect 1 @atom1)))
+
+(scenario
+  (localize-state failure.scenario_failure_examples
+    (dosync (alter ref1 inc))
+    (expect 1 @ref1)))
+
+(scenario
+  (localize-state failure.scenario_failure_examples
+    (swap! atom1 inc)
+    (expect 2 @atom1))
+  (expect 2 @atom1))
+
+(scenario
+  (localize-state failure.scenario_failure_examples
+    (dosync (alter ref1 inc))
+    (expect 2 @ref1))
+  (expect 2 @ref1))
