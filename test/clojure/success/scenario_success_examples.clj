@@ -11,19 +11,19 @@
 (def ref1 (ref 1))
 
 (scenario
- (let [a (atom 0)]
-   (swap! a inc)
-   (expect 1 @a)
-   (swap! a inc)
-   (expect 2 @a)))
+  (let [a (atom 0)]
+    (swap! a inc)
+    (expect 1 @a)
+    (swap! a inc)
+    (expect 2 @a)))
 
 (scenario
- (expect {:a :b} (in {:a :b :c :d})))
+  (expect {:a :b} (in {:a :b :c :d})))
 
 (scenario
- (given [x y] (expect x y)
-        1 1
-        3 3))
+  (given [x y] (expect x y)
+    1 1
+    3 3))
 
 (scenario
   (let [a (atom 1)]
@@ -37,55 +37,70 @@
     (expect nil? (bar2 3 4))))
 
 (scenario
- (stubbing [foo 1
-            bar nil]
-           (expect 1 (foo))
-           (expect nil? (bar))))
+  :binding [bar2 no-op]
+  (expect nil? (bar2 3 4)))
+
+(scenario
+  (stubbing [foo 1
+             bar nil]
+    (expect 1 (foo))
+    (expect nil? (bar))))
+
+(scenario
+  :stubbing [foo 1
+             bar nil]
+  (expect 1 (foo))
+  (expect nil? (bar)))
 
 ;; success interaction tests
 (scenario
- (bar)
- (expect (interaction (foo)) :once))
+  (bar)
+  (expect (interaction (foo)) :once))
 
 (scenario
- (bar)
- (expect (interaction (foo))))
+  (bar)
+  (expect (interaction (foo))))
 
 (scenario
- (expect (interaction (foo)) :never))
+  (expect (interaction (foo)) :never))
 
 (scenario
   ; if you expect an interaction the result of the interaction is the fn name + " result"
- (expect "foo result" (foo 2 4 5))
- (expect (interaction (foo 2 4 5))))
+  (expect "foo result" (foo 2 4 5))
+  (expect (interaction (foo 2 4 5))))
 
 (scenario
- (foo (pr-str [2 4 5]))
- (expect (interaction (foo "[2 4 5]"))))
+  (foo (pr-str [2 4 5]))
+  (expect (interaction (foo "[2 4 5]"))))
 
 (scenario
- (bar2 1 2)
- (expect (interaction (foo2 1 4)) :once))
+  (bar2 1 2)
+  (expect (interaction (foo2 1 4)) :once))
 
 (scenario
- (bar2 1 2)
- (bar2 1 2)
- (expect (interaction (foo2 1 4)) :twice))
+  (bar2 1 2)
+  (bar2 1 2)
+  (expect (interaction (foo2 1 4)) :twice))
 
 (scenario
- (bar2 1 2)
- (expect (interaction (foo2 anything 4)) :once))
+  (bar2 1 2)
+  (expect (interaction (foo2 anything 4)) :once))
 
 (scenario
- (bar2 1 2)
- (bar2 2 2)
- (expect (interaction (foo2 1 4)) :once))
+  (bar2 1 2)
+  (bar2 2 2)
+  (expect (interaction (foo2 1 4)) :once))
 
 (scenario
   (localize-state success.scenario_success_examples
     (swap! atom1 inc)
     (expect 2 @atom1))
   (expect 1 @atom1))
+
+(scenario
+  :localize-state success.scenario_success_examples
+  (swap! atom1 inc)
+  (expect 2 @atom1))
 
 (scenario
   (localize-state success.scenario_success_examples
