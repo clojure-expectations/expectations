@@ -66,3 +66,22 @@
 (def placeholder-fn)
 
 (def anything :anything)
+
+(defmulti localize class)
+(defmethod localize clojure.lang.Atom [a] (atom @a))
+(defmethod localize clojure.lang.Ref [a] (ref @a))
+(defmethod localize :default [v] v)
+
+(defn bind-to-localized [[var-name var]]
+  (when (bound? var)
+    (when-let [vv (var-get var)]
+      (when (#{clojure.lang.Atom clojure.lang.Ref} (class vv) )
+        [var-name (list 'localize var-name)]))))
+
+(defn default-local-vals [ns]
+  (->> (ns-interns ns)
+    (map bind-to-localized)
+    (reduce into [])))
+
+(defmacro localize-state [ns & forms]
+  `(binding ~(default-local-vals ns) ~@forms))

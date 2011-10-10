@@ -7,6 +7,9 @@
 (defn foo2 [a b] (println a b))
 (defn bar2 [a b] (foo2 (* a a) (* b b)))
 
+(def atom1 (atom 1))
+(def ref1 (ref 1))
+
 (scenario
  (let [a (atom 0)]
    (swap! a inc)
@@ -77,3 +80,15 @@
  (bar2 1 2)
  (bar2 2 2)
  (expect (interaction (foo2 1 4)) :once))
+
+(scenario
+  (localize-state success.scenario_success_examples
+    (swap! atom1 inc)
+    (expect 2 @atom1))
+  (expect 1 @atom1))
+
+(scenario
+  (localize-state success.scenario_success_examples
+    (dosync (alter ref1 inc))
+    (expect 2 @ref1))
+  (expect 1 @ref1))
