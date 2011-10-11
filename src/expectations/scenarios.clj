@@ -72,16 +72,18 @@
 
 (defmacro doscenario [forms & {declarative-binds :binding
                                declarative-stubs :stubbing
-                               declarative-localize-state :localize-state}]
+                               declarative-localize-state :localize-state
+                               reminder :reminder}]
   (let [fns (distinct (remove nil? (flatten (prewalk detect-interactions forms))))
         binds (reduce (fn [a f] (conj a f `(append-interaction ~(str f)))) [] fns)]
     `(try
        (localize-state ~declarative-localize-state
          (stubbing ~(vec declarative-stubs)
-           (binding ~(vec declarative-binds)
-             (binding [*interactions* (ref {})]
-               (binding ~binds
-                 ~@forms))))
+           (binding [expectations/reminder ~reminder]
+             (binding ~(vec declarative-binds)
+               (binding [*interactions* (ref {})]
+                 (binding ~binds
+                   ~@forms)))))
          (catch Throwable t#
            (report {:type :error :result t#}))))))
 

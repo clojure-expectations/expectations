@@ -98,6 +98,7 @@
   (expect 1 @atom1))
 
 (scenario
+  :reminder "you shouldn't see this reminder"
   :localize-state success.scenario_success_examples
   (swap! atom1 inc)
   (expect 2 @atom1))

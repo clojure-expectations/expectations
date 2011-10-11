@@ -68,6 +68,7 @@
   (expect (interaction (foo2 1 4)) :once))
 
 (scenario
+  :reminder "you should see this reminder"
   (expect (interaction (foo2 1 (/ 4 0))) :once))
 
 (scenario
@@ -92,6 +93,7 @@
     (expect 1 @ref1)))
 
 (scenario
+  :reminder "you should see this reminder"
   (localize-state failure.scenario_failure_examples
     (swap! atom1 inc)
     (expect 2 @atom1))

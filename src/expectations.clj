@@ -15,6 +15,8 @@
 (def *initial-report-counters* ; used to initialize *report-counters*
   {:test 0, :pass 0, :fail 0, :error 0 :run-time 0})
 
+(def reminder nil)
+
 ;;; UTILITIES FOR REPORTING FUNCTIONS
 (defn string-join [s coll]
   (clojure.string/join s (remove nil? coll)))
@@ -70,10 +72,12 @@
   (inc-report-counter :fail)
   (fail *test-name* *test-meta*
     (string-join "\n"
-      [(when-let [msg (:raw m)] (str "           " (raw-str msg)))
+      [(when reminder (str "     ***** " (clojure.string/upper-case reminder) " *****"))
+       (when-let [msg (:raw m)] (str "           " (raw-str msg)))
        (when-let [msg (:result m)] (str "           " (string-join " " msg)))
        (when (or (:expected-message m) (:actual-message m) (:message m)) " ")
        (when-let [msg (:expected-message m)] (str "           " msg))
+
        (when-let [msg (:actual-message m)] (str "           " msg))
        (when-let [msg (:message m)] (str "           " msg))])))
 
@@ -82,7 +86,8 @@
     (inc-report-counter :error))
   (fail *test-name* *test-meta*
     (string-join "\n"
-      [(when raw (str "           " (raw-str raw)))
+      [(when reminder (str "     ***** " (clojure.string/upper-case reminder) " *****"))
+       (when raw (str "           " (raw-str raw)))
        (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
        (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
        (if (instance? AssertionError result)
