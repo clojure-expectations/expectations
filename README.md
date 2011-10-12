@@ -14,25 +14,50 @@ expectations is a minimalist's testing framework
 Expectations is based on clojure.test. clojure.test is distributed under the Eclipse license, with
 ownership assigned to Rich Hickey.
 
-## Getting Started
+## Installing
+----------
 
-Expectations is fairly light-weight, and so is distribution. To use expectations, copy expectations.clj into your project. You should be able to run the example below once you've added expectations to your project.
+The easiest way to use Compojure in your own projects is via
+[Leiningen](http://github.com/technomancy/leiningen). Add the
+following dependency to your project.clj file:
+
+    [expectations "0.1.0"]
+
+To build expectations from source, run the following commands:
+
+    lein deps
+    lein jar
+
+## Getting Started
 
 By default the tests run on JVM shutdown, so all you need to do is run your clj file and you should see the expectations output. 
 
+You can test that everything is working correctly by using
+expectations in a simple test.
+
+<pre>(ns simple.test
+  (:use expectations))
+
+(expect nil? nil)</pre>
+
+(assuming you've put your dependencies in a (relatively pathed) lib dir)
+
 running your clj should be similar to:
-`java -cp /path/to/clojure.jar:/path/to/expectations/src: clojure.main -i /path/to/your/examples.clj`
+`java -cp "lib/*" clojure.main -i /path/to/your/simple/test.clj`
 
 You can run the examples in expectations with:
-`java -cp /path/to/clojure.jar:/path/to/expectations/src: clojure.main -i /path/to/expectations/test/clojure/success/success_examples.clj`
-
-If you can run the examples, you can start running your own tests.
+`java -cp "lib/*" clojure.main -i /path/to/expectations/test/clojure/success/success_examples.clj`
 
 If you want to disable running the tests on shutdown all you need to do is call: `disable-run-on-shutdown`
 
 It makes sense to disable running tests on shutdown if you want to explicitly call the `run-all-tests` function when you want your tests run. For example, I've written a JUnit test runner that runs all the tests and provides output to IntelliJ. In that case, you'll want to run the tests explicitly and disable the shutdown hook.
 
-However, the vast majority of the time, allowing the framework to run the tests for you is the simplest option.
+However, the vast majority of the time, allowing the framework to run
+the tests for you is the simplest option.
+
+You're now ready to start using expectations as you see fit. There's
+not a ton of syntax; however, you'll probably want to take a quick
+look at the various ways you can write expectations.
 
 ## Success Examples
 
