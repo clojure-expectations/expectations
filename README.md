@@ -17,7 +17,7 @@ ownership assigned to Rich Hickey.
 ## Installing
 ----------
 
-The easiest way to use Compojure in your own projects is via
+The easiest way to use expectations in your own projects is via
 [Leiningen](http://github.com/technomancy/leiningen). Add the
 following dependency to your project.clj file:
 
