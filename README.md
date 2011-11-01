@@ -53,6 +53,8 @@ At this point you should see output similar to:
 You can run the examples in expectations with:
 `java -cp "lib/*" clojure.main -i /path/to/expectations/test/clojure/success/success_examples.clj`
 
+You can also run expectations using lein if you install [lein-expectations](https://github.com/gar3thjon3s/lein-expectations) 
+
 If you want to disable running the tests on shutdown all you need to do is call: `disable-run-on-shutdown`
 
 It makes sense to disable running tests on shutdown if you want to explicitly call the `run-all-tests` function when you want your tests run. For example, I've written a JUnit test runner that runs all the tests and provides output to IntelliJ. In that case, you'll want to run the tests explicitly and disable the shutdown hook.
