@@ -3,7 +3,7 @@
   (:use clojure.walk
         [expectations :only [doexpect fail test-file stack->file&line report]]))
 
-(declare *interactions*)
+(def ^:dynamic *interactions*)
 (def in expectations/in)
 
 (defmacro given [bindings form & args]
@@ -16,12 +16,12 @@
 
 (defmacro stubbing [bindings & forms]
   (let [new-bindings (reduce (fn [a [x y]] (conj a x `(fn [& _#] ~y))) [] (partition 2 bindings))]
-    `(binding ~new-bindings ~@forms)))
+    `(with-redefs ~new-bindings ~@forms)))
 
 (defmacro expect [& args]
   (condp = (count args)
     1 `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]
-         (doexpect ~(first args) :once))
+         (doexpect ~(first args) :once ))
     `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]
        (doexpect ~@args))))
 
@@ -47,7 +47,7 @@
 
 (def placeholder-fn)
 
-(def anything :anything)
+(def anything :anything )
 
 (defmulti localize class)
 (defmethod localize clojure.lang.Atom [a] (atom @a))
@@ -68,7 +68,7 @@
       (reduce into []))))
 
 (defmacro localize-state [ns & forms]
-  `(binding ~(default-local-vals ns) ~@forms))
+  `(with-redefs ~(default-local-vals ns) ~@forms))
 
 (defmacro doscenario [forms & {declarative-binds :binding
                                declarative-stubs :stubbing
@@ -80,12 +80,12 @@
        (localize-state ~declarative-localize-state
          (stubbing ~(vec declarative-stubs)
            (binding [expectations/reminder ~reminder]
-             (binding ~(vec declarative-binds)
+             (with-redefs ~(vec declarative-binds)
                (binding [*interactions* (ref {})]
-                 (binding ~binds
-                   ~@forms)))))
-         (catch Throwable t#
-           (report {:type :error :result t#}))))))
+                 (with-redefs ~binds
+                   ~@forms))))))
+       (catch Throwable t#
+         (report {:type :error :result t#})))))
 
 (defmacro scenario [& forms]
   (let [[decs fs] ((juxt take-while drop-while) #(not= (class %) clojure.lang.PersistentList) forms)]

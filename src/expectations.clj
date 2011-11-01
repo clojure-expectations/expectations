@@ -6,16 +6,16 @@
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
 
-(def *test-name* "test name unset")
-(def *test-meta* {})
-(def *prune-stacktrace* true)
+(def ^:dynamic *test-name* "test name unset")
+(def ^:dynamic *test-meta* {})
+(def ^:dynamic *prune-stacktrace* true)
 
-(def *report-counters* nil) ; bound to a ref of a map in test-ns
+(def ^:dynamic *report-counters* nil) ; bound to a ref of a map in test-ns
 
-(def *initial-report-counters* ; used to initialize *report-counters*
+(def ^:dynamic *initial-report-counters* ; used to initialize *report-counters*
   {:test 0, :pass 0, :fail 0, :error 0 :run-time 0})
 
-(def reminder nil)
+(def ^:dynamic reminder nil)
 
 ;;; UTILITIES FOR REPORTING FUNCTIONS
 (defn string-join [s coll]
@@ -40,14 +40,14 @@
 (defn raw-str [[e a]]
   (str "(expect " e (when (> (count e) 30) "\n                  ") " " a ")"))
 
-(defn fail [test-name test-meta msg]
+(defn ^:dynamic fail [test-name test-meta msg]
   (println (str "\nfailure in (" (test-file test-meta) ") : " (:ns test-meta))) (println msg))
 
-(defn summary [msg] (println msg))
-(defn started [test-name test-meta])
-(defn finished [test-name test-meta])
+(defn ^:dynamic summary [msg] (println msg))
+(defn ^:dynamic started [test-name test-meta])
+(defn ^:dynamic finished [test-name test-meta])
 
-(defn ignored-fns [{:keys [className fileName]}]
+(defn ^:dynamic ignored-fns [{:keys [className fileName]}]
   (when *prune-stacktrace*
     (or (= fileName "expectations.clj")
       (re-seq #"clojure.lang" className)
@@ -157,6 +157,12 @@
 (defmethod nan->keyword java.util.List [m]
   (map #(if (and (number? %) (Double/isNaN %)) :DoubleNaN %) m))
 
+(defmethod nan->keyword Double [m]
+  (if (Double/isNaN m) :DoubleNaN m))
+
+(defmethod nan->keyword java.util.Set [m]
+  (reduce #(conj %1 (if (and (number? %2) (Double/isNaN %2)) :DoubleNaN %2)) #{} m))
+
 (defmethod nan->keyword :default [m]
   (if (and (number? m) (Double/isNaN m)) :DoubleNaN m))
 
@@ -254,7 +260,7 @@
       (report {:type :fail :raw [str-e str-a]
                :result ["value" (pr-str e) "not found in" (::in a)]}))
     (instance? java.util.Set (::in a))
-    (if ((::in a) e)
+    (if ((nan->keyword (::in a)) (nan->keyword e))
       (report {:type :pass})
       (report {:type :fail :raw [str-e str-a]
                :result ["key" (pr-str e) "not found in" (::in a)]}))
@@ -314,7 +320,7 @@
   (map-compare e a str-e str-a a "               was:"))
 
 (defmethod compare-expr [java.util.Set java.util.Set] [e a str-e str-a]
-  (if (= e a)
+  (if (= (nan->keyword e) (nan->keyword a))
     (report {:type :pass})
     (let [diff-fn (fn [e a] (seq (difference e a)))]
       (report {:type :fail

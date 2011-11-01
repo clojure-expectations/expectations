@@ -3,8 +3,7 @@
   :jar-name "expectations.jar"
   :java-source-path "src"
   :test-path "test/clojure"
-  :dependencies [[org.clojure/clojure "1.2.0"]
-                 [org.clojure/clojure-contrib "1.2.0"]
+  :dependencies [[org.clojure/clojure "1.3.0"]
                  [junit/junit "4.8.1"]])
 
 (ns leiningen.publish
