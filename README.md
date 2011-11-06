@@ -56,13 +56,6 @@ You can run the examples in expectations with:
 
 You can also run expectations using lein if you install [lein-expectations](https://github.com/gar3thjon3s/lein-expectations) 
 
-If you want to disable running the tests on shutdown all you need to do is call: `disable-run-on-shutdown`
-
-It makes sense to disable running tests on shutdown if you want to explicitly call the `run-all-tests` function when you want your tests run. For example, I've written a JUnit test runner that runs all the tests and provides output to IntelliJ. In that case, you'll want to run the tests explicitly and disable the shutdown hook.
-
-However, the vast majority of the time, allowing the framework to run
-the tests for you is the simplest option.
-
 You're now ready to start using expectations as you see fit. There's
 not a ton of syntax; however, you'll probably want to take a quick
 look at the various ways you can write expectations.
@@ -74,10 +67,15 @@ look at the various ways you can write expectations.
 ## Detailed Examples with Discussion
 
 [Unit Testing Examples - Part One](http://blog.jayfields.com/2011/11/clojure-expectations-introduction.html)
+
 [Unit Testing Examples - Part Two](http://blog.jayfields.com/2011/11/clojure-non-equality-expectations.html)
+
 [Unit Testing Examples - Part Three](http://blog.jayfields.com/2011/11/clojure-expectations-with-values-in.html)
+
 [Unit Testing Examples - Part Four](http://blog.jayfields.com/2011/11/clojure-expectations-and-doublenan.html)
+
 [Unit Testing Examples - Part Five](http://blog.jayfields.com/2011/11/clojure-expectations-removing.html)
+
 [Unit Testing Examples - Part Six](http://blog.jayfields.com/2011/11/clojure-expectations-unit-testing-wrap.html)
 
 ## License
