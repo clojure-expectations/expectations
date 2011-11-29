@@ -406,7 +406,7 @@
 (defmacro doexpect [e a]
   `(let [e# (try ~e (catch Throwable t# t#))
          a# (try ~a (catch Throwable t# t#))]
-    (compare-expr e# a# ~(str e) ~(str a))))
+    (compare-expr e# a# ~(pr-str e) ~(pr-str a))))
 
 (defmacro expect [e a]
   `(def ~(vary-meta (gensym) assoc :expectation true)
