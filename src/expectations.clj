@@ -134,15 +134,16 @@
   (doto (assoc (test-vars vars 0) :type :summary)
     (report)))
 
-(defn test-ns [ns]
-  (let [expectations (filter #(:expectation (meta %)) (->> ns ns-interns vals (sort-by str)))]
-    (if-let [focused (->> expectations (filter #(:focused (meta %))) seq)]
-      (test-vars focused (- (count expectations) (count focused)))
-      (test-vars expectations 0))))
+(defn ->expectation [ns]
+  (filter #(:expectation (meta %)) (->> ns ns-interns vals (sort-by str))))
 
 (defn run-tests [namespaces]
-  (doto (assoc (apply merge-with + (map test-ns namespaces)) :type :summary)
-    (report)))
+  (let [expectations (->> namespaces (map ->expectation) (reduce into []) seq)] 
+    (if-let [focused (->> expectations (filter #(:focused (meta %))) seq)]
+      (doto (assoc (test-vars focused (- (count expectations) (count focused))) :type :summary)
+        (report))
+      (doto (assoc (test-vars expectations 0) :type :summary)
+        (report)))))
 
 (defn run-all-tests
   ([] (run-tests (all-ns)))
@@ -274,7 +275,8 @@
   (if (instance? e a)
     (report {:type :pass})
     (report {:type :fail :raw [str-e str-a]
-             :result [a "is not an instance of" e]})))
+             :expected-message (str "expected: " a " to be an instance of " e)
+             :actual-message (str   "     was: " a " is an instance of " (class a))})))
 
 
 (defmethod compare-expr ::actual-exception [e a str-e str-a]

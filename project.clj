@@ -3,6 +3,7 @@
   :jar-name "expectations.jar"
   :java-source-path "src"
   :test-path "test/clojure"
+  :dev-dependencies [[lein-expectations "0.0.1"]]
   :dependencies [[org.clojure/clojure "1.3.0"]
                  [junit/junit "4.8.1"]])
 
