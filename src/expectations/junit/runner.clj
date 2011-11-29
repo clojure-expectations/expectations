@@ -1,11 +1,10 @@
 (ns expectations.junit.runner
   (:require expectations)
-  (:import
-    [java.io File]
-    [org.junit.runner Runner Description]
-    [org.junit.runner.notification Failure]
-    [junit.framework AssertionFailedError ComparisonFailure]
-    [java.lang.annotation Annotation]))
+  (:import [java.io File]
+           [org.junit.runner Runner Description]
+           [org.junit.runner.notification Failure]
+           [junit.framework AssertionFailedError ComparisonFailure]
+           [java.lang.annotation Annotation]))
 
 (def empty-ann-arr (make-array Annotation 0))
 
@@ -42,15 +41,14 @@
 (defn clj-file? [file-name]
   (re-seq #".clj$" (:absolutePath file-name)))
 
+(defn in-loaded-file? [file-names v] (file-names (:file (meta v))))
+
 (defn create-runner [source]
-  (let [files (->> source .testPath File. file-seq (map bean) (remove :hidden) (remove :directory) (filter clj-file?))
+  (let [files (->> source .testPath File. file-seq (map bean) (remove :hidden ) (remove :directory ) (filter clj-file?))
         _ (doseq [{:keys [absolutePath]} files] (load-file absolutePath))
         file-names (set (map :absolutePath files))
         suite-description (Description/createSuiteDescription (-> source class .getName) empty-ann-arr)
-        vars-by-ns (map #(vals (ns-interns %)) (all-ns))
-        all-vars (reduce into [] vars-by-ns)
-        expectation-in-loaded-file? (fn [v] (and (file-names (:file (meta v))) (:expectation (meta v))))
-        filtered-vars (filter expectation-in-loaded-file? all-vars)
+        filtered-vars (->> (all-ns) (expectations/->expectations) (filter (partial in-loaded-file? file-names)))
         descs (reduce create-desc {} filtered-vars)]
     (doseq [desc (vals descs)] (.addChild suite-description desc))
     (proxy [Runner] []
