@@ -205,7 +205,7 @@
 (defn normalize-keys [m] (normalize-keys* [] [] m))
 
 (defn ->missing-message [m msg item]
-  (str (string-join " {" item) " with val " (get-in m item) msg))
+  (str (string-join " {" (map pr-str item)) " with val " (pr-str (get-in m item)) msg))
 
 (defn map-difference [e a]
   (difference (set (normalize-keys e)) (set (normalize-keys a))))
