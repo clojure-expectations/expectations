@@ -25,6 +25,7 @@ public class ExpectationsFailure extends Failure {
 
         @Override
         public void printStackTrace(PrintWriter writer) {
+            writer.println(message);
         }
 
         @Override
