@@ -3,7 +3,7 @@
   (:use clojure.walk
         [expectations :only [doexpect fail test-file stack->file&line report]]))
 
-(def ^:dynamic *interactions*)
+(def ^{:dynamic true} *interactions*)
 (def in expectations/in)
 
 (defmacro given [bindings form & args]
