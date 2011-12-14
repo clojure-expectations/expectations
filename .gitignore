@@ -6,3 +6,4 @@ out
 .idea/workspace.xml
 .fig
 .lein-failures
+.lein-deps-sum
