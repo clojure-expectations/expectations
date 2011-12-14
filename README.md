@@ -21,7 +21,7 @@ The easiest way to use expectations in your own projects is via
 [Leiningen](http://github.com/technomancy/leiningen). Add the
 following dependency to your project.clj file:
 
-    [expectations "1.1.0"] ; clojure 1.2
+    [expectations "1.2.1"] ; clojure 1.2
     [expectations "1.3.3"] ; clojure 1.3
 
 To build expectations from source, run the following commands:
