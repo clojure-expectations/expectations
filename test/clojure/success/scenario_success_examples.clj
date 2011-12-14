@@ -37,7 +37,7 @@
     (expect nil? (bar2 3 4))))
 
 (scenario
-  :binding [bar2 no-op]
+  :with-redefs [bar2 no-op]
   (expect nil? (bar2 3 4)))
 
 (scenario

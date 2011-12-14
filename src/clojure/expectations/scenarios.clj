@@ -70,7 +70,7 @@
 (defmacro localize-state [ns & forms]
   `(with-redefs ~(default-local-vals ns) ~@forms))
 
-(defmacro doscenario [forms & {declarative-binds :binding
+(defmacro doscenario [forms & {declarative-redefs :with-redefs
                                declarative-stubs :stubbing
                                declarative-localize-state :localize-state
                                reminder :reminder}]
@@ -80,7 +80,7 @@
        (localize-state ~declarative-localize-state
          (stubbing ~(vec declarative-stubs)
            (binding [expectations/reminder ~reminder]
-             (with-redefs ~(vec declarative-binds)
+             (with-redefs ~(vec declarative-redefs)
                (binding [*interactions* (ref {})]
                  (with-redefs ~binds
                    ~@forms))))))
