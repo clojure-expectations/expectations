@@ -54,7 +54,8 @@ At this point you should see output similar to:
 You can run the examples in expectations with:
 `java -cp "lib/*" clojure.main -i /path/to/expectations/test/clojure/success/success_examples.clj`
 
-You can also run expectations using lein if you install [lein-expectations](https://github.com/gar3thjon3s/lein-expectations) 
+You can also run expectations using lein if you install [lein-expectations](https://github.com/gar3thjon3s/lein-expectations)
+or use [lein-autoexpect](https://github.com/jakemcc/lein-autoexpect) to automatically run expectations.
 
 You're now ready to start using expectations as you see fit. There's
 not a ton of syntax; however, you'll probably want to take a quick
