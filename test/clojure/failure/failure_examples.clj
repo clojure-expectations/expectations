@@ -3,6 +3,7 @@
 
 (defn two [] (/ 12 0))
 (defn one [] (two))
+(defrecord Foo [a b c])
 
 ;; errors
 (expect 1 (one))
@@ -17,6 +18,9 @@
 
 ;; map equality
 (expect {:foo 2 :bar 3 :dog 3 :car 4} (assoc {} :foo 1 :bar "3" :cat 4))
+
+;; record equality
+(expect (->Foo :a :b :c) (->Foo :c :b :a))
 
 ;; list equality
 (expect [1 2 3 2 4] [3 2 1 3])

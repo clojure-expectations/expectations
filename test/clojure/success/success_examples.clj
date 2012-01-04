@@ -1,6 +1,8 @@
 (ns success.success-examples
   (:use expectations))
 
+(defrecord Foo [a b c])
+
 ;; number equality
 (expect 1 (do 1))
 
@@ -9,6 +11,9 @@
 
 ; map equality
 (expect {:foo 1 :bar 2 :car 4} (assoc {} :foo 1 :bar 2 :car 4))
+
+;; record equality
+(expect (->Foo :a :b :c) (->Foo :a :b :c))
 
 ;; is the regex in the string
 (expect #"foo" (str "boo" "foo" "ar"))
