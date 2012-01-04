@@ -27,6 +27,9 @@
 ;; k/v pair in map. matches subset
 (expect {:foo 1} (in {:foo 1 :cat 4}))
 
+;; k/v pair in record. matches subset
+(expect {:a :a} (in (->Foo :a :b :c)))
+
 ;; key in set
 (expect :foo (in (conj #{:foo :bar} :cat)))
 
