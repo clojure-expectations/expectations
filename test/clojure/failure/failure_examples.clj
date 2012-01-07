@@ -4,6 +4,8 @@
 (defn two [] (/ 12 0))
 (defn one [] (two))
 (defrecord Foo [a b c])
+(defmacro a-macro [& args]
+  `(println ~@args))
 
 ;; errors
 (expect 1 (one))
@@ -75,6 +77,10 @@
 
 ;; Double/NaN equality with in fn and map
 (expect {:a Double/NaN :b {:c 9}} (in {:a Double/NaN :b {:c Double/NaN} :d "other stuff"}))
+
+;; macro expansion
+(expect '(clojure.core/println 1 2 (println 100) 3)
+                (expanding (a-macro 1 2 (println 101) 3)))
 
 ;; multiple expects with form
 (given [x y] (expect x (+ y y))

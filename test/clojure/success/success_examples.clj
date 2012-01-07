@@ -2,6 +2,8 @@
   (:use expectations))
 
 (defrecord Foo [a b c])
+(defmacro a-macro [& args]
+  `(println ~@args))
 
 ;; number equality
 (expect 1 (do 1))
@@ -43,7 +45,8 @@
 (expect {:a Double/NaN :b {:c Double/NaN}} {:a Double/NaN :b {:c Double/NaN}})
 
 ;; allow Double/NaN equality with in fn and map
-(expect {:a Double/NaN :b {:c Double/NaN}} (in {:a Double/NaN :b {:c Double/NaN} :d "other stuff"}))
+(expect {:a Double/NaN :b {:c Double/NaN}}
+        (in {:a Double/NaN :b {:c Double/NaN} :d "other stuff"}))
 
 ;; allow Double/NaN equality in a set
 (expect #{1 Double/NaN} #{1 Double/NaN})
@@ -56,6 +59,10 @@
 
 ;; allow Double/NaN equality with in fn and list
 (expect Double/NaN (in [1 Double/NaN]))
+
+;; macro expansion
+(expect '(clojure.core/println 1 2 (println 100) 3)
+                (expanding (a-macro 1 2 (println 100) 3)))
 
 ;; easy java object return value testing
 (given (java.util.ArrayList.)

@@ -192,11 +192,15 @@
   (if (and (map? v1) (map? v2))
     (string-join
       "\n           "
-      (remove nil? (map (partial ->disagreement (str (when prefix (str prefix " {")) k)) (map-intersection v1 v2))))
+      (remove nil? (map
+                    (partial ->disagreement
+                             (str (when prefix (str prefix " {")) k))
+                    (map-intersection v1 v2))))
     (when (extended-not= v1 v2)
       (let [prefix-desc (str (when prefix (str prefix " {")) (pr-str k))
             prefix-space (apply str (take (count prefix-desc) (repeat " ")))]
-        (str prefix-desc " expected: " (pr-str v1) "\n           " prefix-space "      was: " (pr-str v2))))))
+        (str prefix-desc " expected: "
+             (pr-str v1) "\n           " prefix-space "      was: " (pr-str v2))))))
 
 (defn map-diff-message [e a padding]
   (->>
@@ -422,6 +426,7 @@
     `(clojure.template/do-template [~'x ~'y] ~(list 'expect 'y (list 'x bindings)) ~@(rest form))))
 
 (defn in [n] {::in n ::in-flag true})
+(defmacro expanding [n] (list 'quote  (macroexpand-1 n)))
 
 (->
   (Runtime/getRuntime)
