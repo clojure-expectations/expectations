@@ -5,6 +5,7 @@
 
 (def ^{:dynamic true} *interactions*)
 (def in expectations/in)
+(defmacro expanding [n] (list 'quote  (macroexpand-1 n)))
 
 (defmacro given [bindings form & args]
   (let [s (gensym "local")]

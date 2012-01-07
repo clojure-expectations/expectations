@@ -1,4 +1,4 @@
-(ns success.scenario_success_examples
+(ns success.scenario-success-examples
   (:use expectations.scenarios))
 
 (defn foo [] (println "hi"))
@@ -92,19 +92,25 @@
   (expect (interaction (foo2 1 4)) :once))
 
 (scenario
-  (localize-state success.scenario_success_examples
+  (localize-state success.scenario-success-examples
     (swap! atom1 inc)
     (expect 2 @atom1))
   (expect 1 @atom1))
 
 (scenario
   :reminder "you shouldn't see this reminder"
-  :localize-state success.scenario_success_examples
+  :localize-state success.scenario-success-examples
   (swap! atom1 inc)
   (expect 2 @atom1))
 
 (scenario
-  (localize-state success.scenario_success_examples
+  (localize-state success.scenario-success-examples
     (dosync (alter ref1 inc))
     (expect 2 @ref1))
   (expect 1 @ref1))
+
+(defmacro a-macro [& args] `(println ~@args))
+
+(scenario-focused
+ (expect '(clojure.core/println 1 2)
+         (expanding (a-macro 1 2))))
