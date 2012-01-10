@@ -68,17 +68,17 @@ look at the various ways you can write expectations.
 
 ## Detailed Examples with Discussion
 
-[Unit Testing Examples - Part One](http://blog.jayfields.com/2011/11/clojure-expectations-introduction.html)
+[Unit Testing Examples - Part One (Introduction)](http://blog.jayfields.com/2011/11/clojure-expectations-introduction.html)
 
-[Unit Testing Examples - Part Two](http://blog.jayfields.com/2011/11/clojure-non-equality-expectations.html)
+[Unit Testing Examples - Part Two (Non-Equality)](http://blog.jayfields.com/2011/11/clojure-non-equality-expectations.html)
 
-[Unit Testing Examples - Part Three](http://blog.jayfields.com/2011/11/clojure-expectations-with-values-in.html)
+[Unit Testing Examples - Part Three (Using Values)](http://blog.jayfields.com/2011/11/clojure-expectations-with-values-in.html)
 
-[Unit Testing Examples - Part Four](http://blog.jayfields.com/2011/11/clojure-expectations-and-doublenan.html)
+[Unit Testing Examples - Part Four (Testing Double/NaN)](http://blog.jayfields.com/2011/11/clojure-expectations-and-doublenan.html)
 
-[Unit Testing Examples - Part Five](http://blog.jayfields.com/2011/11/clojure-expectations-removing.html)
+[Unit Testing Examples - Part Five (Removing Duplication with 'given')](http://blog.jayfields.com/2011/11/clojure-expectations-removing.html)
 
-[Unit Testing Examples - Part Six](http://blog.jayfields.com/2011/11/clojure-expectations-unit-testing-wrap.html)
+[Unit Testing Examples - Part Six (Wrap Up)](http://blog.jayfields.com/2011/11/clojure-expectations-unit-testing-wrap.html)
 
 ## License
 
