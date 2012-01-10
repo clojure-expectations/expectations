@@ -82,6 +82,8 @@ look at the various ways you can write expectations.
 
 [Unit Testing Examples - Part Six (Wrap Up)](http://blog.jayfields.com/2011/11/clojure-expectations-unit-testing-wrap.html)
 
+[Scenario Testing Examples](http://blog.jayfields.com/2011/11/clojure-expectations-scenarios.html)
+
 ## License
 
 Copyright (c) 2010, Jay Fields
