@@ -64,7 +64,7 @@ look at the various ways you can write expectations.
 
 ## Success Examples
 
-[using 'except', 'given' and 'expanding'](http://github.com/jaycfields/expectations/blob/master/test/clojure/success/success_examples.clj)
+[using 'expect', 'given' and 'expanding'](http://github.com/jaycfields/expectations/blob/master/test/clojure/success/success_examples.clj)
 
 [using 'scenario' and 'stubbing'](http://github.com/jaycfields/expectations/blob/master/test/clojure/success/scenario_success_examples.clj)
 
