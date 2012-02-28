@@ -1,6 +1,0 @@
-resource "expectations.jar"
-
-config default
-  append CLASSPATH=@/expectations.jar
-  append SOURCEPATH=@/expectations.jar
-end
