@@ -7,3 +7,4 @@ out
 .fig
 .lein-failures
 .lein-deps-sum
+package.fig
