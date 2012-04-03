@@ -1,6 +1,6 @@
 # expectations
 
-> because less is more
+> where less is more
 
 expectations is a minimalist's testing framework
 
@@ -9,13 +9,15 @@ expectations is a minimalist's testing framework
  *  stacktraces are trimmed of clojure library lines and java.lang lines
  *  focused error & failure messages
 
+----------
+
 ## Credit
 
 Expectations is based on clojure.test. clojure.test is distributed under the Eclipse license, with
 ownership assigned to Rich Hickey.
 
 ## Installing
-----------
+
 
 The easiest way to use expectations in your own projects is via
 [Leiningen](http://github.com/technomancy/leiningen). Add the
