@@ -8,6 +8,7 @@
 
 (def ^{:dynamic true} *test-name* "test name unset")
 (def ^{:dynamic true} *test-meta* {})
+(def ^{:dynamic true} *test-var* nil)
 (def ^{:dynamic true} *prune-stacktrace* true)
 
 (def ^{:dynamic true} *report-counters* nil) ; bound to a ref of a map in test-ns
@@ -66,34 +67,40 @@
 (defmulti report :type)
 
 (defmethod report :pass [m]
+  (alter-meta! *test-var* assoc :status [:success "" (:line *test-meta*)])
   (inc-report-counter :pass))
 
 (defmethod report :fail [m]
   (inc-report-counter :fail)
-  (fail *test-name* *test-meta*
-    (string-join "\n"
-      [(when reminder (str "     ***** " (clojure.string/upper-case reminder) " *****"))
-       (when-let [msg (:raw m)] (str "           " (raw-str msg)))
-       (when-let [msg (:result m)] (str "           " (string-join " " msg)))
-       (when (or (:expected-message m) (:actual-message m) (:message m)) " ")
-       (when-let [msg (:expected-message m)] (str "           " msg))
-
-       (when-let [msg (:actual-message m)] (str "           " msg))
-       (when-let [msg (:message m)] (str "           " msg))])))
+  (let [current-test *test-var*
+        message (string-join "\n"
+                  [(when reminder (str "     ***** " (clojure.string/upper-case reminder) " *****"))
+                   (when-let [msg (:raw m)] (str "           " (raw-str msg)))
+                   (when-let [msg (:result m)] (str "           " (string-join " " msg)))
+                   (when (or (:expected-message m) (:actual-message m) (:message m)) " ")
+                   (when-let [msg (:expected-message m)] (str "           " msg))
+                   (when-let [msg (:actual-message m)] (str "           " msg))
+                   (when-let [msg (:message m)] (str "           " msg))])]
+    (alter-meta! current-test
+                 assoc :status [:fail message (:line *test-meta*)])
+    (fail *test-name* *test-meta* message)))
 
 (defmethod report :error [{:keys [result raw] :as m}]
   (when-not (instance? AssertionError result)
     (inc-report-counter :error))
-  (fail *test-name* *test-meta*
-    (string-join "\n"
-      [(when reminder (str "     ***** " (clojure.string/upper-case reminder) " *****"))
-       (when raw (str "           " (raw-str raw)))
-       (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
-       (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
-       (if (instance? AssertionError result)
-         (.getMessage result)
-         (str "    threw: " (class result) " - " (.getMessage result)))
-       (pruned-stack-trace result)])))
+  (let [current-test *test-var*
+        message (string-join "\n"
+                  [(when reminder (str "     ***** " (clojure.string/upper-case reminder) " *****"))
+                   (when raw (str "           " (raw-str raw)))
+                   (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
+                   (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
+                   (if (instance? AssertionError result)
+                     (.getMessage result)
+                     (str "    threw: " (class result) " - " (.getMessage result)))
+                   (pruned-stack-trace result)])]
+    (alter-meta! current-test
+                 assoc :status [:error message (:line *test-meta*)])
+    (fail *test-name* *test-meta* message)))
 
 (defmethod report :summary [{:keys [test pass fail error run-time ignored-expectations]}]
   (summary (str "\nRan " test " tests containing "
@@ -113,7 +120,8 @@
       (started tn tm)
       (inc-report-counter :test)
       (binding [*test-name* tn
-                *test-meta* tm]
+                *test-meta* tm
+                *test-var*  v]
         (try
           (t)
           (catch Exception e
