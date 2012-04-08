@@ -111,6 +111,6 @@
 
 (defmacro a-macro [& args] `(println ~@args))
 
-(scenario-focused
+(scenario
  (expect '(clojure.core/println 1 2)
          (expanding (a-macro 1 2))))
