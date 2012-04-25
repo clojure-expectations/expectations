@@ -1,7 +1,8 @@
 (ns expectations
   (:use clojure.set)
   (:require clojure.template
-    clojure.string))
+    clojure.string
+    colorize.core))
 
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
@@ -19,6 +20,30 @@
 (def ^{:dynamic true} reminder nil)
 
 ;;; UTILITIES FOR REPORTING FUNCTIONS
+
+(defn getenv [var]
+  (System/getenv var))
+
+(defn on-windows? []
+  (re-find #"[Ww]in" (System/getProperty "os.name")))
+
+(defn colorize-choice []
+  (clojure.string/upper-case (or (getenv "EXPECTATIONS_COLORIZE")
+                    (str (not (on-windows?))))))
+
+(defn colorize-results [pred s]
+  (println (colorize-choice))
+  (condp = (colorize-choice)
+    "TRUE" (if (pred)
+             (colorize.core/color :green s)
+             (colorize.core/color :red s))
+    s))
+
+(defn colorize-warn [s]
+  (condp = (colorize-choice)
+    "TRUE" (colorize.core/color :magenta s)
+    s))
+
 (defn string-join [s coll]
   (clojure.string/join s (remove nil? coll)))
 
@@ -106,8 +131,8 @@
   (summary (str "\nRan " test " tests containing "
     (+ pass fail error) " assertions in "
     run-time " msecs\n"
-    (when (> ignored-expectations 0) (str "IGNORED " ignored-expectations " EXPECTATIONS\n"))
-    fail " failures, " error " errors.")))
+    (when (> ignored-expectations 0) (colorize-warn (str "IGNORED " ignored-expectations " EXPECTATIONS\n")))
+    (colorize-results (partial = 0 fail error) (str fail " failures, " error " errors")) ".")))
 
 ;; TEST RUNNING
 
@@ -441,3 +466,4 @@
   (.addShutdownHook
     (proxy [Thread] []
       (run [] (when @run-tests-on-shutdown (run-all-tests))))))
+
