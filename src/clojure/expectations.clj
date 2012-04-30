@@ -31,17 +31,27 @@
   (clojure.string/upper-case (or (getenv "EXPECTATIONS_COLORIZE")
                     (str (not (on-windows?))))))
 
+(def ansi-colors {:reset "[0m"
+                  :red     "[31m"
+                  :green   "[32m"
+                  :magenta "[35m"})
+
+(defn ansi [code]
+  (str \u001b (get ansi-colors code (:reset ansi-colors))))
+
+(defn color [code & s]
+  (str (ansi code) (apply str s) (ansi :reset)))
+
 (defn colorize-results [pred s]
-  (println (colorize-choice))
   (condp = (colorize-choice)
     "TRUE" (if (pred)
-             (colorize.core/color :green s)
-             (colorize.core/color :red s))
+             (color :green s)
+             (color :red s))
     s))
 
 (defn colorize-warn [s]
   (condp = (colorize-choice)
-    "TRUE" (colorize.core/color :magenta s)
+    "TRUE" (color :magenta s)
     s))
 
 (defn string-join [s coll]
