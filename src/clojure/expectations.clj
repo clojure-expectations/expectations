@@ -1,8 +1,6 @@
 (ns expectations
   (:use clojure.set)
-  (:require clojure.template
-    clojure.string
-    colorize.core))
+  (:require clojure.template clojure.string))
 
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
