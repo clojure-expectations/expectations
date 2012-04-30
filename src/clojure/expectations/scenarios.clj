@@ -82,8 +82,8 @@
            ['(import 'org.joda.time.DateTime)
             '(import 'org.joda.time.DateTimeUtils)
             `(org.joda.time.DateTimeUtils/setCurrentMillisFixed (.getMillis (condp = (class ~freeze-time)
-                                                                              String (DateTime/parse ~freeze-time)
-                                                                              (DateTime.))))])
+                                                                              String (org.joda.time.DateTime/parse ~freeze-time)
+                                                                              (org.joda.time.DateTime.))))])
        (localize-state ~declarative-localize-state
          (stubbing ~(vec declarative-stubs)
            (binding [expectations/reminder ~reminder]
