@@ -1,4 +1,5 @@
 (ns failure.scenario_failure_examples
+  (:import [org.joda.time DateTime])
   (:use expectations.scenarios))
 
 (defn thr [] (/ 12 0))
@@ -104,3 +105,10 @@
     (dosync (alter ref1 inc))
     (expect 2 @ref1))
   (expect 2 @ref1))
+
+(scenario
+  :freeze-time true
+  (expect true
+    (not=
+      (DateTime.)
+      (do (Thread/sleep 1) (DateTime.)))))

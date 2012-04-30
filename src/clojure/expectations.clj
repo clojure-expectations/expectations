@@ -107,7 +107,7 @@
   (inc-report-counter :fail)
   (let [current-test *test-var*
         message (string-join "\n"
-                  [(when reminder (str "     ***** " (clojure.string/upper-case reminder) " *****"))
+                  [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
                    (when-let [msg (:raw m)] (str "           " (raw-str msg)))
                    (when-let [msg (:result m)] (str "           " (string-join " " msg)))
                    (when (or (:expected-message m) (:actual-message m) (:message m)) " ")
@@ -123,7 +123,7 @@
     (inc-report-counter :error))
   (let [current-test *test-var*
         message (string-join "\n"
-                  [(when reminder (str "     ***** " (clojure.string/upper-case reminder) " *****"))
+                  [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
                    (when raw (str "           " (raw-str raw)))
                    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
                    (when-let [msg (:actual-message m)] (str "  act-msg: " msg))

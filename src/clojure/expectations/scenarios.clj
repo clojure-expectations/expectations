@@ -5,7 +5,7 @@
 
 (def ^{:dynamic true} *interactions*)
 (def in expectations/in)
-(defmacro expanding [n] (list 'quote  (macroexpand-1 n)))
+(defmacro expanding [n] (list 'quote (macroexpand-1 n)))
 
 (defmacro given [bindings form & args]
   (let [s (gensym "local")]
@@ -74,10 +74,16 @@
 (defmacro doscenario [forms & {declarative-redefs :with-redefs
                                declarative-stubs :stubbing
                                declarative-localize-state :localize-state
-                               reminder :reminder}]
+                               :keys [freeze-time reminder]}]
   (let [fns (distinct (remove nil? (flatten (prewalk detect-interactions forms))))
         binds (reduce (fn [a f] (conj a f `(append-interaction ~(str f)))) [] fns)]
     `(try
+       ~@(when freeze-time
+           ['(import 'org.joda.time.DateTime)
+            '(import 'org.joda.time.DateTimeUtils)
+            `(org.joda.time.DateTimeUtils/setCurrentMillisFixed (.getMillis (condp = (class ~freeze-time)
+                                                                              String (DateTime/parse ~freeze-time)
+                                                                              (DateTime.))))])
        (localize-state ~declarative-localize-state
          (stubbing ~(vec declarative-stubs)
            (binding [expectations/reminder ~reminder]
@@ -85,7 +91,11 @@
                (binding [*interactions* (ref {})]
                  (with-redefs ~binds
                    ~@forms))))))
+       ~(when freeze-time
+          '(org.joda.time.DateTimeUtils/setCurrentMillisSystem))
        (catch Throwable t#
+         ~(when freeze-time
+            '(org.joda.time.DateTimeUtils/setCurrentMillisSystem))
          (report {:type :error :result t#})))))
 
 (defmacro scenario [& forms]

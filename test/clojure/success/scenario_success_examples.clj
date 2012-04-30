@@ -1,4 +1,5 @@
 (ns success.scenario-success-examples
+  (:import [org.joda.time DateTime])
   (:use expectations.scenarios))
 
 (defn foo [] (println "hi"))
@@ -102,6 +103,23 @@
   :localize-state success.scenario-success-examples
   (swap! atom1 inc)
   (expect 2 @atom1))
+
+(scenario
+  :freeze-time true
+  :localize-state success.scenario-success-examples
+  (expect (DateTime.) (DateTime.)))
+
+(scenario
+  :freeze-time "2012-4-30"
+  :localize-state success.scenario-success-examples
+  (expect (DateTime.) (DateTime/parse "2012-4-30")))
+
+(scenario
+  :localize-state success.scenario-success-examples
+  (expect true
+    (not=
+      (DateTime.)
+      (do (Thread/sleep 1) (DateTime.)))))
 
 (scenario
   (localize-state success.scenario-success-examples
