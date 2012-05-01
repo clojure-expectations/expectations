@@ -64,6 +64,10 @@ You're now ready to start using expectations as you see fit. There's
 not a ton of syntax; however, you'll probably want to take a quick
 look at the various ways you can write expectations.
 
+## Colorizing
+
+By default, expectations uses ansi escape codes to color output on non-windows environments. expectations also respects a EXPECTATIONS_COLORIZE environment variable - set the var to false if you'd like to turn off colorizing.
+
 ## Success Examples
 
 [using 'expect', 'given' and 'expanding'](http://github.com/jaycfields/expectations/blob/master/test/clojure/success/success_examples.clj)
