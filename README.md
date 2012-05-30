@@ -67,6 +67,7 @@ look at the various ways you can write expectations.
 ## Colorizing
 
 By default, expectations uses ansi escape codes to color output on non-windows environments. expectations also respects a EXPECTATIONS_COLORIZE environment variable - set the var to false if you'd like to turn off colorizing.
+[more info](http://blog.jayfields.com/2012/05/clojure-expectations-colorized.html)
 
 ## Success Examples
 
@@ -89,6 +90,8 @@ By default, expectations uses ansi escape codes to color output on non-windows e
 [Unit Testing Examples - Part Six (Wrap Up)](http://blog.jayfields.com/2011/11/clojure-expectations-unit-testing-wrap.html)
 
 [Scenario Testing Examples](http://blog.jayfields.com/2011/11/clojure-expectations-scenarios.html)
+
+[Freezing Joda Time in](http://blog.jayfields.com/2012/05/clojure-freezing-time-in-expectations.html)
 
 ## License
 
