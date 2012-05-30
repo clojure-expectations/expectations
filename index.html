@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Expectations by jaycfields</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Expectations</h1>
+        <p>a minimalist's unit testing framework</p>
+        <p class="view"><a href="https://github.com/jaycfields/expectations">View the Project on GitHub <small>jaycfields/expectations</small></a></p>
+        <ul>
+          <li><a href="https://github.com/jaycfields/expectations/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/jaycfields/expectations/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/jaycfields/expectations">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>expectations</h1>
+
+<blockquote>
+<p>where less is more</p>
+</blockquote>
+
+<p>expectations is a minimalist's testing framework</p>
+
+<ul>
+<li> simply require expectations and your tests will be run on JVM shutdown.</li>
+<li> what you are testing is inferred from the expected and actual types</li>
+<li> stacktraces are trimmed of clojure library lines and java.lang lines</li>
+<li> focused error &amp; failure messages</li>
+</ul><hr><h2>Credit</h2>
+
+<p>Expectations is based on clojure.test. clojure.test is distributed under the Eclipse license, with
+ownership assigned to Rich Hickey.</p>
+
+<h2>Installing</h2>
+
+<p>The easiest way to use expectations in your own projects is via
+<a href="http://github.com/technomancy/leiningen">Leiningen</a>. Add the
+following dependency to your project.clj file:</p>
+
+<pre><code>[expectations "1.2.1"] ; clojure 1.2
+[expectations "1.4.3"] ; clojure 1.3
+</code></pre>
+
+<p>To build expectations from source, run the following commands:</p>
+
+<pre><code>lein deps
+lein jar
+</code></pre>
+
+<h2>Getting Started</h2>
+
+<p>By default the tests run on JVM shutdown, so all you need to do is run your clj file and you should see the expectations output. </p>
+
+<p>You can test that everything is working correctly by using
+expectations in a simple test.</p>
+
+<pre>(ns simple.test
+  (:use expectations))
+
+(expect nil? nil)</pre>
+
+<p>(assuming you've put your dependencies in a (relatively pathed) lib dir)</p>
+
+<p>Running your clj should be similar to:
+<code>java -cp "lib/*" clojure.main -i /path/to/your/simple/test.clj</code></p>
+
+<p>At this point you should see output similar to:</p>
+
+<pre>Ran 1 tests containing 1 assertions in 5 msecs
+0 failures, 0 errors.</pre>
+
+<p>You can run the examples in expectations with:
+<code>java -cp "lib/*" clojure.main -i /path/to/expectations/test/clojure/success/success_examples.clj</code></p>
+
+<p>You can also run expectations using lein if you install <a href="https://github.com/gar3thjon3s/lein-expectations">lein-expectations</a>.
+Use <a href="https://github.com/jakemcc/lein-autoexpect">lein-autoexpect</a> to automatically
+run when your Clojure source changes.</p>
+
+<p>You're now ready to start using expectations as you see fit. There's
+not a ton of syntax; however, you'll probably want to take a quick
+look at the various ways you can write expectations.</p>
+
+<h2>Colorizing</h2>
+
+<p>By default, expectations uses ansi escape codes to color output on non-windows environments. expectations also respects a EXPECTATIONS_COLORIZE environment variable - set the var to false if you'd like to turn off colorizing.
+<a href="http://blog.jayfields.com/2012/05/clojure-expectations-colorized.html">more info</a></p>
+
+<h2>Success Examples</h2>
+
+<p><a href="http://github.com/jaycfields/expectations/blob/master/test/clojure/success/success_examples.clj">using 'expect', 'given' and 'expanding'</a></p>
+
+<p><a href="http://github.com/jaycfields/expectations/blob/master/test/clojure/success/scenario_success_examples.clj">using 'scenario' and 'stubbing'</a></p>
+
+<h2>Detailed Examples with Discussion</h2>
+
+<p><a href="http://blog.jayfields.com/2011/11/clojure-expectations-introduction.html">Unit Testing Examples - Part One (Introduction)</a></p>
+
+<p><a href="http://blog.jayfields.com/2011/11/clojure-non-equality-expectations.html">Unit Testing Examples - Part Two (Non-Equality)</a></p>
+
+<p><a href="http://blog.jayfields.com/2011/11/clojure-expectations-with-values-in.html">Unit Testing Examples - Part Three (Using Values)</a></p>
+
+<p><a href="http://blog.jayfields.com/2011/11/clojure-expectations-and-doublenan.html">Unit Testing Examples - Part Four (Testing Double/NaN)</a></p>
+
+<p><a href="http://blog.jayfields.com/2011/11/clojure-expectations-removing.html">Unit Testing Examples - Part Five (Removing Duplication with 'given')</a></p>
+
+<p><a href="http://blog.jayfields.com/2011/11/clojure-expectations-unit-testing-wrap.html">Unit Testing Examples - Part Six (Wrap Up)</a></p>
+
+<p><a href="http://blog.jayfields.com/2011/11/clojure-expectations-scenarios.html">Scenario Testing Examples</a></p>
+
+<p><a href="http://blog.jayfields.com/2012/05/clojure-freezing-time-in-expectations.html">Freezing Joda Time</a></p>
+
+<h2>License</h2>
+
+<p>Copyright (c) 2010, Jay Fields
+All rights reserved.</p>
+
+<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
+
+<ul>
+<li><p>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</p></li>
+<li><p>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</p></li>
+<li><p>Neither the name Jay Fields nor the names of the contributors may be used to endorse or promote products derived from this software without specific prior written permission.</p></li>
+</ul><p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/jaycfields">jaycfields</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
