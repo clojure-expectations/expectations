@@ -91,7 +91,7 @@ By default, expectations uses ansi escape codes to color output on non-windows e
 
 [Scenario Testing Examples](http://blog.jayfields.com/2011/11/clojure-expectations-scenarios.html)
 
-[Freezing Joda Time in](http://blog.jayfields.com/2012/05/clojure-freezing-time-in-expectations.html)
+[Freezing Joda Time](http://blog.jayfields.com/2012/05/clojure-freezing-time-in-expectations.html)
 
 ## License
 
