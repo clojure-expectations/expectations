@@ -282,8 +282,15 @@
              :message (when-let [messages (map-diff-message e a "")] (string-join "\n           " messages))})))
 
 (defmulti compare-expr (fn [e a str-e str-a]
-  (cond
-    (isa? e Throwable) ::expect-exception (instance? Throwable e) ::expected-exception (instance? Throwable a) ::actual-exception (fn? e) ::fn (::in-flag a) ::in (::interaction-flag e) ::interaction :default [(class e) (class a)])))
+                         
+                         (cond
+                          (isa? e Throwable) ::expect-exception
+                          (instance? Throwable e) ::expected-exception
+                          (instance? Throwable a) ::actual-exception
+                          (fn? e) ::fn
+                          (and (not (sorted? a)) (::in-flag a)) ::in
+                          (and (not (sorted? e)) (::interaction-flag e)) ::interaction
+                          :default [(class e) (class a)])))
 
 (defmethod compare-expr :default [e a str-e str-a]
   (if (= e a)

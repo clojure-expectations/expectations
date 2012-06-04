@@ -60,6 +60,9 @@
 ;; allow Double/NaN equality with in fn and list
 (expect Double/NaN (in [1 Double/NaN]))
 
+;; sorted map equality
+(expect (sorted-map-by > 1 :a 2 :b) (sorted-map-by > 1 :a 2 :b))
+
 ;; macro expansion
 (expect '(clojure.core/println 1 2 (println 100) 3)
                 (expanding (a-macro 1 2 (println 100) 3)))
