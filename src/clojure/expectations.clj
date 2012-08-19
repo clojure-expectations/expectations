@@ -80,6 +80,8 @@
 (defn ^{:dynamic true} summary [msg] (println msg))
 (defn ^{:dynamic true} started [test-name test-meta])
 (defn ^{:dynamic true} finished [test-name test-meta])
+(defn ^{:dynamic true} ns-finished [a-ns])
+(defn ^{:denamic true} expectation-finished [a-var])
 
 (defn ^{:dynamic true} ignored-fns [{:keys [className fileName]}]
   (when *prune-stacktrace*
@@ -164,8 +166,13 @@
 
 (defn test-vars [vars ignored-expectations]
   (binding [*report-counters* (ref *initial-report-counters*)]
-    (let [start (System/nanoTime)]
-      (doseq [v vars] (test-var v))
+    (let [ns->vars (group-by (comp :ns meta) vars)
+          start (System/nanoTime)]
+      (doseq [[a-ns the-vars] ns->vars]
+        (doseq [v the-vars]
+          (test-var v)
+          (expectation-finished v))
+        (ns-finished (ns-name a-ns)))
       ;;;      (dorun (pmap test-var vars))
       (assoc @*report-counters*
         :run-time (int (/ (- (System/nanoTime) start) 1000000))
