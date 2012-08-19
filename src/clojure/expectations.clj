@@ -178,15 +178,11 @@
 (defn ->expectation [ns]
   (filter (comp :expectation meta) (->> ns ns-interns vals (sort-by str))))
 
-(defn ->expectations [namespaces]
-  (println (str namespaces))
-  (mapcat ->expectation namespaces))
-
 (defn ->focused-expectations [expectations]
   (->> expectations (filter (comp :focused meta)) seq))
 
 (defn run-tests [namespaces]
-  (let [expectations (->expectations namespaces)]
+  (let [expectations (mapcat ->expectation namespaces)]
     (if-let [focused (->focused-expectations expectations)]
       (doto (assoc (test-vars focused (- (count expectations) (count focused))) :type :summary)
         (report))
