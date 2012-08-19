@@ -179,7 +179,8 @@
   (filter (comp :expectation meta) (->> ns ns-interns vals (sort-by str))))
 
 (defn ->expectations [namespaces]
-  (->> namespaces (map ->expectation) (reduce into []) seq))
+  (println (str namespaces))
+  (->> namespaces (mapcat ->expectation)))
 
 (defn ->focused-expectations [expectations]
   (->> expectations (filter (comp :focused meta)) seq))
@@ -282,7 +283,7 @@
              :message (when-let [messages (map-diff-message e a "")] (string-join "\n           " messages))})))
 
 (defmulti compare-expr (fn [e a str-e str-a]
-                         
+
                          (cond
                           (isa? e Throwable) ::expect-exception
                           (instance? Throwable e) ::expected-exception
@@ -481,4 +482,3 @@
   (.addShutdownHook
     (proxy [Thread] []
       (run [] (when @run-tests-on-shutdown (run-all-tests))))))
-
