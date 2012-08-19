@@ -176,7 +176,11 @@
     (report)))
 
 (defn ->expectation [ns]
-  (filter (comp :expectation meta) (->> ns ns-interns vals (sort-by str))))
+  (->> ns
+       ns-interns
+       vals
+       (sort-by str)
+       (filter (comp :expectation meta))))
 
 (defn ->focused-expectations [expectations]
   (->> expectations (filter (comp :focused meta)) seq))
