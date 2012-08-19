@@ -81,7 +81,7 @@
 (defn ^{:dynamic true} started [test-name test-meta])
 (defn ^{:dynamic true} finished [test-name test-meta])
 (defn ^{:dynamic true} ns-finished [a-ns])
-(defn ^{:denamic true} expectation-finished [a-var])
+(defn ^{:dynamic true} expectation-finished [a-var])
 
 (defn ^{:dynamic true} ignored-fns [{:keys [className fileName]}]
   (when *prune-stacktrace*
