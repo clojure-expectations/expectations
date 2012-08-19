@@ -180,7 +180,7 @@
 
 (defn ->expectations [namespaces]
   (println (str namespaces))
-  (->> namespaces (mapcat ->expectation)))
+  (mapcat ->expectation namespaces))
 
 (defn ->focused-expectations [expectations]
   (->> expectations (filter (comp :focused meta)) seq))
