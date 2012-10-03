@@ -31,6 +31,8 @@
 
 (def ansi-colors {:reset "[0m"
                   :red     "[31m"
+                  :blue    "[34m"
+                  :cyan    "[36m"
                   :green   "[32m"
                   :magenta "[35m"})
 
@@ -43,6 +45,11 @@
 (defn colorize-filename [s]
   (condp = (colorize-choice)
     "TRUE" (color :magenta s)
+    s))
+
+(defn colorize-raw [s]
+  (condp = (colorize-choice)
+    "TRUE" (color :cyan s)
     s))
 
 (defn colorize-results [pred s]
@@ -115,7 +122,7 @@
   (let [current-test *test-var*
         message (string-join "\n"
                   [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
-                   (when-let [msg (:raw m)] (str "           " (raw-str msg)))
+                   (when-let [msg (:raw m)] (colorize-raw (str "           " (raw-str msg))))
                    (when-let [msg (:result m)] (str "           " (string-join " " msg)))
                    (when (or (:expected-message m) (:actual-message m) (:message m)) " ")
                    (when-let [msg (:expected-message m)] (str "           " msg))
@@ -131,7 +138,7 @@
   (let [current-test *test-var*
         message (string-join "\n"
                   [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
-                   (when raw (str "           " (raw-str raw)))
+                   (when raw (str "           " (colorize-raw (raw-str raw))))
                    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
                    (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
                    (if (instance? AssertionError result)
