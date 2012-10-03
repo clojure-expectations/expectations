@@ -40,6 +40,11 @@
 (defn color [code & s]
   (str (ansi code) (apply str s) (ansi :reset)))
 
+(defn colorize-filename [s]
+  (condp = (colorize-choice)
+    "TRUE" (color :magenta s)
+    s))
+
 (defn colorize-results [pred s]
   (condp = (colorize-choice)
     "TRUE" (if (pred)
@@ -69,7 +74,7 @@
   (str ns ":" line))
 
 (defn test-file [{:keys [file line]}]
-  (str (last (re-seq #"[A-Za-z_\.]+" file)) ":" line))
+  (colorize-filename (str (last (re-seq #"[A-Za-z_\.]+" file)) ":" line)))
 
 (defn raw-str [[e a]]
   (str "(expect " e (when (> (count e) 30) "\n                  ") " " a ")"))

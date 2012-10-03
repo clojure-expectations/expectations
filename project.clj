@@ -1,11 +1,11 @@
-(defproject expectations "1.4.5"
+(defproject expectations "1.4.6"
   :description "testing framework"
   :jar-name "expectations.jar"
-  :java-source-path "src/java"
-  :source-path "src/clojure"
-  :test-path "test/clojure"
-  :dev-dependencies [[lein-expectations "0.0.1"]
-                     [lein-publishers "1.0.4"]
-                     [joda-time/joda-time "2.1"]
-                     [junit/junit "4.8.1"]]
-  :dependencies [[org.clojure/clojure "1.3.0"]])
+  :java-source-paths ["src/java"]
+  :source-paths ["src/clojure"]
+  :test-paths ["test/clojure"]
+  :dependencies [[org.clojure/clojure "1.3.0"]]
+  :plugins [[lein-expectations "0.0.7"]
+            [lein-publishers "1.0.4"]]
+  :profiles {:dev {:dependencies [[joda-time/joda-time "2.1"]
+                                  [junit/junit "4.8.1"]]}})
