@@ -1,5 +1,6 @@
 (ns expectations.scenarios
   (:require expectations)
+  (:import [expectations ScenarioFailure])
   (:use clojure.walk
         [expectations :only [doexpect fail test-file stack->file&line report]]))
 
@@ -21,9 +22,9 @@
 
 (defmacro expect [& args]
   (condp = (count args)
-    1 `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]
+    1 `(binding [fail (fn [test-file# test-meta# msg#] (throw (ScenarioFailure. msg#)))]
          (doexpect ~(first args) :once ))
-    `(binding [fail (fn [test-file# test-meta# msg#] (throw (AssertionError. msg#)))]
+    `(binding [fail (fn [test-file# test-meta# msg#] (throw (ScenarioFailure. msg#)))]
        (doexpect ~@args))))
 
 (defmacro interaction [[f & args]]
