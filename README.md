@@ -24,7 +24,7 @@ The easiest way to use expectations in your own projects is via
 following dependency to your project.clj file:
 
     [expectations "1.2.1"] ; clojure 1.2
-    [expectations "1.4.10"] ; clojure 1.3
+    [expectations "1.4.11"] ; clojure 1.3
 
 To build expectations from source, run the following commands:
 
@@ -33,7 +33,7 @@ To build expectations from source, run the following commands:
 
 ## Getting Started
 
-By default the tests run on JVM shutdown, so all you need to do is run your clj file and you should see the expectations output. 
+By default the tests run on JVM shutdown, so all you need to do is run your clj file and you should see the expectations output.
 
 You can test that everything is working correctly by using
 expectations in a simple test.
