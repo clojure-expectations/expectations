@@ -563,3 +563,5 @@
 
 (defmacro redef-state [namespaces & forms]
   `(with-redefs ~(default-local-vals namespaces) ~@forms))
+
+(def no-op (constantly nil))
