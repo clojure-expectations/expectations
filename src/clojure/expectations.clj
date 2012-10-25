@@ -476,10 +476,42 @@
                        (partial fn-string function))
                      (rest interactions)))})))))
 
-(defmacro doexpect [e a]
+(defn compare-interaction [f args interactions times]
+  (let [actual-times (count (filter (matching args) interactions))
+        expected-times (times {:never 0 :once 1 :twice 2})]
+    (if (= expected-times actual-times)
+      (report {:type :pass})
+      (if (empty? interactions)
+        (report {:type :fail
+                 :result ["expected:" (fn-string f args)
+                          (name times)
+                          "\n                but:" f "was never called"]})
+        (report {:type :fail
+                 :result (apply
+                   list
+                   "expected:" (fn-string f args)
+                   (name times)
+                   "\n                got:" (fn-string f (first interactions))
+                   (map
+                     (comp (partial str "\n                  &: ")
+                       (partial fn-string f))
+                     (rest interactions)))})))))
+
+(defmacro do-interaction-expect [[_ [f & args] times] a]
+  `(let [expected-interactions# (atom [])]
+     (with-redefs [~f (comp (partial swap! expected-interactions# conj) vector)]
+       (try ~a (catch Throwable t# t#))
+       (compare-interaction ~(str f) (vector ~@args) @expected-interactions# (or ~times :once)))))
+
+(defmacro do-value-expect [e a]
   `(let [e# (try ~e (catch Throwable t# t#))
          a# (try ~a (catch Throwable t# t#))]
-    (compare-expr e# a# ~(pr-str e) ~(pr-str a))))
+     (compare-expr e# a# ~(pr-str e) ~(pr-str a))))
+
+(defmacro doexpect [e a]
+  (if (and (instance? clojure.lang.PersistentList e) (= 'interaction (first e)))
+    `(do-interaction-expect ~e ~a)
+    `(do-value-expect ~e ~a)))
 
 (defmacro expect [e a]
   `(def ~(vary-meta (gensym) assoc :expectation true)
@@ -502,3 +534,5 @@
   (.addShutdownHook
     (proxy [Thread] []
       (run [] (when @run-tests-on-shutdown (run-all-tests))))))
+
+(defn interaction [form times]) ;;; this is never used, but it's nice for auto-completion and documentation

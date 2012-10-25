@@ -27,7 +27,7 @@
     `(binding [fail (fn [test-file# test-meta# msg#] (throw (ScenarioFailure. msg#)))]
        (doexpect ~@args))))
 
-(defmacro interaction [[f & args]]
+(defmacro scenario-interaction [[f & args]]
   `(hash-map :expectations/interaction-flag true
      :function ~(str f)
      :interactions (@*interactions* ~(str f))
@@ -37,7 +37,7 @@
   (when (seq? v)
     (if (= "expect" (str (first v)))
       (let [expect-args (flatten (next v))]
-        (if (= "interaction" (str (first expect-args)))
+        (if (= "scenario-interaction" (str (first expect-args)))
           (second expect-args)))
       v)))
 
@@ -100,7 +100,9 @@
          (report {:type :error :result t#})))))
 
 (defmacro scenario [& forms]
-  (let [[decs fs] ((juxt take-while drop-while) #(not= (class %) clojure.lang.PersistentList) forms)]
+  (let [[decs fs] ((juxt take-while drop-while)
+                   #(not= (class %) clojure.lang.PersistentList)
+                   (clojure.walk/prewalk-replace '{interaction scenario-interaction} forms))]
     `(def ~(vary-meta (gensym) assoc :expectation true)
        (fn [] (doscenario ~fs ~@decs)))))
 

@@ -70,32 +70,36 @@
 ;; easy java object return value testing
 (given (java.util.ArrayList.)
        (expect
-	.size 0
-	.isEmpty true))
+        .size 0
+        .isEmpty true))
 
 ;; multiple expects on an instance
 (given [1 2 3]
        (expect
-	first 1
-	last 3))
+        first 1
+        last 3))
 
 (given {:a 2 :b 4}
-       (expect 
-	:a 2
-	:b 4))
+       (expect
+        :a 2
+        :b 4))
 
 ;; multiple expects with form
 (given [x y] (expect 10 (+ x y))
-	4 6
-	6 4
-	12 -2)
+        4 6
+        6 4
+        12 -2)
 
 (given [x y] (expect x (in y))
-	:a #{:a :b}
-	{:a :b} {:a :b :c :d})
+        :a #{:a :b}
+        {:a :b} {:a :b :c :d})
 
 (given [x y] (expect x y)
-	nil? nil
-	fn? +
-	empty? [])
+        nil? nil
+        fn? +
+        empty? [])
 
+(expect (interaction (spit "/tmp/herrow-world" "some dater" :append true))
+        (do
+          (spit "some other stuff" "xy")
+          (spit "/tmp/herrow-world" "some dater" :append true)))
