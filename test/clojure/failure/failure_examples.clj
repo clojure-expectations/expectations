@@ -133,3 +133,16 @@
 (expect (interaction (one) :twice) (one))
 
 (expect (interaction (one) :twice) (do (one) (one) (one)))
+
+(expect :original
+        (with-redefs [success.success-examples-src/an-atom (atom :original)]
+          (redef-state [success.success-examples-src]
+                       (reset! success.success-examples-src/an-atom :something-else)
+                       @success.success-examples-src/an-atom)))
+
+(expect :atom
+        (with-redefs [success.success-examples-src/an-atom (atom :original)]
+          (do
+            (redef-state [success.success-examples-src]
+                         (reset! success.success-examples-src/an-atom :atom))
+            @success.success-examples-src/an-atom)))

@@ -5,6 +5,7 @@
 
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
+(def lib-namespaces (set (all-ns)))
 
 (def ^{:dynamic true} *test-name* "test name unset")
 (def ^{:dynamic true} *test-meta* {})
@@ -536,3 +537,29 @@
       (run [] (when @run-tests-on-shutdown (run-all-tests))))))
 
 (defn interaction [form times]) ;;; this is never used, but it's nice for auto-completion and documentation
+
+(defn var->symbol [v]
+  (symbol (str (.ns v) "/" (.sym v))))
+
+(defmulti localize class)
+(defmethod localize clojure.lang.Atom [a] (atom @a))
+(defmethod localize clojure.lang.Agent [a] (agent @a))
+(defmethod localize clojure.lang.Ref [a] (ref @a))
+(defmethod localize :default [v] v)
+
+(defn binding-&-localized-val [var]
+  (when (bound? var)
+    (when-let [vv (var-get var)]
+      (when (#{clojure.lang.Agent clojure.lang.Atom clojure.lang.Ref} (class vv))
+        [(var->symbol var) (list 'localize (var->symbol var))]))))
+
+(defn default-local-vals [namespaces]
+  (->>
+   namespaces
+   (mapcat (comp vals ns-interns))
+   (mapcat binding-&-localized-val)
+   (remove nil?)
+   vec))
+
+(defmacro redef-state [namespaces & forms]
+  `(with-redefs ~(default-local-vals namespaces) ~@forms))

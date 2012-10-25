@@ -1,5 +1,6 @@
 (ns success.success-examples
-  (:use expectations))
+  (:use expectations)
+  (:require success.success-examples-src))
 
 (defrecord Foo [a b c])
 (defmacro a-macro [& args]
@@ -11,7 +12,7 @@
 ;; string equality
 (expect "foo" (identity "foo"))
 
-; map equality
+                                        ; map equality
 (expect {:foo 1 :bar 2 :car 4} (assoc {} :foo 1 :bar 2 :car 4))
 
 ;; record equality
@@ -65,7 +66,7 @@
 
 ;; macro expansion
 (expect '(clojure.core/println 1 2 (println 100) 3)
-                (expanding (a-macro 1 2 (println 100) 3)))
+        (expanding (a-macro 1 2 (println 100) 3)))
 
 ;; easy java object return value testing
 (given (java.util.ArrayList.)
@@ -86,20 +87,31 @@
 
 ;; multiple expects with form
 (given [x y] (expect 10 (+ x y))
-        4 6
-        6 4
-        12 -2)
+       4 6
+       6 4
+       12 -2)
 
 (given [x y] (expect x (in y))
-        :a #{:a :b}
-        {:a :b} {:a :b :c :d})
+       :a #{:a :b}
+       {:a :b} {:a :b :c :d})
 
 (given [x y] (expect x y)
-        nil? nil
-        fn? +
-        empty? [])
+       nil? nil
+       fn? +
+       empty? [])
 
 (expect (interaction (spit "/tmp/herrow-world" "some dater" :append true))
         (do
           (spit "some other stuff" "xy")
           (spit "/tmp/herrow-world" "some dater" :append true)))
+
+(expect :atom
+        (redef-state [success.success-examples-src]
+                     (reset! success.success-examples-src/an-atom :atom)
+                     @success.success-examples-src/an-atom))
+
+(expect "atom"
+        (do
+          (redef-state [success.success-examples-src]
+                       (reset! success.success-examples-src/an-atom :atom))
+          @success.success-examples-src/an-atom))
