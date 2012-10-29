@@ -115,3 +115,9 @@
           (redef-state [success.success-examples-src]
                        (reset! success.success-examples-src/an-atom :atom))
           @success.success-examples-src/an-atom))
+
+(expect-let [x 1]
+            x x)
+
+(expect-let [x 2]
+            (* x x) (+ x x))

@@ -29,7 +29,7 @@
 
 (defn colorize-choice []
   (clojure.string/upper-case (or (getenv "EXPECTATIONS_COLORIZE")
-                    (str (not (on-windows?))))))
+                                 (str (not (on-windows?))))))
 
 (def ansi-colors {:reset "[0m"
                   :red     "[31m"
@@ -76,7 +76,7 @@
 (defn inc-report-counter [name]
   (when *report-counters*
     (dosync (commute *report-counters* assoc name
-      (inc (or (*report-counters* name) 0))))))
+                     (inc (or (*report-counters* name) 0))))))
 
 ;;; TEST RESULT REPORTING
 (defn test-name [{:keys [line ns]}]
@@ -100,18 +100,18 @@
 (defn ^{:dynamic true} ignored-fns [{:keys [className fileName]}]
   (when *prune-stacktrace*
     (or (= fileName "expectations.clj")
-      (re-seq #"clojure.lang" className)
-      (re-seq #"clojure.core" className)
-      (re-seq #"clojure.main" className)
-      (re-seq #"java.lang" className))))
+        (re-seq #"clojure.lang" className)
+        (re-seq #"clojure.core" className)
+        (re-seq #"clojure.main" className)
+        (re-seq #"java.lang" className))))
 
 (defn pruned-stack-trace [t]
   (string-join "\n"
-    (distinct (map (fn [{:keys [className methodName fileName lineNumber] :as m}]
-      (if (= methodName "invoke")
-        (str "           on (" fileName ":" lineNumber ")")
-        (str "           " className "$" methodName " (" fileName ":" lineNumber ")")))
-      (remove ignored-fns (map bean (.getStackTrace t)))))))
+               (distinct (map (fn [{:keys [className methodName fileName lineNumber] :as m}]
+                                (if (= methodName "invoke")
+                                  (str "           on (" fileName ":" lineNumber ")")
+                                  (str "           " className "$" methodName " (" fileName ":" lineNumber ")")))
+                              (remove ignored-fns (map bean (.getStackTrace t)))))))
 
 (defmulti report :type)
 
@@ -123,13 +123,13 @@
   (inc-report-counter :fail)
   (let [current-test *test-var*
         message (string-join "\n"
-                  [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
-                   (when-let [msg (:raw m)] (colorize-raw (str "           " (raw-str msg))))
-                   (when-let [msg (:result m)] (str "           " (string-join " " msg)))
-                   (when (or (:expected-message m) (:actual-message m) (:message m)) " ")
-                   (when-let [msg (:expected-message m)] (str "           " msg))
-                   (when-let [msg (:actual-message m)] (str "           " msg))
-                   (when-let [msg (:message m)] (str "           " msg))])]
+                             [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
+                              (when-let [msg (:raw m)] (colorize-raw (str "           " (raw-str msg))))
+                              (when-let [msg (:result m)] (str "           " (string-join " " msg)))
+                              (when (or (:expected-message m) (:actual-message m) (:message m)) " ")
+                              (when-let [msg (:expected-message m)] (str "           " msg))
+                              (when-let [msg (:actual-message m)] (str "           " msg))
+                              (when-let [msg (:message m)] (str "           " msg))])]
     (alter-meta! current-test
                  assoc :status [:fail message (:line *test-meta*)])
     (fail *test-name* *test-meta* message)))
@@ -139,24 +139,24 @@
     (inc-report-counter :error))
   (let [current-test *test-var*
         message (string-join "\n"
-                  [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
-                   (when raw (str "           " (colorize-raw (raw-str raw))))
-                   (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
-                   (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
-                   (if (instance? ScenarioFailure result)
-                     (.getMessage result)
-                     (str "    threw: " (class result) " - " (.getMessage result)))
-                   (pruned-stack-trace result)])]
+                             [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
+                              (when raw (str "           " (colorize-raw (raw-str raw))))
+                              (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
+                              (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
+                              (if (instance? ScenarioFailure result)
+                                (.getMessage result)
+                                (str "    threw: " (class result) " - " (.getMessage result)))
+                              (pruned-stack-trace result)])]
     (alter-meta! current-test
                  assoc :status [:error message (:line *test-meta*)])
     (fail *test-name* *test-meta* message)))
 
 (defmethod report :summary [{:keys [test pass fail error run-time ignored-expectations]}]
   (summary (str "\nRan " test " tests containing "
-    (+ pass fail error) " assertions in "
-    run-time " msecs\n"
-    (when (> ignored-expectations 0) (colorize-warn (str "IGNORED " ignored-expectations " EXPECTATIONS\n")))
-    (colorize-results (partial = 0 fail error) (str fail " failures, " error " errors")) ".")))
+                (+ pass fail error) " assertions in "
+                run-time " msecs\n"
+                (when (> ignored-expectations 0) (colorize-warn (str "IGNORED " ignored-expectations " EXPECTATIONS\n")))
+                (colorize-results (partial = 0 fail error) (str fail " failures, " error " errors")) ".")))
 
 ;; TEST RUNNING
 
@@ -254,11 +254,11 @@
 (defn ->disagreement [prefix [k [v1 v2]]]
   (if (and (map? v1) (map? v2))
     (string-join
-      "\n           "
-      (remove nil? (map
-                    (partial ->disagreement
-                             (str (when prefix (str prefix " {")) k))
-                    (map-intersection v1 v2))))
+     "\n           "
+     (remove nil? (map
+                   (partial ->disagreement
+                            (str (when prefix (str prefix " {")) k))
+                   (map-intersection v1 v2))))
     (when (extended-not= v1 v2)
       (let [prefix-desc (str (when prefix (str prefix " {")) (pr-str k))
             prefix-space (apply str (take (count prefix-desc) (repeat " ")))]
@@ -267,10 +267,10 @@
 
 (defn map-diff-message [e a padding]
   (->>
-    (map (partial ->disagreement nil) (map-intersection e a))
-    (remove nil?)
-    (remove empty?)
-    seq))
+   (map (partial ->disagreement nil) (map-intersection e a))
+   (remove nil?)
+   (remove empty?)
+   seq))
 
 (defn normalize-keys* [a ks m]
   (if (map? m)
@@ -287,18 +287,18 @@
 
 (defn map-missing-message [e a msg]
   (->>
-    (map-difference e a)
-    (map (partial ->missing-message e msg))
-    seq))
+   (map-difference e a)
+   (map (partial ->missing-message e msg))
+   seq))
 
 (defn map-compare [e a str-e str-a original-a but-string]
   (if (= (nan->keyword e) (nan->keyword a))
     (report {:type :pass})
     (report {:type :fail
              :actual-message (when-let [messages (map-missing-message e a " is in expected, but not in actual")]
-               (string-join "\n           " messages))
+                               (string-join "\n           " messages))
              :expected-message (when-let [messages (map-missing-message a e " is in actual, but not in expected")]
-               (string-join "\n           " messages))
+                                 (string-join "\n           " messages))
              :raw [str-e str-a]
              :result ["expected:" (pr-str e) "\n" but-string (pr-str original-a)]
              :message (when-let [messages (map-diff-message e a "")] (string-join "\n           " messages))})))
@@ -329,21 +329,21 @@
 
 (defmethod compare-expr ::in [e a str-e str-a]
   (cond
-    (instance? java.util.List (::in a))
-    (if (seq (filter (fn [item] (= (nan->keyword e) (nan->keyword item))) (::in a)))
-      (report {:type :pass})
-      (report {:type :fail :raw [str-e str-a]
-               :result ["value" (pr-str e) "not found in" (::in a)]}))
-    (instance? java.util.Set (::in a))
-    (if ((nan->keyword (::in a)) (nan->keyword e))
-      (report {:type :pass})
-      (report {:type :fail :raw [str-e str-a]
-               :result ["key" (pr-str e) "not found in" (::in a)]}))
-    (instance? java.util.Map (::in a))
-    (map-compare e (select-keys (::in a) (keys e)) str-e str-a (::in a) "                in:")
-    :default (report {:type :fail :raw [str-e str-a]
-                      :result ["You supplied:" (pr-str (::in a))]
-                      :message "You must supply a list, set, or map when using (in)"})))
+   (instance? java.util.List (::in a))
+   (if (seq (filter (fn [item] (= (nan->keyword e) (nan->keyword item))) (::in a)))
+     (report {:type :pass})
+     (report {:type :fail :raw [str-e str-a]
+              :result ["value" (pr-str e) "not found in" (::in a)]}))
+   (instance? java.util.Set (::in a))
+   (if ((nan->keyword (::in a)) (nan->keyword e))
+     (report {:type :pass})
+     (report {:type :fail :raw [str-e str-a]
+              :result ["key" (pr-str e) "not found in" (::in a)]}))
+   (instance? java.util.Map (::in a))
+   (map-compare e (select-keys (::in a) (keys e)) str-e str-a (::in a) "                in:")
+   :default (report {:type :fail :raw [str-e str-a]
+                     :result ["You supplied:" (pr-str (::in a))]
+                     :message "You must supply a list, set, or map when using (in)"})))
 
 (defmethod compare-expr [Class Object] [e a str-e str-a]
   (if (instance? e a)
@@ -401,11 +401,11 @@
     (let [diff-fn (fn [e a] (seq (difference e a)))]
       (report {:type :fail
                :actual-message (when-let [v (diff-fn e a)]
-                 (str (string-join ", " v)
-                   " are in expected, but not in actual"))
+                                 (str (string-join ", " v)
+                                      " are in expected, but not in actual"))
                :expected-message (when-let [v (diff-fn a e)]
-                 (str (string-join ", " v)
-                   " are in actual, but not in expected"))
+                                   (str (string-join ", " v)
+                                        " are in actual, but not in expected"))
                :raw [str-e str-a]
                :result ["expected:" e "\n                was:" (pr-str a)]}))))
 
@@ -415,27 +415,27 @@
     (let [diff-fn (fn [e a] (seq (difference (set e) (set a))))]
       (report {:type :fail
                :actual-message (when-let [v (diff-fn e a)]
-                 (str (string-join ", " v)
-                   " are in expected, but not in actual"))
+                                 (str (string-join ", " v)
+                                      " are in expected, but not in actual"))
                :expected-message (when-let [v (diff-fn a e)]
-                 (str (string-join ", " v)
-                   " are in actual, but not in expected"))
+                                   (str (string-join ", " v)
+                                        " are in actual, but not in expected"))
                :raw [str-e str-a]
                :result ["expected:" e "\n                was:" (pr-str a)]
                :message (cond
-                 (and
-                   (= (set e) (set a))
-                   (= (count e) (count a))
-                   (= (count e) (count (set a))))
-                 "lists appears to contain the same items with different ordering"
-                 (and (= (set e) (set a)) (< (count e) (count a)))
-                 "some duplicate items in actual are not expected"
-                 (and (= (set e) (set a)) (> (count e) (count a)))
-                 "some duplicate items in expected are not actual"
-                 (< (count e) (count a))
-                 "actual is larger than expected"
-                 (> (count e) (count a))
-                 "expected is larger than actual")}))))
+                         (and
+                          (= (set e) (set a))
+                          (= (count e) (count a))
+                          (= (count e) (count (set a))))
+                         "lists appears to contain the same items with different ordering"
+                         (and (= (set e) (set a)) (< (count e) (count a)))
+                         "some duplicate items in actual are not expected"
+                         (and (= (set e) (set a)) (> (count e) (count a)))
+                         "some duplicate items in expected are not actual"
+                         (< (count e) (count a))
+                         "actual is larger than expected"
+                         (> (count e) (count a))
+                         "expected is larger than actual")}))))
 
 (defn fn-string [f-name f-args]
   (str "(" f-name (when (seq f-args) " ") (string-join " " (map pr-str f-args)) ")"))
@@ -448,8 +448,8 @@
 (defn matching [expected-args]
   (fn [interaction]
     (and
-      (= (count interaction) (count expected-args))
-      (every? true? (map matches? interaction (seq expected-args))))))
+     (= (count interaction) (count expected-args))
+     (every? true? (map matches? interaction (seq expected-args))))))
 
 (defmethod compare-expr ::interaction [{:keys [function
                                                interactions
@@ -468,14 +468,14 @@
                           "\n                but:" function "was never called"]})
         (report {:type :fail
                  :result (apply
-                   list
-                   "expected:" (fn-string function expected-args)
-                   (name expected-times-keyword)
-                   "\n                got:" (fn-string function (first interactions))
-                   (map
-                     (comp (partial str "\n                  &: ")
-                       (partial fn-string function))
-                     (rest interactions)))})))))
+                          list
+                          "expected:" (fn-string function expected-args)
+                          (name expected-times-keyword)
+                          "\n                got:" (fn-string function (first interactions))
+                          (map
+                           (comp (partial str "\n                  &: ")
+                                 (partial fn-string function))
+                           (rest interactions)))})))))
 
 (defn compare-interaction [f args interactions times]
   (let [actual-times (count (filter (matching args) interactions))
@@ -489,14 +489,14 @@
                           "\n                but:" f "was never called"]})
         (report {:type :fail
                  :result (apply
-                   list
-                   "expected:" (fn-string f args)
-                   (name times)
-                   "\n                got:" (fn-string f (first interactions))
-                   (map
-                     (comp (partial str "\n                  &: ")
-                       (partial fn-string f))
-                     (rest interactions)))})))))
+                          list
+                          "expected:" (fn-string f args)
+                          (name times)
+                          "\n                got:" (fn-string f (first interactions))
+                          (map
+                           (comp (partial str "\n                  &: ")
+                                 (partial fn-string f))
+                           (rest interactions)))})))))
 
 (defmacro do-interaction-expect [[_ [f & args] times] a]
   `(let [expected-interactions# (atom [])]
@@ -516,11 +516,15 @@
 
 (defmacro expect [e a]
   `(def ~(vary-meta (gensym) assoc :expectation true)
-    (fn [] (doexpect ~e ~a))))
+     (fn [] (doexpect ~e ~a))))
+
+(defmacro expect-let [bindings e a]
+  `(def ~(vary-meta (gensym) assoc :expectation true)
+     (fn [] (let ~bindings (doexpect ~e ~a)))))
 
 (defmacro expect-focused [e a]
   `(def ~(vary-meta (gensym) assoc :expectation true :focused true)
-    (fn [] (doexpect ~e ~a))))
+     (fn [] (doexpect ~e ~a))))
 
 (defmacro given [bindings form & args]
   (if args
@@ -531,10 +535,10 @@
 (defmacro expanding [n] (list 'quote  (macroexpand-1 n)))
 
 (->
-  (Runtime/getRuntime)
-  (.addShutdownHook
-    (proxy [Thread] []
-      (run [] (when @run-tests-on-shutdown (run-all-tests))))))
+ (Runtime/getRuntime)
+ (.addShutdownHook
+  (proxy [Thread] []
+    (run [] (when @run-tests-on-shutdown (run-all-tests))))))
 
 (defn interaction [form times]) ;;; this is never used, but it's nice for auto-completion and documentation
 
