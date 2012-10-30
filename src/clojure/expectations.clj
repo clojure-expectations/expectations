@@ -526,6 +526,10 @@
   `(def ~(vary-meta (gensym) assoc :expectation true :focused true)
      (fn [] (doexpect ~e ~a))))
 
+(defmacro expect-let-focused [bindings e a]
+  `(def ~(vary-meta (gensym) assoc :expectation true :focused true)
+     (fn [] (let ~bindings (doexpect ~e ~a)))))
+
 (defmacro given [bindings form & args]
   (if args
     `(clojure.template/do-template ~bindings ~form ~@args)
@@ -568,4 +572,19 @@
 (defmacro redef-state [namespaces & forms]
   `(with-redefs ~(default-local-vals namespaces) ~@forms))
 
+(defmacro freeze-time [time & forms]
+  `(try
+     (org.joda.time.DateTimeUtils/setCurrentMillisFixed (.getMillis ~time))
+     ~@forms
+     (finally
+       (org.joda.time.DateTimeUtils/setCurrentMillisSystem))))
+
 (def no-op (constantly nil))
+
+(defmacro context [[sym-kw val & contexts] & forms]
+  (if (empty? contexts)
+    `(~(symbol (name sym-kw)) ~val
+      ~@forms)
+    `(~(symbol (name sym-kw)) ~val
+      (context ~(vec contexts)
+               ~@forms))))

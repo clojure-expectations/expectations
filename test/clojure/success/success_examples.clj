@@ -1,6 +1,7 @@
 (ns success.success-examples
   (:use expectations)
-  (:require success.success-examples-src))
+  (:require success.success-examples-src)
+  (:import [org.joda.time DateTime]))
 
 (defrecord Foo [a b c])
 (defmacro a-macro [& args]
@@ -121,3 +122,29 @@
 
 (expect-let [x 2]
             (* x x) (+ x x))
+
+(expect-let [now (DateTime.)]
+            (freeze-time now (DateTime.))
+            (freeze-time now (DateTime.)))
+
+(expect (partial not= (DateTime. 1))
+        (do
+          (freeze-time (DateTime. 1))
+          (DateTime.)))
+
+(expect (partial not= (DateTime. 1))
+        (do
+          (try
+            (freeze-time (DateTime. 1)
+                         (throw (RuntimeException. "test finally")))
+            (catch Exception e))
+          (DateTime.)))
+
+(expect-let [now (DateTime.)]
+            (interaction (println "trades" now))
+            (context [:redef-state [success.success-examples-src]
+                      :with-redefs [vector identity
+                                    spit no-op]
+                      :freeze-time now]
+                     (spit now)
+                     (println "trades" (vector (DateTime.)))))

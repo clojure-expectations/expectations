@@ -1,5 +1,6 @@
 (ns failure.failure-examples
-  (:use expectations))
+  (:use expectations)
+  (:require success.success-examples-src))
 
 (defn two [] (/ 12 0))
 (defn one [] (two))
