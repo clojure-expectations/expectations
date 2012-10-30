@@ -150,3 +150,12 @@
 
 (expect-let [x 2]
             4 x)
+
+(expect (interaction (println "hello" {:a :b :c {:dd :ee :ff :gg}}))
+        (do
+          (println "hello")
+          (println "hello" "world" "here")
+          (println "hello" {:a 1 2 3})))
+
+(expect (interaction (println))
+        (do))
