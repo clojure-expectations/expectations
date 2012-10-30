@@ -151,11 +151,13 @@
 (expect-let [x 2]
             4 x)
 
-(expect (interaction (println "hello" {:a :b :c {:dd :ee :ff :gg}}))
+(expect (interaction (one "hello" {:a :b :c {:dd :ee :ff :gg}}))
         (do
-          (println "hello")
-          (println "hello" "world" "here")
-          (println "hello" {:a 1 2 3})))
+          (one "hello")
+          (one "hello" "world" "here")
+          (one "hello" {:a 1 2 3})))
 
-(expect (interaction (println))
+(expect (interaction (one))
         (do))
+
+(expect 1 2)
