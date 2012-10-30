@@ -581,7 +581,18 @@
 
 (def no-op (constantly nil))
 
-(defmacro context [[sym-kw val & contexts] & forms]
+(defmacro ^{:private true} assert-args [fnname & pairs]
+  `(do (when-not ~(first pairs)
+         (throw (IllegalArgumentException.
+                  ~(str fnname " requires " (second pairs)))))
+     ~(let [more (nnext pairs)]
+        (when more
+          (list* `assert-args fnname more)))))
+
+(defmacro context [[sym-kw val & contexts :as args] & forms]
+  (assert-args context
+               (vector? args) "a vector for its contexts"
+               (even? (count args)) "an even number of forms in the contexts vector")
   (if (empty? contexts)
     `(~(symbol (name sym-kw)) ~val
       ~@forms)
