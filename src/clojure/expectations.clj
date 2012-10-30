@@ -451,8 +451,9 @@
            (when actual-message (str "\n           " actual-message))
            (when message (str "\n           " message))))))
 
-(defn compare-args [white-space-header white-space f-name expected-args actual-args]
-  (str white-space-header (fn-string f-name actual-args)
+(defn compare-args [f-name expected-args actual-args]
+  (str (when (seq expected-args) "\n")
+       "\n           got: " (fn-string f-name actual-args)
        (when (seq actual-args)
          (if (= (count expected-args) (count actual-args))
            (clojure.string/join
@@ -461,8 +462,7 @@
                  (compare-expr expected-args actual-args "" "")]
              (str (when expected-message (str "\n           " expected-message))
                   (when actual-message (str "\n           " actual-message))
-                  (when message (str "\n           " message))))))
-       white-space))
+                  (when message (str "\n           " message))))))))
 
 (defn matches? [a b]
   (if (or (= a :anything) (= b :anything))
@@ -515,14 +515,9 @@
          :result (concat ["expected:" (fn-string f args)
                           (name times)
                           (compare-args
-                           "\n\n           got: "
-                           "\n                     "
                            f args (first interactions))]
                          (map
-                          (partial compare-args
-                                   "\n           &: "
-                                   "\n                     "
-                                   f args)
+                          (partial compare-args f args)
                           (rest interactions)))}))))
 
 (defmacro do-interaction-expect [[_ [f & args] times :as e] a]
