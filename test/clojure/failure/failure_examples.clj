@@ -157,6 +157,9 @@
           (one "hello" "world" "here")
           (one "hello" {:a 1 2 3})))
 
+(expect (interaction (one "hello" :anything))
+        (one "help" {:a 1 2 3}))
+
 (expect (interaction (one))
         (do))
 

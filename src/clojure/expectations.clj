@@ -442,7 +442,7 @@
 
 (defn compare-individual-args [idx arg1 arg2]
   (let [{:keys [expected-message actual-message message type]} (compare-expr arg1 arg2 "" "")]
-    (if (= type :pass)
+    (if (or (= type :pass) (= arg1 :anything))
       (str "\n                    arg" idx ": matches")
       (str
            "\n           expected arg" idx ": " arg1
@@ -512,13 +512,8 @@
                   (name times)
                   "\n                but:" f "was never called"]}
         {:type :fail
-         :result (concat ["expected:" (fn-string f args)
-                          (name times)
-                          (compare-args
-                           f args (first interactions))]
-                         (map
-                          (partial compare-args f args)
-                          (rest interactions)))}))))
+         :result (concat ["expected:" (fn-string f args) (name times)]
+                         (map (partial compare-args f args) interactions))}))))
 
 (defmacro do-interaction-expect [[_ [f & args] times :as e] a]
   `(let [expected-interactions# (atom [])]
