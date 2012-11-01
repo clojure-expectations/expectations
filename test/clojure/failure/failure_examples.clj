@@ -157,10 +157,10 @@
           (one "hello" "world" "here")
           (one "hello" {:a 1 2 3})))
 
-(expect (interaction (one "hello" :anything))
-        (one "help" {:a 1 2 3}))
 
-(expect (interaction (one))
-        (do))
+(expect (interaction (one "hello"))
+                (throw (RuntimeException. "do you see me?")))
 
-(expect 1 2)
+(expect (interaction (one
+                              (do (throw (RuntimeException. "do you see me?")))))
+                (one "hello"))

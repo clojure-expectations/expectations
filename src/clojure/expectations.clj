@@ -518,13 +518,17 @@
 (defmacro do-interaction-expect [[_ [f & args] times :as e] a]
   `(let [expected-interactions# (atom [])]
      (with-redefs [~f (comp (partial swap! expected-interactions# conj) vector)]
-       (try ~a
-            (report (compare-interaction ~(str f)
-                                         (vector ~@args)
-                                         @expected-interactions#
-                                         (or ~times :once)))
-            (catch Throwable t#
-              (compare-expr nil t# ~(pr-str e) ~(pr-str a)))))))
+       (try
+         (let [expected-args# (vector ~@args)]
+           (try ~a
+                (report (compare-interaction ~(str f)
+                                             expected-args#
+                                             @expected-interactions#
+                                             (or ~times :once)))
+                (catch Throwable t#
+                  (report (compare-expr nil t# ~(pr-str e) ~(pr-str a))))))
+         (catch Throwable t#
+           (report (compare-expr t# nil ~(pr-str e) ~(pr-str a))))))))
 
 (defmacro do-value-expect [e a]
   `(let [e# (try ~e (catch Throwable t# t#))
