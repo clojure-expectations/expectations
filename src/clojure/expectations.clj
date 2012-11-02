@@ -1,7 +1,7 @@
 (ns expectations
   (:use clojure.set)
   (:import [expectations ScenarioFailure])
-  (:require clojure.template clojure.string))
+  (:require clojure.template clojure.string clojure.pprint))
 
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
@@ -86,7 +86,7 @@
   (colorize-filename (str (last (re-seq #"[A-Za-z_\.]+" file)) ":" line)))
 
 (defn raw-str [[e a]]
-  (str "(expect " e (when (> (count e) 30) "\n                  ") " " a ")"))
+  (with-out-str (clojure.pprint/pprint `(expect ~e ~a))))
 
 (defn ^{:dynamic true} fail [test-name test-meta msg]
   (println (str "\nfailure in (" (test-file test-meta) ") : " (:ns test-meta))) (println msg))
@@ -124,7 +124,7 @@
   (let [current-test *test-var*
         message (string-join "\n"
                              [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
-                              (when-let [msg (:raw m)] (colorize-raw (str "           " (raw-str msg))))
+                              (when-let [msg (:raw m)] (colorize-raw (raw-str msg)))
                               (when-let [msg (:result m)] (str "           " (string-join " " msg)))
                               (when (or (:expected-message m) (:actual-message m) (:message m)) " ")
                               (when-let [msg (:expected-message m)] (str "           " msg))
@@ -140,7 +140,7 @@
   (let [current-test *test-var*
         message (string-join "\n"
                              [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
-                              (when raw (str "           " (colorize-raw (raw-str raw))))
+                              (when raw (colorize-raw (raw-str raw)))
                               (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
                               (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
                               (if (instance? ScenarioFailure result)
@@ -526,14 +526,14 @@
                                              @expected-interactions#
                                              (or ~times :once)))
                 (catch Throwable t#
-                  (report (compare-expr nil t# ~(pr-str e) ~(pr-str a))))))
+                  (report (compare-expr nil t# '~e '~a)))))
          (catch Throwable t#
-           (report (compare-expr t# nil ~(pr-str e) ~(pr-str a))))))))
+           (report (compare-expr t# nil '~e '~a)))))))
 
 (defmacro do-value-expect [e a]
   `(let [e# (try ~e (catch Throwable t# t#))
          a# (try ~a (catch Throwable t# t#))]
-     (report (compare-expr e# a# ~(pr-str e) ~(pr-str a)))))
+     (report (compare-expr e# a# '~e '~a))))
 
 (defmacro doexpect [e a]
   (if (and (instance? clojure.lang.PersistentList e) (= 'interaction (first e)))
