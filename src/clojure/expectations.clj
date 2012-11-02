@@ -86,7 +86,7 @@
   (colorize-filename (str (last (re-seq #"[A-Za-z_\.]+" file)) ":" line)))
 
 (defn raw-str [[e a]]
-  (with-out-str (clojure.pprint/pprint `(expect ~e ~a))))
+  (with-out-str (clojure.pprint/pprint `(~'expect ~e ~a))))
 
 (defn ^{:dynamic true} fail [test-name test-meta msg]
   (println (str "\nfailure in (" (test-file test-meta) ") : " (:ns test-meta))) (println msg))
