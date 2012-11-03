@@ -27,6 +27,11 @@
 (defn on-windows? []
   (re-find #"[Ww]in" (System/getProperty "os.name")))
 
+(defn show-raw-choice []
+  (if-let [choice (getenv "EXPECTATIONS_SHOW_RAW")]
+    (= "TRUE" (clojure.string/upper-case choice))
+    true))
+
 (defn colorize-choice []
   (clojure.string/upper-case (or (getenv "EXPECTATIONS_COLORIZE")
                                  (str (not (on-windows?))))))
@@ -98,12 +103,16 @@
 (defn ^{:dynamic true} expectation-finished [a-var])
 
 (defn ^{:dynamic true} ignored-fns [{:keys [className fileName]}]
+  (println fileName className)
   (when *prune-stacktrace*
     (or (= fileName "expectations.clj")
-        (re-seq #"clojure.lang" className)
-        (re-seq #"clojure.core" className)
-        (re-seq #"clojure.main" className)
-        (re-seq #"java.lang" className))))
+        (= fileName "NO_SOURCE_FILE")
+        (= fileName "interruptible_eval.clj")
+        (re-seq #"clojure\.lang" className)
+        (re-seq #"clojure\.core" className)
+        (re-seq #"clojure\.main" className)
+        (re-seq #"java\.lang" className)
+        (re-seq #"java\.util\.concurrent\.ThreadPoolExecutor\$Worker" className))))
 
 (defn pruned-stack-trace [t]
   (string-join "\n"
@@ -123,8 +132,10 @@
   (inc-report-counter :fail)
   (let [current-test *test-var*
         message (string-join "\n"
-                             [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
-                              (when-let [msg (:raw m)] (colorize-raw (raw-str msg)))
+                             [(when reminder
+                                (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
+                              (when-let [msg (:raw m)]
+                                (when (show-raw-choice) (colorize-raw (raw-str msg))))
                               (when-let [msg (:result m)] (str "           " (string-join " " msg)))
                               (when (or (:expected-message m) (:actual-message m) (:message m)) " ")
                               (when-let [msg (:expected-message m)] (str "           " msg))
@@ -140,7 +151,8 @@
   (let [current-test *test-var*
         message (string-join "\n"
                              [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
-                              (when raw (colorize-raw (raw-str raw)))
+                              (when raw
+                                (when (show-raw-choice) (colorize-raw (raw-str raw))))
                               (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
                               (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
                               (if (instance? ScenarioFailure result)

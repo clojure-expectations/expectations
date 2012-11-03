@@ -161,6 +161,6 @@
 (expect (interaction (one "hello"))
                 (throw (RuntimeException. "do you see me?")))
 
-(expect (interaction (one
+(expect-focused (interaction (one
                               (do (throw (RuntimeException. "do you see me?")))))
                 (one "hello"))
