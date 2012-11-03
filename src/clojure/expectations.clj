@@ -551,17 +551,21 @@
     `(do-interaction-expect ~e ~a)
     `(do-value-expect ~e ~a)))
 
-(defmacro expect [e a]
-  `(def ~(vary-meta (gensym) assoc :expectation true)
-     (fn [] (doexpect ~e ~a))))
+(defmacro expect
+  ([a] `(expect true (if ~a true false)))
+  ([e a]
+     `(def ~(vary-meta (gensym) assoc :expectation true)
+        (fn [] (doexpect ~e ~a)))))
 
 (defmacro expect-let [bindings e a]
   `(def ~(vary-meta (gensym) assoc :expectation true)
      (fn [] (let ~bindings (doexpect ~e ~a)))))
 
-(defmacro expect-focused [e a]
-  `(def ~(vary-meta (gensym) assoc :expectation true :focused true)
-     (fn [] (doexpect ~e ~a))))
+(defmacro expect-focused
+  ([a] `(expect-focused true (if ~a true false)))
+  ([e a]
+     `(def ~(vary-meta (gensym) assoc :expectation true :focused true)
+        (fn [] (doexpect ~e ~a)))))
 
 (defmacro expect-let-focused [bindings e a]
   `(def ~(vary-meta (gensym) assoc :expectation true :focused true)

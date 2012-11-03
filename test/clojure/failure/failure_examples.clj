@@ -165,6 +165,5 @@
                       (do (throw (RuntimeException. "do you see me?")))))
         (one "hello"))
 
-(expect ^{:reminder "foos and bars"}
-        {:foo 1 :bar 2}
-        (assoc {} :foo 1 :bar 2))
+(expect nil)
+(expect false)

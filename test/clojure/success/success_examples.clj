@@ -148,3 +148,7 @@
                       :freeze-time now]
                      (spit now)
                      (println "trades" (vector (DateTime.)))))
+
+(expect true)
+(expect "x")
+(expect (not false))
