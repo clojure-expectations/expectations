@@ -159,8 +159,12 @@
 
 
 (expect (interaction (one "hello"))
-                (throw (RuntimeException. "do you see me?")))
+        (throw (RuntimeException. "do you see me?")))
 
 (expect (interaction (one
-                              (do (throw (RuntimeException. "do you see me?")))))
-                (one "hello"))
+                      (do (throw (RuntimeException. "do you see me?")))))
+        (one "hello"))
+
+(expect ^{:reminder "foos and bars"}
+        {:foo 1 :bar 2}
+        (assoc {} :foo 1 :bar 2))

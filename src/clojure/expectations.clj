@@ -103,7 +103,6 @@
 (defn ^{:dynamic true} expectation-finished [a-var])
 
 (defn ^{:dynamic true} ignored-fns [{:keys [className fileName]}]
-  (println fileName className)
   (when *prune-stacktrace*
     (or (= fileName "expectations.clj")
         (= fileName "NO_SOURCE_FILE")
