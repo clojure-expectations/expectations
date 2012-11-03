@@ -24,7 +24,7 @@ The easiest way to use expectations in your own projects is via
 following dependency to your project.clj file:
 
     [expectations "1.2.1"] ; clojure 1.2
-    [expectations "1.4.11"] ; clojure 1.3
+    [expectations "1.4.17"] ; clojure 1.3
 
 To build expectations from source, run the following commands:
 
@@ -73,8 +73,6 @@ By default, expectations uses ansi escape codes to color output on non-windows e
 
 [using 'expect', 'given' and 'expanding'](http://github.com/jaycfields/expectations/blob/master/test/clojure/success/success_examples.clj)
 
-[using 'scenario' and 'stubbing'](http://github.com/jaycfields/expectations/blob/master/test/clojure/success/scenario_success_examples.clj)
-
 ## Detailed Examples with Discussion
 
 [Unit Testing Examples - Part One (Introduction)](http://blog.jayfields.com/2011/11/clojure-expectations-introduction.html)
@@ -88,10 +86,6 @@ By default, expectations uses ansi escape codes to color output on non-windows e
 [Unit Testing Examples - Part Five (Removing Duplication with 'given')](http://blog.jayfields.com/2011/11/clojure-expectations-removing.html)
 
 [Unit Testing Examples - Part Six (Wrap Up)](http://blog.jayfields.com/2011/11/clojure-expectations-unit-testing-wrap.html)
-
-[Scenario Testing Examples](http://blog.jayfields.com/2011/11/clojure-expectations-scenarios.html)
-
-[Freezing Joda Time](http://blog.jayfields.com/2012/05/clojure-freezing-time-in-expectations.html)
 
 ## License
 
