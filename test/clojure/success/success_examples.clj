@@ -127,18 +127,18 @@
             (freeze-time now (DateTime.))
             (freeze-time now (DateTime.)))
 
-(expect (partial not= (DateTime. 1))
-        (do
-          (freeze-time (DateTime. 1))
-          (DateTime.)))
+(expect (not= (DateTime. 1)
+              (do
+                (freeze-time (DateTime. 1))
+                (DateTime.))))
 
-(expect (partial not= (DateTime. 1))
-        (do
-          (try
-            (freeze-time (DateTime. 1)
-                         (throw (RuntimeException. "test finally")))
-            (catch Exception e))
-          (DateTime.)))
+(expect (not= (DateTime. 1)
+              (do
+                (try
+                  (freeze-time (DateTime. 1)
+                               (throw (RuntimeException. "test finally")))
+                  (catch Exception e))
+                (DateTime.))))
 
 (expect-let [now (DateTime.)]
             (interaction (println "trades" now))
