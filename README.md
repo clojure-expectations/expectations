@@ -31,7 +31,27 @@ To build expectations from source, run the following commands:
     lein deps
     lein jar
 
-## Getting Started
+## Getting Started With Leiningen
+
+expectations integrates with Leiningen via [lein-expectations](https://github.com/gar3thjon3s/lein-expectations).
+
+# Usage for lein-expectations:
+
+Declare `lein-expectations` in `project.clj`:
+
+```clojure
+:plugins [[lein-expectations "0.0.7"]]
+```
+
+To run all your tests:
+
+```bash
+$ lein expectations
+```
+
+You can also use [lein-autoexpect](https://github.com/jakemcc/lein-autoexpect) to automatically run expectations when your Clojure source changes.
+
+## Getting Started Otherwise
 
 By default the tests run on JVM shutdown, so all you need to do is run your clj file and you should see the expectations output.
 
@@ -56,20 +76,9 @@ At this point you should see output similar to:
 You can run the examples in expectations with:
 `java -cp "lib/*" clojure.main -i /path/to/expectations/test/clojure/success/success_examples.clj`
 
-You can also run expectations using lein if you install [lein-expectations](https://github.com/gar3thjon3s/lein-expectations).
-Use [lein-autoexpect](https://github.com/jakemcc/lein-autoexpect) to automatically
-run when your Clojure source changes.
-
-You're now ready to start using expectations as you see fit. There's
-not a ton of syntax; however, you'll probably want to take a quick
-look at the various ways you can write expectations.
-
-## Colorizing
-
-By default, expectations uses ansi escape codes to color output on non-windows environments. expectations also respects a EXPECTATIONS_COLORIZE environment variable - set the var to false if you'd like to turn off colorizing.
-[more info](http://blog.jayfields.com/2012/05/clojure-expectations-colorized.html)
-
 ## Success Examples
+
+You're now ready to start using expectations as you see fit. There's not a ton of syntax; however, you'll probably want to take a quick look at the various ways you can write expectations.
 
 [using 'expect', 'given' and 'expanding'](http://github.com/jaycfields/expectations/blob/master/test/clojure/success/success_examples.clj)
 
@@ -86,6 +95,11 @@ By default, expectations uses ansi escape codes to color output on non-windows e
 [Unit Testing Examples - Part Five (Removing Duplication with 'given')](http://blog.jayfields.com/2011/11/clojure-expectations-removing.html)
 
 [Unit Testing Examples - Part Six (Wrap Up)](http://blog.jayfields.com/2011/11/clojure-expectations-unit-testing-wrap.html)
+
+## Colorizing
+
+By default, expectations uses ansi escape codes to color output on non-windows environments. expectations also respects a EXPECTATIONS_COLORIZE environment variable - set the var to false if you'd like to turn off colorizing.
+[more info](http://blog.jayfields.com/2012/05/clojure-expectations-colorized.html)
 
 ## License
 
