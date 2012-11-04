@@ -77,7 +77,10 @@ Add simple_test.clj to your test directory
 
 Follow the directions available on [expectations-mode](https://github.com/gar3thjon3s/expectations-mode)
 
-## Getting Started With JUnit (thus IntelliJ)
+## Getting Started With IntelliJ
+
+Create a directory and mark it as a Test Source. [more info](http://www.jetbrains.com/idea/webhelp/configuring-folders-within-a-content-root.html#mark)
+For example, you can create proj/test/java and mark 'java' as a test source. Then you also create proj/test/clojure and also mark that as a test source directory.
 
 If you want all of your tests to run in JUnit all you need to do is implement ExpectationsTestRunner.TestSource.
 The following example is what I use to run all the tests in expectations with JUnit.
@@ -87,7 +90,7 @@ import expectations.junit.ExpectationsTestRunner;
 import org.junit.runner.RunWith;
 
 @RunWith(expectations.junit.ExpectationsTestRunner.class)
-public class SuccessTest implements ExpectationsTestRunner.TestSource{
+public class ClojureTests implements ExpectationsTestRunner.TestSource{
 
     public String testPath() {
         // return the path to your root test dir here
@@ -96,8 +99,16 @@ public class SuccessTest implements ExpectationsTestRunner.TestSource{
 }
 ```
 
+Create ClojureTests.java in your proj/test/java directory. Next you can create sample-test in proj/test/clojure.
 
+```clojure
+(ns simple-test
+  (:use expectations))
 
+(expect nil? nil)
+```
+
+That's it, you can now use the JUnit Test Runner built into IntelliJ to execute your expectations.
 
 ## Getting Started Otherwise
 
