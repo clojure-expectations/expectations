@@ -23,8 +23,10 @@ The easiest way to use expectations in your own projects is via
 [Leiningen](http://github.com/technomancy/leiningen). Add the
 following dependency to your project.clj file:
 
-    [expectations "1.2.1"] ; clojure 1.2
-    [expectations "1.4.17"] ; clojure 1.3
+```clojure
+[expectations "1.2.1"] ; clojure 1.2
+[expectations "1.4.17"] ; clojure 1.3
+```
 
 To build expectations from source, run the following commands:
 
@@ -60,10 +62,12 @@ By default the tests run on JVM shutdown, so all you need to do is run your clj 
 You can test that everything is working correctly by using
 expectations in a simple test.
 
-<pre>(ns simple.test
+```clojure
+(ns simple.test
   (:use expectations))
 
-(expect nil? nil)</pre>
+(expect nil? nil)
+```
 
 (assuming you've put your dependencies in a (relatively pathed) lib dir)
 
