@@ -64,6 +64,41 @@ $ lein expectations
 
 You can also use [lein-autoexpect](https://github.com/jakemcc/lein-autoexpect) to automatically run expectations when your Clojure source changes.
 
+## Getting Started With Emacs
+
+Add simple_test.clj to your test directory
+
+```clojure
+(ns simple-test
+  (:use expectations))
+
+(expect nil? nil)
+```
+
+Follow the directions available on [expectations-mode](https://github.com/gar3thjon3s/expectations-mode)
+
+## Getting Started With JUnit (thus IntelliJ)
+
+If you want all of your tests to run in JUnit all you need to do is implement ExpectationsTestRunner.TestSource.
+The following example is what I use to run all the tests in expectations with JUnit.
+
+```java
+import expectations.junit.ExpectationsTestRunner;
+import org.junit.runner.RunWith;
+
+@RunWith(expectations.junit.ExpectationsTestRunner.class)
+public class SuccessTest implements ExpectationsTestRunner.TestSource{
+
+    public String testPath() {
+        // return the path to your root test dir here
+        return "test/root/dir";
+    }
+}
+```
+
+
+
+
 ## Getting Started Otherwise
 
 By default the tests run on JVM shutdown, so all you need to do is run your clj file and you should see the expectations output.
