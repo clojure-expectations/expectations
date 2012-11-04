@@ -28,8 +28,10 @@ following dependency to your project.clj file:
 
 To build expectations from source, run the following commands:
 
-    lein deps
-    lein jar
+```bash
+$ lein deps
+$ lein jar
+```
 
 ## Getting Started With Leiningen
 
