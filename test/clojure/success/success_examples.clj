@@ -113,12 +113,87 @@
           (spit "some other stuff" "xy")
           (spit "/tmp/hello-world" "some data" :append true)))
 
+;; interaction based testing, expect zero interactions
+(expect (interaction
+         (spit "/tmp/hello-world" "some data" :append true)
+         :never)
+        (spit "some other stuff" "xy"))
+
+;; interaction based testing, expect two interactions
+(expect (interaction
+         (spit "/tmp/hello-world" "some data" :append true)
+         :twice)
+        (do
+          (spit "/tmp/hello-world" "some data" :append true)
+          (spit "/tmp/hello-world" "some data" :append true)))
+
+;; interaction based testing, expect at least one interaction
+(expect (interaction
+         (spit "/tmp/hello-world" "some data" :append true)
+         (at-least :once))
+        (spit "/tmp/hello-world" "some data" :append true))
+
+;; interaction based testing, expect at least one interaction
+(expect (interaction
+         (spit "/tmp/hello-world" "some data" :append true)
+         (at-least :once))
+        (do
+          (spit "/tmp/hello-world" "some data" :append true)
+          (spit "/tmp/hello-world" "some data" :append true)))
+
+;; interaction based testing, expect at most one interaction
+(expect (interaction
+         (spit "/tmp/hello-world" "some data" :append true)
+         (at-most :once))
+        (spit "/tmp/hello-world" "some data" :append true))
+
+;; interaction based testing, expect at most one interaction
+(expect (interaction
+         (spit "/tmp/hello-world" "some data" :append true)
+         (at-most :once))
+        (do))
+
+;; interaction based testing, expect exactly 2 interactions
+(expect (interaction
+         (spit "/tmp/hello-world" "some data" :append true)
+         (2 :times))
+        (do
+          (spit "/tmp/hello-world" "some data" :append true)
+          (spit "/tmp/hello-world" "some data" :append true)))
+
+;; interaction based testing, expect exactly 3 interactions
+(expect (interaction
+         (spit "/tmp/hello-world" "some data" :append true)
+         (3 :times))
+        (do
+          (spit "/tmp/hello-world" "some data" :append true)
+          (spit "/tmp/hello-world" "some data" :append true)
+          (spit "/tmp/hello-world" "some data" :append true)))
+
+;; interaction based testing, expect exactly 3 interactions
+(expect (interaction
+         (spit "/tmp/hello-world" "some data" :append true)
+         (at-least (2 :times)))
+        (do
+          (spit "/tmp/hello-world" "some data" :append true)
+          (spit "/tmp/hello-world" "some data" :append true)))
+
+;; interaction based testing, expect exactly 3 interactions
+(expect (interaction
+         (spit "/tmp/hello-world" "some data" :append true)
+         (at-least (2 :times)))
+        (do
+          (spit "/tmp/hello-world" "some data" :append true)
+          (spit "/tmp/hello-world" "some data" :append true)
+          (spit "/tmp/hello-world" "some data" :append true)))
+
 ;; redef state within the context of a test
 (expect :atom
-        (reset! success.success-examples-src/an-atom "atom")
-        (redef-state [success.success-examples-src]
-                     (reset! success.success-examples-src/an-atom :atom)
-                     @success.success-examples-src/an-atom))
+        (do
+          (reset! success.success-examples-src/an-atom "atom")
+          (redef-state [success.success-examples-src]
+                       (reset! success.success-examples-src/an-atom :atom)
+                       @success.success-examples-src/an-atom)))
 
 (expect "atom"
         (do

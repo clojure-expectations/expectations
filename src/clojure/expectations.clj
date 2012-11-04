@@ -453,14 +453,13 @@
 
 (defn compare-individual-args [idx arg1 arg2]
   (let [{:keys [expected-message actual-message message type]} (compare-expr arg1 arg2 "" "")]
-    (if (or (= type :pass) (= arg1 :anything))
-      (str "\n                    arg" idx ": matches")
+    (when-not (or (= type :pass) (= arg1 :anything))
       (str
-           "\n           expected arg" idx ": " arg1
-           "\n             actual arg" idx ": " arg2
-           (when expected-message (str "\n           " expected-message))
-           (when actual-message (str "\n           " actual-message))
-           (when message (str "\n           " message))))))
+       "\n           expected arg" idx ": " arg1
+       "\n             actual arg" idx ": " arg2
+       (when expected-message (str "\n           " expected-message))
+       (when actual-message (str "\n           " actual-message))
+       (when message (str "\n           " message))))))
 
 (defn compare-args [f-name expected-args actual-args]
   (str (when (seq expected-args) "\n")
@@ -512,19 +511,48 @@
                          (partial fn-string function))
                    (rest interactions)))}))))
 
-(defn compare-interaction [f args interactions times]
-  (let [actual-times (count (filter (matching args) interactions))
-        expected-times (times {:never 0 :once 1 :twice 2})]
-    (if (= expected-times actual-times)
+(defn compare-interaction [f args interactions {:keys [times-fn times]} raw-times]
+  (let [actual-times (count (filter (matching args) interactions))]
+    (if (times-fn times actual-times)
       {:type :pass}
       (if (empty? interactions)
         {:type :fail
          :result ["expected:" (fn-string f args)
-                  (name times)
+                  raw-times
                   "\n                but:" f "was never called"]}
         {:type :fail
-         :result (concat ["expected:" (fn-string f args) (name times)]
+         :result (concat ["expected:" (fn-string f args) raw-times
+                          "\n                got:" (fn-string f args) actual-times "times"]
                          (map (partial compare-args f args) interactions))}))))
+
+(defn ->number-of-times [times]
+  (cond
+    (= times :never) 0
+    (= times :once) 1
+    (= times :twice) 2
+    (and (list? times) (number? (first times)) (= :times (last times))) (first times)
+    :detault `(throw (RuntimeException.
+                      (str '~times
+                           " is not a supported number of interactions."
+                           " use :never, :once, :twice or"
+                           " (x times) where x is a number - e.g. (5 times)")))))
+
+(defn ->times [times]
+  (cond
+   (nil? times) {:times-fn = :times 1}
+   (keyword? times) {:times-fn = :times (->number-of-times times)}
+   (and (list? times) (number? (first times)) (= :times (last times))) {:times-fn =
+                                                                        :times (first times)}
+   (and (list? times) (= 'at-least (first times))) {:times-fn <=
+                                                    :times (->number-of-times (last times))}
+        (and (list? times) (= 'at-most (first times))) {:times-fn >=
+                                                        :times (->number-of-times
+                                                                (last times))}
+   :default `(throw (RuntimeException.
+                    (str '~times
+                         " is not a supported number of interaction times."
+                         " use :never, :once, :twice, (at-least ..) (at-most ..), or"
+                         " (x times) where x is a number - e.g. (5 times).")))))
 
 (defmacro do-interaction-expect [[_ [f & args] times :as e] a]
   `(let [expected-interactions# (atom [])]
@@ -535,7 +563,8 @@
                 (report (compare-interaction ~(str f)
                                              expected-args#
                                              @expected-interactions#
-                                             (or ~times :once)))
+                                             ~(->times times)
+                                             '~times))
                 (catch Throwable t#
                   (report (compare-expr nil t# '~e '~a)))))
          (catch Throwable t#
