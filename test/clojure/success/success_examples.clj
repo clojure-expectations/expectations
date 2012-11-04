@@ -3,9 +3,10 @@
   (:require success.success-examples-src)
   (:import [org.joda.time DateTime]))
 
-(defrecord Foo [a b c])
-(defmacro a-macro [& args]
-  `(println ~@args))
+
+(expect true)
+(expect "x")
+(expect (not false))
 
 ;; number equality
 (expect 1 (do 1))
@@ -13,10 +14,12 @@
 ;; string equality
 (expect "foo" (identity "foo"))
 
-                                        ; map equality
+;; map equality
 (expect {:foo 1 :bar 2 :car 4} (assoc {} :foo 1 :bar 2 :car 4))
 
 ;; record equality
+(defrecord Foo [a b c])
+
 (expect (->Foo :a :b :c) (->Foo :a :b :c))
 
 ;; is the regex in the string
@@ -66,6 +69,9 @@
 (expect (sorted-map-by > 1 :a 2 :b) (sorted-map-by > 1 :a 2 :b))
 
 ;; macro expansion
+(defmacro a-macro [& args]
+  `(println ~@args))
+
 (expect '(clojure.core/println 1 2 (println 100) 3)
         (expanding (a-macro 1 2 (println 100) 3)))
 
@@ -101,37 +107,42 @@
        fn? +
        empty? [])
 
-(expect (interaction (spit "/tmp/herrow-world" "some dater" :append true))
+;; interaction based testing
+(expect (interaction (spit "/tmp/hello-world" "some data" :append true))
         (do
           (spit "some other stuff" "xy")
-          (spit "/tmp/herrow-world" "some dater" :append true)))
+          (spit "/tmp/hello-world" "some data" :append true)))
 
+;; redef state within the context of a test
 (expect :atom
+        (reset! success.success-examples-src/an-atom "atom")
         (redef-state [success.success-examples-src]
                      (reset! success.success-examples-src/an-atom :atom)
                      @success.success-examples-src/an-atom))
 
 (expect "atom"
         (do
+          (reset! success.success-examples-src/an-atom "atom")
           (redef-state [success.success-examples-src]
                        (reset! success.success-examples-src/an-atom :atom))
           @success.success-examples-src/an-atom))
 
-(expect-let [x 1]
-            x x)
-
+;; use expect-let to share a value between the actual and expected forms
 (expect-let [x 2]
             (* x x) (+ x x))
 
+;; use freeze-time to set the current time while a test is running
 (expect-let [now (DateTime.)]
             (freeze-time now (DateTime.))
             (freeze-time now (DateTime.)))
 
+;; freeze-time only affects wrapped forms
 (expect (not= (DateTime. 1)
               (do
                 (freeze-time (DateTime. 1))
                 (DateTime.))))
 
+;; freeze-time resets the frozen time even when an exception occurs
 (expect (not= (DateTime. 1)
               (do
                 (try
@@ -140,6 +151,7 @@
                   (catch Exception e))
                 (DateTime.))))
 
+;; use context to limit the number of indentions while using redef-state, with-redefs or freeze-time
 (expect-let [now (DateTime.)]
             (interaction (println "trades" now))
             (context [:redef-state [success.success-examples-src]
@@ -148,7 +160,3 @@
                       :freeze-time now]
                      (spit now)
                      (println "trades" (vector (DateTime.)))))
-
-(expect true)
-(expect "x")
-(expect (not false))
