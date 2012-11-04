@@ -97,9 +97,7 @@ $ java -cp "lib/*" clojure.main -i /path/to/expectations/test/clojure/success/su
 
 ## Examples
 
-You're now ready to start using expectations as you see fit. There's not a ton of syntax; however, you'll probably want to take a quick look at the various ways you can write expectations.
-
-[Examples Of expectations Syntax](http://github.com/jaycfields/expectations/blob/master/test/clojure/success/success_examples.clj)
+You're now ready to start using expectations as you see fit. There's not a ton of syntax; however, you'll probably want to take a quick look at the various ways you can write expectations: [Syntax Examples](http://github.com/jaycfields/expectations/blob/master/test/clojure/success/success_examples.clj)
 
 ## Detailed Examples with Discussion
 
