@@ -102,15 +102,23 @@ You're now ready to start using expectations as you see fit. There's not a ton o
 ## Detailed Examples with Discussion
 
 [Unit Testing Examples - Part One (Introduction)](http://blog.jayfields.com/2011/11/clojure-expectations-introduction.html)
+
 [Unit Testing Examples - Part Two (Non-Equality)](http://blog.jayfields.com/2011/11/clojure-non-equality-expectations.html)
+
 [Unit Testing Examples - Part Three (Using Values)](http://blog.jayfields.com/2011/11/clojure-expectations-with-values-in.html)
+
 [Unit Testing Examples - Part Four (Testing Double/NaN)](http://blog.jayfields.com/2011/11/clojure-expectations-and-doublenan.html)
+
 [Unit Testing Examples - Part Five (Removing Duplication with 'given')](http://blog.jayfields.com/2011/11/clojure-expectations-removing.html)
+
 [Unit Testing Examples - Part Six (Wrap Up)](http://blog.jayfields.com/2011/11/clojure-expectations-unit-testing-wrap.html)
 
 [Use expect-let To Share A Value Between expected And actual](http://blog.jayfields.com/2012/11/clojure-use-expect-let-to-share-value.html)
+
 [Freezing Time Added To expectations](http://blog.jayfields.com/2012/11/clojure-freezing-time-added-to.html)
+
 [Interaction Based Testing Added To expectations](http://blog.jayfields.com/2012/11/clojure-interaction-based-testing-added.html)
+
 [redef-state Added To expectations](http://blog.jayfields.com/2012/10/clojure-redef-state-added-to.html)
 
 ## Colorizing
