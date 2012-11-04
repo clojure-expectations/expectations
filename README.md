@@ -35,7 +35,7 @@ To build expectations from source, run the following commands:
 
 expectations integrates with Leiningen via [lein-expectations](https://github.com/gar3thjon3s/lein-expectations).
 
-# Usage for lein-expectations:
+### Usage for lein-expectations:
 
 Declare `lein-expectations` in `project.clj`:
 
