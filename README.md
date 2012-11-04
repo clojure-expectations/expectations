@@ -37,6 +37,15 @@ $ lein jar
 
 ## Getting Started With Leiningen
 
+Add simple_test.clj to your test directory
+
+```clojure
+(ns simple-test
+  (:use expectations))
+
+(expect nil? nil)
+```
+
 expectations integrates with Leiningen via [lein-expectations](https://github.com/gar3thjon3s/lein-expectations).
 
 ### Usage for lein-expectations:
