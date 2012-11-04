@@ -72,7 +72,9 @@ expectations in a simple test.
 (assuming you've put your dependencies in a (relatively pathed) lib dir)
 
 Running your clj should be similar to:
-`java -cp "lib/*" clojure.main -i /path/to/your/simple/test.clj`
+```bash
+$ java -cp "lib/*" clojure.main -i /path/to/your/simple/test.clj
+```
 
 At this point you should see output similar to:
 
@@ -80,7 +82,9 @@ At this point you should see output similar to:
 0 failures, 0 errors.</pre>
 
 You can run the examples in expectations with:
-`java -cp "lib/*" clojure.main -i /path/to/expectations/test/clojure/success/success_examples.clj`
+```bash
+$ java -cp "lib/*" clojure.main -i /path/to/expectations/test/clojure/success/success_examples.clj
+```
 
 ## Success Examples
 
