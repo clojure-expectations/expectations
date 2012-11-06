@@ -3,7 +3,7 @@
   (:require success.success-examples-src)
   (:import [org.joda.time DateTime]))
 
-
+;; expect a truthy value
 (expect true)
 (expect "x")
 (expect (not false))
