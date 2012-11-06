@@ -165,8 +165,8 @@
                       (do (throw (RuntimeException. "do you see me?")))))
         (one "hello"))
 
-(expect (interaction (spit Integer #"some data not found" symbol? (contains-kvs 1 2)))
-        (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))
+(expect (interaction (spit Integer #"some data not found" (contains-kvs 1 2 :c :d :x {:y nil}) symbol?))
+        (spit "/tmp/hello-world" "some data" {:a :b :c :d :e :f} :append))
 
 (expect (contains-kvs 1 2) {:a :b})
 
