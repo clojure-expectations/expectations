@@ -1,7 +1,7 @@
 (ns expectations
   (:use clojure.set)
   (:import [expectations ScenarioFailure])
-  (:require clojure.template clojure.string clojure.pprint))
+  (:require clojure.template clojure.string clojure.pprint clojure.data))
 
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
@@ -462,15 +462,14 @@
   (let [{:keys [expected-message actual-message message type]} (compare-expr arg1 arg2 "" "")]
     (when-not (or (= type :pass) (= arg1 :anything))
       (str
-       "\n           expected arg" idx ": " arg1
-       "\n             actual arg" idx ": " arg2
+       "\n           - arg" idx ": " arg2
        (when expected-message (str "\n           " expected-message))
        (when actual-message (str "\n           " actual-message))
        (when message (str "\n           " message))))))
 
 (defn compare-args [f-name expected-args actual-args]
   (str (when (seq expected-args) "\n")
-       "\n           got: " (fn-string f-name actual-args)
+       "\n           -- got: " (fn-string f-name actual-args)
        (when (seq actual-args)
          (if (= (count expected-args) (count actual-args))
            (clojure.string/join
@@ -517,31 +516,31 @@
                          (partial fn-string function))
                    (rest interactions)))}))))
 
-(defn compare-interaction [f args interactions {:keys [times-fn times]} raw-times]
+(defn compare-interaction [expected-expr f args interactions {:keys [times-fn times]} raw-times]
   (let [actual-times (count (filter (partial matching args) interactions))]
     (if (times-fn times actual-times)
       {:type :pass}
       (if (empty? interactions)
         {:type :fail
-         :result ["expected:" (fn-string f args)
+         :result ["expected:" expected-expr
                   raw-times
                   "\n                but:" f "was never called"]}
         {:type :fail
-         :result (concat ["expected:" (fn-string f args) raw-times
-                          "\n                got:" (fn-string f args) actual-times "times"]
+         :result (concat ["expected:" expected-expr raw-times
+                          "\n                got:" actual-times "times"]
                          (map (partial compare-args f args) interactions))}))))
 
 (defn ->number-of-times [times]
   (cond
-    (= times :never) 0
-    (= times :once) 1
-    (= times :twice) 2
-    (and (list? times) (number? (first times)) (= :times (last times))) (first times)
-    :detault `(throw (RuntimeException.
-                      (str '~times
-                           " is not a supported number of interactions."
-                           " use :never, :once, :twice or"
-                           " (x times) where x is a number - e.g. (5 times)")))))
+   (= times :never) 0
+   (= times :once) 1
+   (= times :twice) 2
+   (and (list? times) (number? (first times)) (= :times (last times))) (first times)
+   :detault `(throw (RuntimeException.
+                     (str '~times
+                          " is not a supported number of interactions."
+                          " use :never, :once, :twice or"
+                          " (x times) where x is a number - e.g. (5 times)")))))
 
 (defn ->times [times]
   (cond
@@ -551,22 +550,23 @@
                                                                         :times (first times)}
    (and (list? times) (= 'at-least (first times))) {:times-fn <=
                                                     :times (->number-of-times (last times))}
-        (and (list? times) (= 'at-most (first times))) {:times-fn >=
-                                                        :times (->number-of-times
-                                                                (last times))}
+   (and (list? times) (= 'at-most (first times))) {:times-fn >=
+                                                   :times (->number-of-times
+                                                           (last times))}
    :default `(throw (RuntimeException.
-                    (str '~times
-                         " is not a supported number of interaction times."
-                         " use :never, :once, :twice, (at-least ..) (at-most ..), or"
-                         " (x times) where x is a number - e.g. (5 times).")))))
+                     (str '~times
+                          " is not a supported number of interaction times."
+                          " use :never, :once, :twice, (at-least ..) (at-most ..), or"
+                          " (x times) where x is a number - e.g. (5 times).")))))
 
-(defmacro do-interaction-expect [[_ [f & args] times :as e] a]
+(defmacro do-interaction-expect [[_ [f & args :as expected-expr] times :as e] a]
   `(let [expected-interactions# (atom [])]
      (with-redefs [~f (comp (partial swap! expected-interactions# conj) vector)]
        (try
          (let [expected-args# (vector ~@args)]
            (try ~a
-                (report (compare-interaction ~(str f)
+                (report (compare-interaction '~expected-expr
+                                             ~(str f)
                                              expected-args#
                                              @expected-interactions#
                                              ~(->times times)
@@ -675,3 +675,8 @@
     `(~(symbol (name sym-kw)) ~val
       (context ~(vec contexts)
                ~@forms))))
+
+(defn pairs [submap]
+  (fn
+    [fullmap]
+    (nil? (second (clojure.data/diff fullmap submap)))))
