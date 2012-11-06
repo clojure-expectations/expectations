@@ -481,16 +481,15 @@
                   (when actual-message (str "\n           " actual-message))
                   (when message (str "\n           " message))))))))
 
-(defn matches? [a b]
-  (if (or (= a :anything) (= b :anything))
+(defn matches? [e-arg a-arg]
+  (if (= e-arg :anything)
     true
-    (= a b)))
+    (-> (compare-expr e-arg a-arg nil nil) :type (= :pass))))
 
-(defn matching [expected-args]
-  (fn [interaction]
-    (and
-     (= (count interaction) (count expected-args))
-     (every? true? (map matches? interaction (seq expected-args))))))
+(defn matching [expected-args interaction]
+  (and
+   (= (count interaction) (count expected-args))
+   (every? true? (map matches? (seq expected-args) interaction))))
 
 (defmethod compare-expr ::interaction [{:keys [function
                                                interactions
@@ -498,7 +497,7 @@
                                        expected-times-keyword
                                        str-e
                                        str-a]
-  (let [actual-times (count (filter (matching expected-args) interactions))
+  (let [actual-times (count (filter (partial matching expected-args) interactions))
         expected-times (expected-times-keyword {:never 0 :once 1 :twice 2})]
     (if (= expected-times actual-times)
       {:type :pass}
@@ -519,7 +518,7 @@
                    (rest interactions)))}))))
 
 (defn compare-interaction [f args interactions {:keys [times-fn times]} raw-times]
-  (let [actual-times (count (filter (matching args) interactions))]
+  (let [actual-times (count (filter (partial matching args) interactions))]
     (if (times-fn times actual-times)
       {:type :pass}
       (if (empty? interactions)

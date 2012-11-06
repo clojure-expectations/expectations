@@ -107,10 +107,6 @@
        fn? +
        empty? [])
 
-;; (expect (interaction (spit String "some data" :append true))
-;;         (do
-;;           (spit "/tmp/hello-world" "some data" :append true)))
-
 ;; interaction based testing
 (expect (interaction (spit "/tmp/hello-world" "some data" :append true))
         (do
@@ -190,6 +186,14 @@
           (spit "/tmp/hello-world" "some data" :append true)
           (spit "/tmp/hello-world" "some data" :append true)
           (spit "/tmp/hello-world" "some data" :append true)))
+
+;; interaction based test where the args are matched
+;; by something other than equality
+;; - the first arg is checked to be a String
+;; - the second arg is checked to see if it matches a regex
+;; - the third arg is verified via a function
+(expect (interaction (spit String #"some da" keyword? true))
+        (spit "/tmp/hello-world" "some data" :append true))
 
 ;; redef state within the context of a test
 (expect :atom
