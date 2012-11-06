@@ -107,6 +107,10 @@
        fn? +
        empty? [])
 
+;; (expect (interaction (spit String "some data" :append true))
+;;         (do
+;;           (spit "/tmp/hello-world" "some data" :append true)))
+
 ;; interaction based testing
 (expect (interaction (spit "/tmp/hello-world" "some data" :append true))
         (do
@@ -170,7 +174,7 @@
           (spit "/tmp/hello-world" "some data" :append true)
           (spit "/tmp/hello-world" "some data" :append true)))
 
-;; interaction based testing, expect exactly 3 interactions
+;; interaction based testing, expect at least 2 interactions
 (expect (interaction
          (spit "/tmp/hello-world" "some data" :append true)
          (at-least (2 :times)))
@@ -178,7 +182,7 @@
           (spit "/tmp/hello-world" "some data" :append true)
           (spit "/tmp/hello-world" "some data" :append true)))
 
-;; interaction based testing, expect exactly 3 interactions
+;; interaction based testing, expect at least 2 interactions
 (expect (interaction
          (spit "/tmp/hello-world" "some data" :append true)
          (at-least (2 :times)))
@@ -235,3 +239,9 @@
                       :freeze-time now]
                      (spit now)
                      (println "trades" (vector (DateTime.)))))
+
+;; ensure equality matching where possible
+(expect no-op no-op)
+(expect java.util.AbstractMap java.util.HashMap)
+(expect #"a" #"a")
+(expect RuntimeException RuntimeException)

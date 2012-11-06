@@ -315,12 +315,11 @@
      :message (when-let [messages (map-diff-message e a "")] (string-join "\n           " messages))}))
 
 (defmulti compare-expr (fn [e a str-e str-a]
-
                          (cond
-                          (isa? e Throwable) ::expect-exception
+                          (and (isa? e Throwable) (not= e a)) ::expect-exception
                           (instance? Throwable e) ::expected-exception
                           (instance? Throwable a) ::actual-exception
-                          (fn? e) ::fn
+                          (and (fn? e) (not= e a)) ::fn
                           (and (not (sorted? a)) (::in-flag a)) ::in
                           (and (not (sorted? e)) (::interaction-flag e)) ::interaction
                           :default [(class e) (class a)])))
@@ -363,6 +362,11 @@
      :expected-message (str "expected: " a " to be an instance of " e)
      :actual-message (str "     was: " a " is an instance of " (class a))}))
 
+(defmethod compare-expr [Class Class] [e a str-e str-a]
+  (if (isa? a e)
+    {:type :pass}
+    {:type :fail :raw [str-e str-a]
+     :expected-message (str "expected: " a " to be a " e)}))
 
 (defmethod compare-expr ::actual-exception [e a str-e str-a]
   {:type :error
@@ -375,6 +379,9 @@
    :raw [str-e str-a]
    :expected-message (str "exception in expected: " str-e)
    :result e})
+
+(defmethod compare-expr [java.util.regex.Pattern java.util.regex.Pattern] [e a str-e str-a]
+  (compare-expr (.pattern e) (.pattern a) str-e str-a))
 
 (defmethod compare-expr [java.util.regex.Pattern Object] [e a str-e str-a]
   (if (re-seq e a)
