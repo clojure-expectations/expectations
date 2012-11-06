@@ -459,6 +459,7 @@
   (str "(" f-name (when (seq f-args) " ") (string-join " " (map pr-str f-args)) ")"))
 
 (defn compare-individual-args [idx arg1 arg2]
+  (println (meta arg1) (meta arg2))
   (let [{:keys [expected-message actual-message message type]} (compare-expr arg1 arg2 "" "")]
     (when-not (or (= type :pass) (= arg1 :anything))
       (str
@@ -676,7 +677,5 @@
       (context ~(vec contexts)
                ~@forms))))
 
-(defn pairs [submap]
-  (fn
-    [fullmap]
-    (nil? (second (clojure.data/diff fullmap submap)))))
+(defn contains-kvs? [m & {:as kvs}]
+  (nil? (second (clojure.data/diff m kvs))))
