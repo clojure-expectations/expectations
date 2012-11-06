@@ -3,6 +3,9 @@
   (:import [expectations ScenarioFailure])
   (:require clojure.template clojure.string clojure.pprint clojure.data))
 
+(defn in [n] {::in n ::in-flag true})
+(defn contains-kvs [& {:as kvs}] {::contains-kvs kvs ::contains-kvs-flag true})
+
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
 (def lib-namespaces (set (all-ns)))
@@ -321,6 +324,7 @@
                           (instance? Throwable a) ::actual-exception
                           (and (fn? e) (not= e a)) ::fn
                           (and (not (sorted? a)) (::in-flag a)) ::in
+                          (and (not (sorted? e)) (::contains-kvs-flag e)) ::contains-kvs
                           (and (not (sorted? e)) (::interaction-flag e)) ::interaction
                           :default [(class e) (class a)])))
 
@@ -334,8 +338,10 @@
 (defmethod compare-expr ::fn [e a str-e str-a]
   (if (e a)
     {:type :pass}
-    {:type :fail :raw [str-e str-a]
-     :result [(pr-str a) "is not" str-e]}))
+    {:type :fail :raw [str-e str-a] :result [(pr-str a) "is not" str-e]}))
+
+(defmethod compare-expr ::contains-kvs [{e ::contains-kvs} a str-e str-a]
+  (compare-expr e (in a) str-e str-a))
 
 (defmethod compare-expr ::in [e a str-e str-a]
   (cond
@@ -459,7 +465,6 @@
   (str "(" f-name (when (seq f-args) " ") (string-join " " (map pr-str f-args)) ")"))
 
 (defn compare-individual-args [idx arg1 arg2]
-  (println (meta arg1) (meta arg2))
   (let [{:keys [expected-message actual-message message type]} (compare-expr arg1 arg2 "" "")]
     (when-not (or (= type :pass) (= arg1 :anything))
       (str
@@ -612,7 +617,6 @@
     `(clojure.template/do-template ~bindings ~form ~@args)
     `(clojure.template/do-template [~'x ~'y] ~(list 'expect 'y (list 'x bindings)) ~@(rest form))))
 
-(defn in [n] {::in n ::in-flag true})
 (defmacro expanding [n] (list 'quote  (macroexpand-1 n)))
 
 (->
@@ -676,6 +680,3 @@
     `(~(symbol (name sym-kw)) ~val
       (context ~(vec contexts)
                ~@forms))))
-
-(defn contains-kvs? [m & {:as kvs}]
-  (nil? (second (clojure.data/diff m kvs))))

@@ -43,7 +43,7 @@
 ;; val in list
 (expect :foo (in (conj [:bar] :foo)))
 
-(expect (pairs {:a :b :c :d})
+(expect (contains-kvs :a :b :c :d)
         {:a :b :c :d :e :f})
 
 ;; expect boolean
@@ -195,7 +195,7 @@
 ;; - the first arg is checked to be a String
 ;; - the second arg is checked to see if it matches a regex
 ;; - the third arg is verified via a function
-(expect (interaction (spit String #"some da" keyword? #(contains-kvs? % :a :b :c :d)))
+(expect (interaction (spit String #"some da" keyword? (contains-kvs :a :b :c :d)))
         (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))
 
 ;; redef state within the context of a test
