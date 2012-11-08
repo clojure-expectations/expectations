@@ -8,6 +8,7 @@
 
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
+(def warn-on-iref-updates-boolean (atom false))
 (def lib-namespaces (set (all-ns)))
 
 (def ^{:dynamic true} *test-name* "test name unset")
@@ -42,6 +43,7 @@
 (def ansi-colors {:reset "[0m"
                   :red     "[31m"
                   :blue    "[34m"
+                  :yellow    "[33m"
                   :cyan    "[36m"
                   :green   "[32m"
                   :magenta "[35m"})
@@ -71,7 +73,7 @@
 
 (defn colorize-warn [s]
   (condp = (colorize-choice)
-    "TRUE" (color :magenta s)
+    "TRUE" (color :yellow s)
     s))
 
 (defn string-join [s coll]
@@ -175,6 +177,33 @@
 ;; TEST RUNNING
 
 (defn disable-run-on-shutdown [] (reset! run-tests-on-shutdown false))
+(defn warn-on-iref-updates [] (reset! warn-on-iref-updates-boolean true))
+
+(comment (defn binding-&-localized-valxxx [var]
+           (when (bound? var)
+             (when-let [vv (var-get var)]
+               (when (#{} (class vv))
+                 [(var->symbol var) (list 'localize (var->symbol var))])))))
+
+(defn find-every-iref []
+  (->> (all-ns)
+       (remove #(re-seq #"(clojure\.|expectations)" (str (.name %))))
+       (mapcat (comp vals ns-interns))
+       (filter bound?)
+       (keep #(when-let [val (var-get %)] [% val]))
+       (filter (comp #{clojure.lang.Agent clojure.lang.Atom clojure.lang.Ref} class second))))
+
+(defn add-watch-every-iref-for-updates []
+  (doseq [[var iref] (find-every-iref)]
+    (add-watch iref ::expectations-watching-state-modifications
+               (fn [_ reference old-state new-state]
+                 (println (colorize-warn
+                           (clojure.string/join " "
+                                                ["WARNING:"
+                                                 *test-name*
+                                                 "modified" var
+                                                 "from" (pr-str old-state)
+                                                 "to" (pr-str new-state)])))))))
 
 (defn test-var [v]
   (when-let [t (var-get v)]
@@ -192,7 +221,27 @@
             (.printStackTrace e))))
       (finished tn tm))))
 
+(defn find-before-run-vars []
+  (->>
+   (all-ns)
+   (mapcat (comp vals ns-interns))
+   (filter (comp (partial = :before-run) :expectations-options meta))))
+
+(defn execute-vars [vars]
+  (doseq [var vars]
+    (when (bound? var)
+      (when-let [vv (var-get var)]
+        (vv)))))
+
 (defn test-vars [vars ignored-expectations]
+  (remove-ns 'expectations-options)
+  (try
+    (require 'expectations-options :reload)
+    (catch java.io.FileNotFoundException e))
+
+  (-> (find-before-run-vars) (execute-vars))
+  (when @warn-on-iref-updates-boolean
+    (add-watch-every-iref-for-updates))
   (binding [*report-counters* (ref *initial-report-counters*)]
     (let [ns->vars (group-by (comp :ns meta) vars)
           start (System/nanoTime)]
