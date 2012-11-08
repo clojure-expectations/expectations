@@ -179,12 +179,6 @@
 (defn disable-run-on-shutdown [] (reset! run-tests-on-shutdown false))
 (defn warn-on-iref-updates [] (reset! warn-on-iref-updates-boolean true))
 
-(comment (defn binding-&-localized-valxxx [var]
-           (when (bound? var)
-             (when-let [vv (var-get var)]
-               (when (#{} (class vv))
-                 [(var->symbol var) (list 'localize (var->symbol var))])))))
-
 (defn find-every-iref []
   (->> (all-ns)
        (remove #(re-seq #"(clojure\.|expectations)" (str (.name %))))
