@@ -608,7 +608,7 @@
                           " use :never, :once, :twice, (at-least ..) (at-most ..), or"
                           " (x times) where x is a number - e.g. (5 times).")))))
 
-(defmacro do-interaction-expect [[_ [f & args :as expected-expr] times :as e] a]
+(defmacro do-fn-interaction-expect [[_ [f & args :as expected-expr] times :as e] a]
   `(let [expected-interactions# (atom [])]
      (with-redefs [~f (comp (partial swap! expected-interactions# conj) vector)]
        (try
@@ -624,6 +624,47 @@
                   (report (compare-expr nil t# '~e '~a)))))
          (catch Throwable t#
            (report (compare-expr t# nil '~e '~a)))))))
+
+(defn ->number-of-mock-times [times]
+  (cond
+   (= times :never) 0
+   (= times :once) 1
+   (= times :twice) 2
+   (and (list? times) (number? (first times)) (= :times (last times))) (first times)
+   :detault `(throw (RuntimeException.
+                     (str '~times
+                          " is not a supported number of interactions."
+                          " use :never, :once, :twice or"
+                          " (x times) where x is a number - e.g. (5 times)")))))
+
+(defn ->mock-times [times]
+  (cond
+   (nil? times) '(org.mockito.Mockito/times 1)
+   (keyword? times) `(org.mockito.Mockito/times ~(->number-of-mock-times times))
+   (and (list? times) (number? (first times)) (= :times (last times))) `(org.mockito.Mockito/times ~(first times))
+   (and (list? times) (= 'at-least (first times))) `(org.mockito.Mockito/atLeast ~(->number-of-mock-times (last times)))
+   (and (list? times) (= 'at-most (first times))) `(org.mockito.Mockito/atMost ~(->number-of-mock-times (last times)))
+   :default `(throw (RuntimeException.
+                     (str '~times
+                          " is not a supported number of interaction times."
+                          " use :never, :once, :twice, (at-least ..) (at-most ..), or"
+                          " (x times) where x is a number - e.g. (5 times).")))))
+
+(defmacro do-mock-interaction-expect [[_ [method o & args] times :as e] a]
+  `(try
+     ~a
+     (try
+       (~'verify ~o ~(->mock-times times) (~method ~@args))
+       (report {:type :pass})
+       (catch Throwable t#
+         (report (compare-expr t# nil '~e '~a))))
+     (catch Throwable t#
+       (report (compare-expr nil t# '~e '~a)))))
+
+(defmacro do-interaction-expect [[_ [f & args :as expected-expr] times :as e] a]
+  (if (= \. (first (name f)))
+    `(do-mock-interaction-expect ~e ~a)
+    `(do-fn-interaction-expect ~e ~a)))
 
 (defmacro do-value-expect [e a]
   `(let [e# (try ~e (catch Throwable t# t#))
@@ -668,7 +709,9 @@
   (proxy [Thread] []
     (run [] (when @run-tests-on-shutdown (run-all-tests))))))
 
-(defn interaction [form times]) ;;; this is never used, but it's nice for auto-completion and documentation
+(defn interaction
+  ([form])
+  ([form times])) ;;; this is never used, but it's nice for auto-completion and documentation
 
 (defn var->symbol [v]
   (symbol (str (.ns v) "/" (.sym v))))

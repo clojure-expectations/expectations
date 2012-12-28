@@ -1,4 +1,4 @@
-(defproject expectations "1.4.22"
+(defproject expectations "1.4.23"
   :description "testing framework"
   :jar-name "expectations.jar"
   :java-source-paths ["src/java"]
@@ -8,4 +8,5 @@
   :plugins [[lein-expectations "0.0.7"]
             [lein-publishers "1.0.4"]]
   :profiles {:dev {:dependencies [[joda-time/joda-time "2.1"]
-                                  [junit/junit "4.8.1"]]}})
+                                  [junit/junit "4.8.1"]
+                                  [erajure/erajure "0.0.3"]]}})

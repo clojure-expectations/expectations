@@ -1,5 +1,5 @@
 (ns failure.failure-examples
-  (:use expectations)
+  (:use expectations erajure.core)
   (:require success.success-examples-src))
 
 (defn two [] (/ 12 0))
@@ -172,3 +172,46 @@
 
 (expect nil)
 (expect false)
+
+;; mock interaction based testing
+(expect-let [r (mock Runnable)]
+            (interaction (.run r))
+            (do))
+
+;; mock interaction based testing, expect zero interactions
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) :never)
+            (.get l 1))
+
+;; mock interaction based testing, expect two interactions
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) :twice)
+            (.get l 1))
+
+;; mock interaction based testing, expect at least one interaction
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (at-least :once))
+            (do))
+
+;; mock interaction based testing, expect at most one interaction
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (at-most :once))
+            (do (.get l 1)
+                (.get l 1)))
+
+;; mock interaction based testing, expect exactly 2 interactions
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (2 :times))
+            (.get l 1))
+
+;; mock interaction based testing, expect exactly 3 interactions
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (3 :times))
+            (do
+              (.get l 1)
+              (.get l 1)))
+
+;; mock interaction based testing, expect at least 2 interactions
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (at-least (2 :times)))
+            (.get l 1))

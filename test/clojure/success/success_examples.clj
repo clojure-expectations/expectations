@@ -1,5 +1,5 @@
 (ns success.success-examples
-  (:use expectations)
+  (:use expectations erajure.core)
   (:require success.success-examples-src)
   (:import [org.joda.time DateTime]))
 
@@ -197,6 +197,84 @@
 ;; - the third arg is verified via a function
 (expect (interaction (spit String #"some da" keyword? (contains-kvs :a :b :c :d)))
         (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))
+
+(expect (interaction (no-op "runnable run called"))
+        (.run (reify Runnable
+                (run [_]
+                  (no-op "runnable run called")))))
+
+;; mock interaction based testing
+(expect-let [r (mock Runnable)]
+            (interaction (.run r))
+            (.run r))
+
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1))
+            (.get l 1))
+
+;; mock interaction based testing, expect zero interactions
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) :never)
+            (.get l 2))
+
+;; mock interaction based testing, expect two interactions
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) :twice)
+            (do
+              (.get l 1)
+              (.get l 1)))
+
+;; mock interaction based testing, expect at least one interaction
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (at-least :once))
+            (.get l 1))
+
+;; mock interaction based testing, expect at least one interaction
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (at-least :once))
+            (do
+              (.get l 1)
+              (.get l 1)))
+
+;; mock interaction based testing, expect at most one interaction
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (at-most :once))
+            (.get l 1))
+
+;; mock interaction based testing, expect at most one interaction
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (at-most :once))
+            (do))
+
+;; mock interaction based testing, expect exactly 2 interactions
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (2 :times))
+            (do
+              (.get l 1)
+              (.get l 1)))
+
+;; mock interaction based testing, expect exactly 3 interactions
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (3 :times))
+            (do
+              (.get l 1)
+              (.get l 1)
+              (.get l 1)))
+
+;; mock interaction based testing, expect at least 2 interactions
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (at-least (2 :times)))
+            (do
+              (.get l 1)
+              (.get l 1)))
+
+;; mock interaction based testing, expect at least 2 interactions
+(expect-let [l (mock java.util.List)]
+            (interaction (.get l 1) (at-least (2 :times)))
+            (do
+              (.get l 1)
+              (.get l 1)
+              (.get l 1)))
 
 ;; redef state within the context of a test
 (expect :atom
