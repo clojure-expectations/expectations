@@ -650,12 +650,56 @@
                           " use :never, :once, :twice, (at-least ..) (at-most ..), or"
                           " (x times) where x is a number - e.g. (5 times).")))))
 
-(defmacro do-mock-interaction-expect [[_ [method o & args] times :as e] a]
+(defmulti format-mockito-failure (comp class first vector))
+(defmethod format-mockito-failure org.mockito.exceptions.verification.WantedButNotInvoked [e expected-expr times]
+  {:type :fail
+           :result ["expected:" expected-expr
+                    times
+                    "\n" (.getMessage e)]})
+
+(defmethod format-mockito-failure org.mockito.exceptions.verification.junit.ArgumentsAreDifferent [e expected-expr times]
+  {:type :fail
+           :result ["expected:" expected-expr
+                    times
+                    "\n" (.getMessage e)]})
+
+(defmethod format-mockito-failure org.mockito.exceptions.verification.NeverWantedButInvoked [e expected-expr times]
+  {:type :fail
+           :result ["expected:" expected-expr
+                    times
+                    "\n" (.getMessage e)]})
+
+(defmethod format-mockito-failure org.mockito.exceptions.verification.TooLittleActualInvocations [e expected-expr times]
+  {:type :fail
+           :result ["expected:" expected-expr
+                    times
+                    "\n" (.getMessage e)]})
+
+(defmethod format-mockito-failure org.mockito.exceptions.base.MockitoAssertionError [e expected-expr times]
+  {:type :fail
+           :result ["expected:" expected-expr
+                    times
+                    "\n" (.getMessage e)]})
+
+
+
+
+(defmacro do-mock-interaction-expect [[_ [method o & args :as expected-expr] times :as e] a]
   `(try
      ~a
      (try
        (~'verify ~o ~(->mock-times times) (~method ~@args))
        (report {:type :pass})
+       (catch org.mockito.exceptions.base.MockitoAssertionError e#
+         (report (format-mockito-failure e# '~expected-expr '~times)))
+       (catch org.mockito.exceptions.verification.TooLittleActualInvocations e#
+         (report (format-mockito-failure e# '~expected-expr '~times)))
+       (catch org.mockito.exceptions.verification.WantedButNotInvoked e#
+         (report (format-mockito-failure e# '~expected-expr '~times)))
+       (catch org.mockito.exceptions.verification.junit.ArgumentsAreDifferent e#
+         (report (format-mockito-failure e# '~expected-expr '~times)))
+       (catch org.mockito.exceptions.verification.NeverWantedButInvoked e#
+         (report (format-mockito-failure e# '~expected-expr '~times)))
        (catch Throwable t#
          (report (compare-expr t# nil '~e '~a))))
      (catch Throwable t#
