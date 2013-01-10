@@ -11,6 +11,32 @@ expectations is a minimalist's testing framework
 
 ----------
 
+## 10 second example (inferred testing demo)
+
+```clojure
+;; use expectations to test equality
+(expect 1 1)
+(expect "foo" "foo")
+
+;; test if the regex is in a string
+(expect #"foo" "boofooar")
+
+;; does the form throw an expeted exception
+(expect ArithmeticException (/ 12 0))
+
+;; expect a k/v pair in map. used for verifying subset k/v pairs
+(expect {:foo 1} (in {:foo 1 :cat 4}))
+
+;; key in set
+(expect :foo (in #{:foo :bar}))
+
+;; val in list
+(expect :foo (in [:bar :foo]))
+
+;; expect a function to return a truthy value give the actual argument
+(expect empty? (list))
+```
+
 ## Credit
 
 Expectations is based on clojure.test. clojure.test is distributed under the Eclipse license, with
