@@ -36,11 +36,6 @@ expectations is a minimalist's testing framework
 (expect empty? (list))
 ```
 
-## Credit
-
-Expectations is based on clojure.test. clojure.test is distributed under the Eclipse license, with
-ownership assigned to Rich Hickey.
-
 ## Installing
 
 
@@ -196,6 +191,11 @@ You're now ready to start using expectations as you see fit. There's not a ton o
 
 By default, expectations uses ansi escape codes to color output on non-windows environments. expectations also respects a EXPECTATIONS_COLORIZE environment variable - set the var to false if you'd like to turn off colorizing.
 [more info](http://blog.jayfields.com/2012/05/clojure-expectations-colorized.html)
+
+## Credit
+
+Expectations is based on clojure.test. clojure.test is distributed under the Eclipse license, with
+ownership assigned to Rich Hickey.
 
 ## License
 
