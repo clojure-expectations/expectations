@@ -14,7 +14,8 @@ expectations is a minimalist's testing framework
 ## 10 second example (inferred testing demo)
 
 ```clojure
-;; expectations uses the format (expect expected actual) for all tests (equality, expected exception, regex matching, interactions, etc)
+;; expectations uses the format (expect expected actual) for all tests 
+;; (equality, expected exception, regex matching, interactions, etc).
 
 ;; use expectations to test equality
 (expect 1 1)
