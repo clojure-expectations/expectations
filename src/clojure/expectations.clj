@@ -716,7 +716,7 @@
      (report (compare-expr e# a# '~e '~a))))
 
 (defmacro doexpect [e a]
-  (if (and (instance? clojure.lang.PersistentList e) (= 'interaction (first e)))
+  (if (and (list? e) (= 'interaction (first e)))
     `(do-interaction-expect ~e ~a)
     `(do-value-expect ~e ~a)))
 
