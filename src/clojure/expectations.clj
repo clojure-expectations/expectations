@@ -11,7 +11,7 @@
 (def warn-on-iref-updates-boolean (atom false))
 (def lib-namespaces (set (all-ns)))
 
-(def ^{:dynamic true} *test-name* "test name unset")
+(def ^{:dynamic true} *test-name* nil)
 (def ^{:dynamic true} *test-meta* {})
 (def ^{:dynamic true} *test-var* nil)
 (def ^{:dynamic true} *prune-stacktrace* true)
@@ -194,10 +194,12 @@
                  (println (colorize-warn
                            (clojure.string/join " "
                                                 ["WARNING:"
-                                                 *test-name*
+                                                 (or *test-name* "test name unset")
                                                  "modified" var
                                                  "from" (pr-str old-state)
-                                                 "to" (pr-str new-state)])))))))
+                                                 "to" (pr-str new-state)])))
+                 (when-not *test-name*
+                   (.printStackTrace (Exception.) *out*))))))
 
 (defn test-var [v]
   (when-let [t (var-get v)]
