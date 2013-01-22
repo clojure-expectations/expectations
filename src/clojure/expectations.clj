@@ -199,7 +199,7 @@
                                                  "from" (pr-str old-state)
                                                  "to" (pr-str new-state)])))
                  (when-not *test-name*
-                   (.printStackTrace (Exception.) *out*))))))
+                   (.printStackTrace (RuntimeException. "stacktrace for var modification") System/out))))))
 
 (defn test-var [v]
   (when-let [t (var-get v)]
@@ -533,7 +533,9 @@
 
 (defn matches? [e-arg a-arg]
   (if (= e-arg :anything)
-    true
+    (do
+      (println ":anything is deprecated for accepting any arg. Please switch to using the anything fn included in expectations")
+      true)
     (-> (compare-expr e-arg a-arg nil nil) :type (= :pass))))
 
 (defn matching [expected-args interaction]
@@ -683,9 +685,6 @@
                     times
                     "\n" (.getMessage e)]})
 
-
-
-
 (defmacro do-mock-interaction-expect [[_ [method o & args :as expected-expr] times :as e] a]
   `(try
      ~a
@@ -812,3 +811,5 @@
     `(~(symbol (name sym-kw)) ~val
       (context ~(vec contexts)
                ~@forms))))
+
+(def anything (constantly true))

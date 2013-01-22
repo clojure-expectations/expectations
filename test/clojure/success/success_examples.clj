@@ -198,6 +198,10 @@
 (expect (interaction (spit String #"some da" keyword? (contains-kvs :a :b :c :d)))
         (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))
 
+;; use anything when you don't care about any of the args
+(expect (interaction (spit anything anything anything anything))
+        (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))
+
 (expect (interaction (no-op "runnable run called"))
         (.run (reify Runnable
                 (run [_]
