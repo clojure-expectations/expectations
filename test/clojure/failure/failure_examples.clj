@@ -173,6 +173,12 @@
 (expect nil)
 (expect false)
 
+;; interaction test where the fn is not a var
+(expect-let [foo #(%)]
+            (interaction (foo 1))
+            (foo 1))
+
+
 ;; mock interaction based testing
 (expect-let [r (mock Runnable)]
             (interaction (.run r))
