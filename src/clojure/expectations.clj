@@ -613,21 +613,29 @@
                           " (x times) where x is a number - e.g. (5 times).")))))
 
 (defmacro do-fn-interaction-expect [[_ [f & args :as expected-expr] times :as e] a]
-  `(let [expected-interactions# (atom [])]
-     (with-redefs [~f (comp (partial swap! expected-interactions# conj) vector)]
-       (try
-         (let [expected-args# (vector ~@args)]
-           (try ~a
-                (report (compare-interaction '~expected-expr
-                                             ~(str f)
-                                             expected-args#
-                                             @expected-interactions#
-                                             ~(->times times)
-                                             '~times))
-                (catch Throwable t#
-                  (report (compare-expr nil t# '~e '~a)))))
-         (catch Throwable t#
-           (report (compare-expr t# nil '~e '~a)))))))
+  (if-not (resolve f)
+    `(report (compare-expr (RuntimeException. (str '~f
+                                                   " needs to be a var."
+                                                   " Either specify the actual var from the"
+                                                   " ns or use expectations/no-op or"
+                                                   " expectations/a-fn if you want to pass"
+                                                   " a fn around."
+                                                   )) nil '~e '~a))
+    `(try
+       (let [expected-interactions# (atom [])]
+         (with-redefs [~f (comp (partial swap! expected-interactions# conj) vector)]
+           (let [expected-args# (vector ~@args)]
+             (try ~a
+                  (report (compare-interaction '~expected-expr
+                                               ~(str f)
+                                               expected-args#
+                                               @expected-interactions#
+                                               ~(->times times)
+                                               '~times))
+                  (catch Throwable t#
+                    (report (compare-expr nil t# '~e '~a)))))))
+       (catch Throwable t#
+         (report (compare-expr t# nil '~e '~a))))))
 
 (defn ->number-of-mock-times [times]
   (cond
@@ -657,33 +665,33 @@
 (defmulti format-mockito-failure (comp class first vector))
 (defmethod format-mockito-failure org.mockito.exceptions.verification.WantedButNotInvoked [e expected-expr times]
   {:type :fail
-           :result ["expected:" expected-expr
-                    times
-                    "\n" (.getMessage e)]})
+   :result ["expected:" expected-expr
+            times
+            "\n" (.getMessage e)]})
 
 (defmethod format-mockito-failure org.mockito.exceptions.verification.junit.ArgumentsAreDifferent [e expected-expr times]
   {:type :fail
-           :result ["expected:" expected-expr
-                    times
-                    "\n" (.getMessage e)]})
+   :result ["expected:" expected-expr
+            times
+            "\n" (.getMessage e)]})
 
 (defmethod format-mockito-failure org.mockito.exceptions.verification.NeverWantedButInvoked [e expected-expr times]
   {:type :fail
-           :result ["expected:" expected-expr
-                    times
-                    "\n" (.getMessage e)]})
+   :result ["expected:" expected-expr
+            times
+            "\n" (.getMessage e)]})
 
 (defmethod format-mockito-failure org.mockito.exceptions.verification.TooLittleActualInvocations [e expected-expr times]
   {:type :fail
-           :result ["expected:" expected-expr
-                    times
-                    "\n" (.getMessage e)]})
+   :result ["expected:" expected-expr
+            times
+            "\n" (.getMessage e)]})
 
 (defmethod format-mockito-failure org.mockito.exceptions.base.MockitoAssertionError [e expected-expr times]
   {:type :fail
-           :result ["expected:" expected-expr
-                    times
-                    "\n" (.getMessage e)]})
+   :result ["expected:" expected-expr
+            times
+            "\n" (.getMessage e)]})
 
 (defmacro do-mock-interaction-expect [[_ [method o & args :as expected-expr] times :as e] a]
   `(try
@@ -791,7 +799,7 @@
      (finally
        (org.joda.time.DateTimeUtils/setCurrentMillisSystem))))
 
-(def no-op (constantly nil))
+
 
 (defmacro ^{:private true} assert-args [fnname & pairs]
   `(do (when-not ~(first pairs)
@@ -813,3 +821,5 @@
                ~@forms))))
 
 (def anything (constantly true))
+(def no-op (constantly nil))
+(def a-fn no-op)
