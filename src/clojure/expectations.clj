@@ -217,11 +217,11 @@
             (.printStackTrace e))))
       (finished tn tm))))
 
-(defn find-before-run-vars []
+(defn find-expectations-vars [option-type]
   (->>
    (all-ns)
    (mapcat (comp vals ns-interns))
-   (filter (comp (partial = :before-run) :expectations-options meta))))
+   (filter (comp #{option-type} :expectations-options meta))))
 
 (defn execute-vars [vars]
   (doseq [var vars]
@@ -229,27 +229,37 @@
       (when-let [vv (var-get var)]
         (vv)))))
 
+(defn create-context [work]
+  (let [vars (find-expectations-vars :in-context)]
+    (cond
+     (= 0 (count vars)) (work)
+     (= 1 (count vars)) ((var-get (first vars)) work)
+     :default (do
+                (println "expectations only supports 0 or 1 :in-context fns. Ignoring:" vars)
+                (work)))))
+
 (defn test-vars [vars ignored-expectations]
   (remove-ns 'expectations-options)
   (try
     (require 'expectations-options :reload)
     (catch java.io.FileNotFoundException e))
 
-  (-> (find-before-run-vars) (execute-vars))
+  (-> (find-expectations-vars :before-run) (execute-vars))
   (when @warn-on-iref-updates-boolean
     (add-watch-every-iref-for-updates))
-  (binding [*report-counters* (ref *initial-report-counters*)]
-    (let [ns->vars (group-by (comp :ns meta) vars)
-          start (System/nanoTime)]
-      (doseq [[a-ns the-vars] ns->vars]
-        (doseq [v the-vars]
-          (test-var v)
-          (expectation-finished v))
-        (ns-finished (ns-name a-ns)))
+  (create-context
+   #(binding [*report-counters* (ref *initial-report-counters*)]
+     (let [ns->vars (group-by (comp :ns meta) vars)
+           start (System/nanoTime)]
+       (doseq [[a-ns the-vars] ns->vars]
+         (doseq [v the-vars]
+           (test-var v)
+           (expectation-finished v))
+         (ns-finished (ns-name a-ns)))
       ;;;      (dorun (pmap test-var vars))
-      (assoc @*report-counters*
-        :run-time (int (/ (- (System/nanoTime) start) 1000000))
-        :ignored-expectations ignored-expectations))))
+       (assoc @*report-counters*
+         :run-time (int (/ (- (System/nanoTime) start) 1000000))
+         :ignored-expectations ignored-expectations)))))
 
 (defn run-tests-in-vars [vars]
   (doto (assoc (test-vars vars 0) :type :summary)

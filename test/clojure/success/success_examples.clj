@@ -334,3 +334,5 @@
 (expect java.util.AbstractMap java.util.HashMap)
 (expect #"a" #"a")
 (expect RuntimeException RuntimeException)
+
+(expect :a-rebound-val (success.success-examples-src/a-fn-to-be-rebound))

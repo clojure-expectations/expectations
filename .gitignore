@@ -9,3 +9,4 @@ out
 .lein-deps-sum
 package.fig
 target
+/*nrepl-server*
