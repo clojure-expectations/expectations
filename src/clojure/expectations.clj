@@ -549,9 +549,11 @@
     (-> (compare-expr e-arg a-arg nil nil) :type (= :pass))))
 
 (defn matching [expected-args interaction]
-  (and
-   (= (count interaction) (count expected-args))
-   (every? true? (map matches? (seq expected-args) interaction))))
+  (or
+   (= expected-args [anything&])
+   (and
+    (= (count interaction) (count expected-args))
+    (every? true? (map matches? (seq expected-args) interaction)))))
 
 (defmethod compare-expr ::interaction [{:keys [function
                                                interactions
@@ -831,5 +833,9 @@
                ~@forms))))
 
 (def anything (constantly true))
+(def anything& (constantly true))
 (def no-op (constantly nil))
-(def a-fn no-op)
+(def a-fn (constantly true))
+(def a-fn1 (constantly true))
+(def a-fn2 (constantly true))
+(def a-fn3 (constantly true))

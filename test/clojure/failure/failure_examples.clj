@@ -231,3 +231,9 @@
 (expect-let [l (mock java.util.List)]
             (interaction (.get l 1) (at-least (2 :times)))
             (.get l 1))
+
+(expect (interaction (a-fn anything&) :never)
+        (a-fn 1 2 3))
+
+(expect (interaction (a-fn anything&) :never)
+        (a-fn 1))
