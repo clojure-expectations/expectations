@@ -506,7 +506,7 @@
                   (= (set e) (set a))
                   (= (count e) (count a))
                   (= (count e) (count (set a))))
-                 "lists appears to contain the same items with different ordering"
+                 "lists appear to contain the same items with different ordering"
                  (and (= (set e) (set a)) (< (count e) (count a)))
                  "some duplicate items in actual are not expected"
                  (and (= (set e) (set a)) (> (count e) (count a)))
