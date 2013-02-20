@@ -3,6 +3,16 @@
   (:import [expectations ScenarioFailure])
   (:require clojure.template clojure.string clojure.pprint clojure.data))
 
+(defn no-op [& x])
+
+(defn anything [& x] true)
+(defn anything& [& x] true)
+
+(defn a-fn  [& x] true)
+(defn a-fn1 [& x] true)
+(defn a-fn2 [& x] true)
+(defn a-fn3 [& x] true)
+
 (defn in [n] {::in n ::in-flag true})
 (defn contains-kvs [& {:as kvs}] {::contains-kvs kvs ::contains-kvs-flag true})
 
@@ -831,11 +841,3 @@
     `(~(symbol (name sym-kw)) ~val
       (context ~(vec contexts)
                ~@forms))))
-
-(def anything (constantly true))
-(def anything& (constantly true))
-(def no-op (constantly nil))
-(def a-fn (constantly true))
-(def a-fn1 (constantly true))
-(def a-fn2 (constantly true))
-(def a-fn3 (constantly true))
