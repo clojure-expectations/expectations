@@ -45,7 +45,7 @@ following dependency to your project.clj file:
 
 ```clojure
 [expectations "1.2.1"] ; clojure 1.2
-[expectations "1.4.24"] ; clojure 1.3
+[expectations "1.4.32"] ; clojure 1.3
 ```
 
 To build expectations from source, run the following commands:
