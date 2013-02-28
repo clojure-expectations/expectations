@@ -211,6 +211,10 @@
                  (when-not *test-name*
                    (.printStackTrace (RuntimeException. "stacktrace for var modification") System/out))))))
 
+(defn remove-watch-every-iref-for-updates []
+  (doseq [[var iref] (find-every-iref)]
+    (remove-watch iref ::expectations-watching-state-modifications)))
+
 (defn test-var [v]
   (when-let [t (var-get v)]
     (let [tn (test-name (meta v))
@@ -267,9 +271,12 @@
            (expectation-finished v))
          (ns-finished (ns-name a-ns)))
       ;;;      (dorun (pmap test-var vars))
-       (assoc @*report-counters*
-         :run-time (int (/ (- (System/nanoTime) start) 1000000))
-         :ignored-expectations ignored-expectations)))))
+       (let [result (assoc @*report-counters*
+                      :run-time (int (/ (- (System/nanoTime) start) 1000000))
+                      :ignored-expectations ignored-expectations)]
+         (when @warn-on-iref-updates-boolean
+           (remove-watch-every-iref-for-updates))
+         result)))))
 
 (defn run-tests-in-vars [vars]
   (doto (assoc (test-vars vars 0) :type :summary)
