@@ -5,13 +5,13 @@
 
 (defn no-op [& x])
 
-(defn anything [& x] true)
-(defn anything& [& x] true)
+(defn anything [& _] true)
+(defn anything& [& _] true)
 
-(defn a-fn  [& x] true)
-(defn a-fn1 [& x] true)
-(defn a-fn2 [& x] true)
-(defn a-fn3 [& x] true)
+(defn a-fn  [& _] true)
+(defn a-fn1 [& _] true)
+(defn a-fn2 [& _] true)
+(defn a-fn3 [& _] true)
 
 (defn in [n] {::in n ::in-flag true})
 (defn contains-kvs [& {:as kvs}] {::contains-kvs kvs ::contains-kvs-flag true})
@@ -211,6 +211,10 @@
                  (when-not *test-name*
                    (.printStackTrace (RuntimeException. "stacktrace for var modification") System/out))))))
 
+(defn remove-watch-every-iref-for-updates []
+  (doseq [[var iref] (find-every-iref)]
+    (remove-watch iref ::expectations-watching-state-modifications)))
+
 (defn test-var [v]
   (when-let [t (var-get v)]
     (let [tn (test-name (meta v))
@@ -267,9 +271,12 @@
            (expectation-finished v))
          (ns-finished (ns-name a-ns)))
       ;;;      (dorun (pmap test-var vars))
-       (assoc @*report-counters*
-         :run-time (int (/ (- (System/nanoTime) start) 1000000))
-         :ignored-expectations ignored-expectations)))))
+       (let [result (assoc @*report-counters*
+                      :run-time (int (/ (- (System/nanoTime) start) 1000000))
+                      :ignored-expectations ignored-expectations)]
+         (when @warn-on-iref-updates-boolean
+           (remove-watch-every-iref-for-updates))
+         result)))))
 
 (defn run-tests-in-vars [vars]
   (doto (assoc (test-vars vars 0) :type :summary)
@@ -516,7 +523,7 @@
                   (= (set e) (set a))
                   (= (count e) (count a))
                   (= (count e) (count (set a))))
-                 "lists appears to contain the same items with different ordering"
+                 "lists appear to contain the same items with different ordering"
                  (and (= (set e) (set a)) (< (count e) (count a)))
                  "some duplicate items in actual are not expected"
                  (and (= (set e) (set a)) (> (count e) (count a)))
