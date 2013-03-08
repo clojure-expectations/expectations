@@ -3,6 +3,7 @@
   (:import [expectations ScenarioFailure])
   (:require clojure.template clojure.string clojure.pprint clojure.data))
 
+(def nothing "nothing")
 (defn no-op [& x])
 
 (defn anything [& _] true)
@@ -538,25 +539,29 @@
 
 (defn compare-individual-args [idx arg1 arg2]
   (let [{:keys [expected-message actual-message message type]} (compare-expr arg1 arg2 "" "")]
-    (when-not (or (= type :pass) (= arg1 :anything))
+    (when-not (= type :pass)
       (str
        "\n           - arg" idx ": " arg2
        (when expected-message (str "\n           " expected-message))
        (when actual-message (str "\n           " actual-message))
        (when message (str "\n           " message))))))
 
+(defn compare-each-arg [result
+                        idx
+                        {e-first 0 :as e-args :or {e-first nothing}}
+                        {a-first 0 :as a-args :or {a-first nothing}}
+                        max-idx]
+  (if (> idx max-idx)
+    result
+    (recur (str result (compare-individual-args idx e-first a-first))
+           (inc idx) (vec (rest e-args)) (vec (rest a-args)) max-idx)))
+
 (defn compare-args [f-name expected-args actual-args]
-  (str (when (seq expected-args) "\n")
-       "\n           -- got: " (fn-string f-name actual-args)
-       (when (seq actual-args)
-         (if (= (count expected-args) (count actual-args))
-           (clojure.string/join
-            (map compare-individual-args (iterate inc 1) expected-args actual-args))
-           (let [{:keys [expected-message actual-message message]}
-                 (compare-expr expected-args actual-args "" "")]
-             (str (when expected-message (str "\n           " expected-message))
-                  (when actual-message (str "\n           " actual-message))
-                  (when message (str "\n           " message))))))))
+  (compare-each-arg (str "\n\n           -- got: " (fn-string f-name actual-args))
+                    1
+                    (vec expected-args)
+                    (vec actual-args)
+                    (count expected-args)))
 
 (defn matches? [e-arg a-arg]
   (if (= e-arg :anything)
@@ -565,12 +570,13 @@
       true)
     (-> (compare-expr e-arg a-arg nil nil) :type (= :pass))))
 
-(defn matching [expected-args interaction]
-  (or
-   (= expected-args [anything&])
-   (and
-    (= (count interaction) (count expected-args))
-    (every? true? (map matches? (seq expected-args) interaction)))))
+(defn matching [[e-first & e-rest] [a-first & a-rest]]
+  (let [match (matches? e-first a-first)]
+    (cond
+     (and (nil? e-rest) (nil? a-rest)) match
+     (false? match) false
+     (= e-first anything&) true
+     :default (recur e-rest a-rest))))
 
 (defmethod compare-expr ::interaction [{:keys [function
                                                interactions

@@ -336,7 +336,18 @@
 (expect RuntimeException RuntimeException)
 
 (expect :a-rebound-val (success.success-examples-src/a-fn-to-be-rebound))
+
 (expect (interaction (a-fn anything&) :twice)
         (do
           (a-fn 1 2)
           (a-fn 3)))
+
+(expect (interaction (a-fn :an-actual-arg anything&))
+        (do
+          (a-fn :an-actual-arg 1 2)
+          (a-fn :some-other-arg 3)))
+
+(expect (interaction (a-fn :an-actual-arg anything&))
+        (do
+          (a-fn :an-actual-arg)
+          (a-fn :some-other-arg 3)))

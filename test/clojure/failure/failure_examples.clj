@@ -237,3 +237,12 @@
 
 (expect (interaction (a-fn anything&) :never)
         (a-fn 1))
+
+(expect (interaction (a-fn 1 anything&))
+        (do
+          (a-fn 1 :one-thing)
+          (a-fn 1 :two :things)))
+
+(expect (interaction (a-fn))
+        (do (a-fn 1)
+            (a-fn 2)))
