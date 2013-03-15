@@ -17,7 +17,7 @@
 (expect 1 (identity 2))
 
 ;; string equality
-(expect "foos" (identity "foo"))
+(expect "foos" (identity "foode"))
 
 ;; map equality
 (expect {:foo 2 :bar 3 :dog 3 :car 4} (assoc {} :foo 1 :bar "3" :cat 4))
