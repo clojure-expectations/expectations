@@ -3,7 +3,7 @@
   (:import [expectations ScenarioFailure])
   (:require clojure.template clojure.string clojure.pprint clojure.data))
 
-(def nothing "nothing")
+(def nothing "no arg given")
 (defn no-op [& x])
 
 (defn anything [& _] true)
@@ -390,7 +390,7 @@
      :result ["expected:" (pr-str e) "\n" but-string (pr-str original-a)]
      :message (when-let [messages (map-diff-message e a "")] (string-join "\n           " messages))}))
 
-(defmulti compare-expr (fn [e a str-e str-a]
+(defmulti compare-expr (fn [e a _ _]
                          (cond
                           (and (isa? e Throwable) (not= e a)) ::expect-exception
                           (instance? Throwable e) ::expected-exception
@@ -409,9 +409,16 @@
               "\n                was:" (pr-str a)]}))
 
 (defmethod compare-expr ::fn [e a str-e str-a]
-  (if (e a)
-    {:type :pass}
-    {:type :fail :raw [str-e str-a] :result [(pr-str a) "is not" str-e]}))
+  (try
+    (if (e a)
+      {:type :pass}
+      {:type :fail :raw [str-e str-a] :result [(pr-str a) "is not" str-e]})
+    (catch clojure.lang.ArityException ex
+      {:type :fail :raw [str-e str-a]
+       :expected-message (str "also attempted: (" str-e " " str-a ")")
+       :actual-message (str   "       and got: " (.getMessage ex))
+       :result ["expected:" str-e
+                "\n                was:" (pr-str a)]})))
 
 (defmethod compare-expr ::contains-kvs [{e ::contains-kvs} a str-e str-a]
   (compare-expr e (in a) str-e str-a))
@@ -537,27 +544,31 @@
 (defn fn-string [f-name f-args]
   (str "(" f-name (when (seq f-args) " ") (string-join " " (map pr-str f-args)) ")"))
 
-(defn compare-individual-args [idx arg1 arg2]
-  (let [{:keys [expected-message actual-message message type]} (compare-expr arg1 arg2 "" "")]
+(defn compare-individual-args [idx arg1 arg2 raw-e]
+  (let [{:keys [expected-message actual-message result message type]}
+        (compare-expr arg1 arg2 raw-e (pr-str arg2))]
     (when-not (= type :pass)
       (str
-       "\n           - arg" idx ": " arg2
+       "\n           - arg" idx ": " (pr-str arg2)
        (when expected-message (str "\n           " expected-message))
        (when actual-message (str "\n           " actual-message))
        (when message (str "\n           " message))))))
 
 (defn compare-each-arg [result
+                        [raw-e-first & raw-e-rest]
                         idx
                         {e-first 0 :as e-args :or {e-first nothing}}
                         {a-first 0 :as a-args :or {a-first nothing}}
                         max-idx]
   (if (> idx max-idx)
     result
-    (recur (str result (compare-individual-args idx e-first a-first))
+    (recur (str result (compare-individual-args idx e-first a-first raw-e-first))
+           raw-e-rest
            (inc idx) (vec (rest e-args)) (vec (rest a-args)) max-idx)))
 
-(defn compare-args [f-name expected-args actual-args]
+(defn compare-args [raw-e f-name expected-args actual-args]
   (compare-each-arg (str "\n\n           -- got: " (fn-string f-name actual-args))
+                    raw-e
                     1
                     (vec expected-args)
                     (vec actual-args)
@@ -565,9 +576,7 @@
 
 (defn matches? [e-arg a-arg]
   (if (= e-arg :anything)
-    (do
-      (println ":anything is deprecated for accepting any arg. Please switch to using the anything fn included in expectations")
-      true)
+    true
     (-> (compare-expr e-arg a-arg nil nil) :type (= :pass))))
 
 (defn matching [[e-first & e-rest] [a-first & a-rest]]
@@ -604,7 +613,8 @@
                          (partial fn-string function))
                    (rest interactions)))}))))
 
-(defn compare-interaction [expected-expr f args interactions {:keys [times-fn times]} raw-times]
+(defn compare-interaction [expected-expr f args interactions
+                           {:keys [times-fn times]} raw-times raw-e]
   (let [actual-times (count (filter (partial matching args) interactions))]
     (if (times-fn times actual-times)
       {:type :pass}
@@ -616,7 +626,7 @@
         {:type :fail
          :result (concat ["expected:" expected-expr raw-times
                           "\n                got:" actual-times "times"]
-                         (map (partial compare-args f args) interactions))}))))
+                         (map (partial compare-args raw-e f args) interactions))}))))
 
 (defn ->number-of-times [times]
   (cond
@@ -666,7 +676,8 @@
                                                expected-args#
                                                @expected-interactions#
                                                ~(->times times)
-                                               '~times))
+                                               '~times
+                                               '~(rest (nth e 1))))
                   (catch Throwable t#
                     (report (compare-expr nil t# '~e '~a)))))))
        (catch Throwable t#

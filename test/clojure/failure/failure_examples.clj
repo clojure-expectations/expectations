@@ -247,7 +247,7 @@
         (do (a-fn 1)
             (a-fn 2)))
 
-(expect (interaction (a-fn map))
-                (a-fn 1))
+(expect (interaction (a-fn map filter remove 2 3))
+                (a-fn identity 1 nil 2))
 
-(expect-focused filter 1)
+(expect filter map)
