@@ -246,3 +246,8 @@
 (expect (interaction (a-fn))
         (do (a-fn 1)
             (a-fn 2)))
+
+(expect (interaction (a-fn map))
+                (a-fn 1))
+
+(expect-focused filter 1)

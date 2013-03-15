@@ -227,8 +227,8 @@
                 *test-var*  v]
         (try
           (t)
-          (catch Exception e
-            (println "\nunexpected exception in" tn)
+          (catch Throwable e
+            (println "\nunexpected error in" tn)
             (.printStackTrace e))))
       (finished tn tm))))
 
@@ -757,7 +757,10 @@
 (defmacro do-value-expect [e a]
   `(let [e# (try ~e (catch Throwable t# t#))
          a# (try ~a (catch Throwable t# t#))]
-     (report (compare-expr e# a# '~e '~a))))
+     (report
+      (try (compare-expr e# a# '~e '~a)
+           (catch Throwable e2#
+             (compare-expr e2# a# '~e '~a))))))
 
 (defmacro doexpect [e a]
   (if (and (list? e) (= 'interaction (first e)))
