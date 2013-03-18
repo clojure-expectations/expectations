@@ -1,6 +1,5 @@
 (ns expectations
   (:use clojure.set)
-  (:import [expectations ScenarioFailure])
   (:require clojure.template clojure.string clojure.pprint clojure.data))
 
 (def nothing "no arg given")
@@ -121,6 +120,7 @@
 (defn ^{:dynamic true} ignored-fns [{:keys [className fileName]}]
   (when *prune-stacktrace*
     (or (= fileName "expectations.clj")
+        (= fileName "expectations_options.clj")
         (= fileName "NO_SOURCE_FILE")
         (= fileName "interruptible_eval.clj")
         (re-seq #"clojure\.lang" className)
@@ -161,8 +161,7 @@
     (fail *test-name* *test-meta* message)))
 
 (defmethod report :error [{:keys [result raw] :as m}]
-  (when-not (instance? ScenarioFailure result)
-    (inc-report-counter :error))
+  (inc-report-counter :error)
   (let [current-test *test-var*
         message (string-join "\n"
                              [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
@@ -170,9 +169,7 @@
                                 (when (show-raw-choice) (colorize-raw (raw-str raw))))
                               (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
                               (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
-                              (if (instance? ScenarioFailure result)
-                                (.getMessage result)
-                                (str "    threw: " (class result) " - " (.getMessage result)))
+                              (str "    threw: " (class result) " - " (.getMessage result))
                               (pruned-stack-trace result)])]
     (alter-meta! current-test
                  assoc :status [:error message (:line *test-meta*)])

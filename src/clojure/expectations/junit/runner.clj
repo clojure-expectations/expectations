@@ -27,6 +27,7 @@
 
 (defn ignored-fns [{:keys [className fileName]}]
   (or (= fileName "expectations.clj")
+    (= fileName "expectations_options.clj")
     (re-seq #"clojure.lang" className)
     (re-seq #"clojure.core" className)
     (re-seq #"clojure.main" className)
@@ -48,7 +49,7 @@
         _ (doseq [{:keys [absolutePath]} files] (load-file absolutePath))
         file-names (set (map :absolutePath files))
         suite-description (Description/createSuiteDescription (-> source class .getName) empty-ann-arr)
-        filtered-vars (->> (all-ns) (expectations/->expectation) (filter (partial in-loaded-file? file-names)))
+        filtered-vars (->> (all-ns) (mapcat expectations/->expectation) (filter (partial in-loaded-file? file-names)))
         descs (reduce create-desc {} filtered-vars)]
     (doseq [desc (vals descs)] (.addChild suite-description desc))
     (proxy [Runner] []
