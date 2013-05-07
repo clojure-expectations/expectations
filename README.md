@@ -24,7 +24,7 @@ expectations is a minimalist's testing framework
 ;; test if the regex is in a string
 (expect #"foo" "boofooar")
 
-;; does the form throw an expeted exception
+;; does the form throw an expected exception
 (expect ArithmeticException (/ 12 0))
 
 ;; expect a value in a collection (k/v for maps)
@@ -32,7 +32,7 @@ expectations is a minimalist's testing framework
 (expect :foo (in #{:foo :bar}))
 (expect :foo (in [:bar :foo]))
 
-;; expect a function to return a truthy value give the actual argument
+;; expect a function to return a truthy value given the actual argument
 (expect empty? (list))
 ```
 
