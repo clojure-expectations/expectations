@@ -251,3 +251,9 @@
                 (a-fn identity 1 nil 2))
 
 (expect filter map)
+
+(expect (interaction (no-op))
+        (no-op nil))
+
+(expect (interaction (no-op nil))
+        (no-op))

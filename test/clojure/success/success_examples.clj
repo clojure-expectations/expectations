@@ -349,5 +349,5 @@
 
 (expect (interaction (a-fn :an-actual-arg anything&))
         (do
-          (a-fn :an-actual-arg)
+          (a-fn :an-actual-arg 1)
           (a-fn :some-other-arg 3)))

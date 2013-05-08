@@ -261,20 +261,20 @@
     (add-watch-every-iref-for-updates))
   (create-context
    #(binding [*report-counters* (ref *initial-report-counters*)]
-     (let [ns->vars (group-by (comp :ns meta) vars)
-           start (System/nanoTime)]
-       (doseq [[a-ns the-vars] ns->vars]
-         (doseq [v the-vars]
-           (test-var v)
-           (expectation-finished v))
-         (ns-finished (ns-name a-ns)))
+      (let [ns->vars (group-by (comp :ns meta) vars)
+            start (System/nanoTime)]
+        (doseq [[a-ns the-vars] ns->vars]
+          (doseq [v the-vars]
+            (test-var v)
+            (expectation-finished v))
+          (ns-finished (ns-name a-ns)))
       ;;;      (dorun (pmap test-var vars))
-       (let [result (assoc @*report-counters*
-                      :run-time (int (/ (- (System/nanoTime) start) 1000000))
-                      :ignored-expectations ignored-expectations)]
-         (when @warn-on-iref-updates-boolean
-           (remove-watch-every-iref-for-updates))
-         result)))))
+        (let [result (assoc @*report-counters*
+                       :run-time (int (/ (- (System/nanoTime) start) 1000000))
+                       :ignored-expectations ignored-expectations)]
+          (when @warn-on-iref-updates-boolean
+            (remove-watch-every-iref-for-updates))
+          result)))))
 
 (defn run-tests-in-vars [vars]
   (doto (assoc (test-vars vars 0) :type :summary)
@@ -572,17 +572,20 @@
                     (count expected-args)))
 
 (defn matches? [e-arg a-arg]
-  (if (= e-arg :anything)
-    true
-    (-> (compare-expr e-arg a-arg nil nil) :type (= :pass))))
+  (-> (compare-expr e-arg a-arg nil nil) :type (= :pass)))
 
-(defn matching [[e-first & e-rest] [a-first & a-rest]]
-  (let [match (matches? e-first a-first)]
-    (cond
-     (and (nil? e-rest) (nil? a-rest)) match
-     (false? match) false
-     (= e-first anything&) true
-     :default (recur e-rest a-rest))))
+(defn matching [e-args a-args]
+  (cond
+   (and (empty? e-args) (not-empty a-args)) false
+   (and (empty? a-args) (not-empty e-args)) false
+   :default (let [[e-first & e-rest] e-args
+                  [a-first & a-rest] a-args
+                  match (matches? e-first a-first)]
+              (cond
+               (and (nil? e-rest) (nil? a-rest)) match
+               (false? match) false
+               (= e-first anything&) true
+               :default (recur e-rest a-rest)))))
 
 (defmethod compare-expr ::interaction [{:keys [function
                                                interactions
