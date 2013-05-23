@@ -395,7 +395,6 @@
                           (and (fn? e) (not= e a)) ::fn
                           (and (not (sorted? a)) (::in-flag a)) ::in
                           (and (not (sorted? e)) (::contains-kvs-flag e)) ::contains-kvs
-                          (and (not (sorted? e)) (::interaction-flag e)) ::interaction
                           :default [(class e) (class a)])))
 
 (defmethod compare-expr :default [e a str-e str-a]
@@ -586,32 +585,6 @@
                (false? match) false
                (= e-first anything&) true
                :default (recur e-rest a-rest)))))
-
-(defmethod compare-expr ::interaction [{:keys [function
-                                               interactions
-                                               expected-args]}
-                                       expected-times-keyword
-                                       str-e
-                                       str-a]
-  (let [actual-times (count (filter (partial matching expected-args) interactions))
-        expected-times (expected-times-keyword {:never 0 :once 1 :twice 2})]
-    (if (= expected-times actual-times)
-      {:type :pass}
-      (if (empty? interactions)
-        {:type :fail
-         :result ["expected:" (fn-string function expected-args)
-                  (name expected-times-keyword)
-                  "\n                but:" function "was never called"]}
-        {:type :fail
-         :result (apply
-                  list
-                  "expected:" (fn-string function expected-args)
-                  (name expected-times-keyword)
-                  "\n                got:" (fn-string function (first interactions))
-                  (map
-                   (comp (partial str "\n                  &: ")
-                         (partial fn-string function))
-                   (rest interactions)))}))))
 
 (defn compare-interaction [expected-expr f args interactions
                            {:keys [times-fn times]} raw-times raw-e]
