@@ -137,29 +137,31 @@
                                   (str "           " className "$" methodName " (" fileName ":" lineNumber ")")))
                               (remove ignored-fns (map bean (.getStackTrace t)))))))
 
+(defn ->failure-message [{:keys [raw result expected-message actual-message message]}]
+  (string-join "\n"
+               [(when reminder
+                  (colorize-warn (str "     ***** "
+                                      (clojure.string/upper-case reminder)
+                                      " *****")))
+                (when raw (when (show-raw-choice) (colorize-raw (raw-str raw))))
+                (when result (str "           " (string-join " " result)))
+                (when (or expected-message actual-message message) " ")
+                (when expected-message (str "           " expected-message))
+                (when actual-message (str "           " actual-message))
+                (when message (str "           " message))]))
+
 (defmulti report :type)
 
 (defmethod report :pass [m]
   (alter-meta! *test-var* assoc :status [:success "" (:line *test-meta*)])
   (inc-report-counter :pass))
 
-(defmethod report :fail [{:keys [raw result expected-message actual-message message]}]
+(defmethod report :fail [m]
   (inc-report-counter :fail)
   (let [current-test *test-var*
-        result (string-join "\n"
-                            [(when reminder
-                               (colorize-warn (str "     ***** "
-                                                   (clojure.string/upper-case reminder)
-                                                   " *****")))
-                             (when raw (when (show-raw-choice) (colorize-raw (raw-str raw))))
-                             (when result (str "           " (string-join " " result)))
-                             (when (or expected-message actual-message message) " ")
-                             (when expected-message (str "           " expected-message))
-                             (when actual-message (str "           " actual-message))
-                             (when message (str "           " message))])]
-    (alter-meta! current-test
-                 assoc :status [:fail result (:line *test-meta*)])
-    (fail *test-name* *test-meta* result)))
+        message (->failure-message m)]
+    (alter-meta! current-test assoc :status [:fail message (:line *test-meta*)])
+    (fail *test-name* *test-meta* message)))
 
 (defmethod report :error [{:keys [result raw] :as m}]
   (inc-report-counter :error)
