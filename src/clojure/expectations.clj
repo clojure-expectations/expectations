@@ -590,16 +590,18 @@
                :default (recur e-rest a-rest)))))
 
 (defn compare-interaction [expected-expr f args interactions
-                           {:keys [times-fn times]} raw-times raw-e]
+                           {:keys [times-fn times]} raw-times raw-e str-e str-a]
   (let [actual-times (count (filter (partial matching args) interactions))]
     (if (times-fn times actual-times)
       {:type :pass}
       (if (empty? interactions)
         {:type :fail
+         :raw [str-e str-a]
          :result ["expected:" expected-expr
                   raw-times
                   "\n                but:" f "was never called"]}
         {:type :fail
+         :raw [str-e str-a]
          :result (concat ["expected:" expected-expr raw-times
                           "\n                got:" actual-times "times"]
                          (map (partial compare-args raw-e f args) interactions))}))))
@@ -653,7 +655,8 @@
                                                @expected-interactions#
                                                ~(->times times)
                                                '~times
-                                               '~(rest (nth e 1))))
+                                               '~(rest (nth e 1))
+                                               '~e '~a))
                   (catch Throwable t#
                     (report (compare-expr nil t# '~e '~a)))))))
        (catch Throwable t#
@@ -823,8 +826,6 @@
      ~@forms
      (finally
        (org.joda.time.DateTimeUtils/setCurrentMillisSystem))))
-
-
 
 (defmacro ^{:private true} assert-args [fnname & pairs]
   `(do (when-not ~(first pairs)
