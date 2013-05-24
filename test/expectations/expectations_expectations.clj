@@ -64,3 +64,21 @@
             :expected-message "expected-message"
             :actual-message "actual-message"
             :message "message"})))
+
+(expect "           result
+\n           expected-message\n           actual-message\n           message"
+        (with-redefs [show-raw-choice (constantly false)]
+          (->failure-message
+           {:raw '(raw-e raw-a)
+            :result ["result"]
+            :expected-message "expected-message"
+            :actual-message "actual-message"
+            :message "message"})))
+
+(expect ""
+        (with-redefs [show-raw-choice (constantly true)]
+          (->failure-message {})))
+
+(expect ""
+        (with-redefs [show-raw-choice (constantly false)]
+          (->failure-message {})))
