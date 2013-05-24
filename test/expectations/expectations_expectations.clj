@@ -46,3 +46,21 @@
            - arg1: \"no arg given\"
            - arg2: \"no arg given\""
         (compare-args '(hello-fn 1 2)  "hello-fn" [1 2] nil))
+
+(expect "           result\n\n           expected-message\n           actual-message\n           message"
+        (->failure-message
+         {:raw "raw"
+          :result ["result"]
+          :expected-message "expected-message"
+          :actual-message "actual-message"
+          :message "message"}))
+
+(expect "(expect raw-e raw-a)\n\n           result
+\n           expected-message\n           actual-message\n           message"
+        (with-redefs [show-raw-choice (constantly true)]
+          (->failure-message
+           {:raw '(raw-e raw-a)
+            :result ["result"]
+            :expected-message "expected-message"
+            :actual-message "actual-message"
+            :message "message"})))
