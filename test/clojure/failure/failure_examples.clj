@@ -261,3 +261,5 @@
 (expect Integer (from-each [1 2 3]))
 
 (expect even? (from-each [1 2 3]))
+
+(expect even? (from-each [1 2 3] inc inc dec))
