@@ -145,7 +145,7 @@
                                       " *****")))
                 (when raw (when (show-raw-choice) (colorize-raw (raw-str raw))))
                 (when result (str "           " (string-join " " result)))
-                (when (or expected-message actual-message message) " ")
+                (when (or expected-message actual-message message) "")
                 (when expected-message (str "           " expected-message))
                 (when actual-message (str "           " actual-message))
                 (when message (str "           " message))]))
