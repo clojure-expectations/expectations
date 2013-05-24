@@ -1,4 +1,4 @@
-(defproject expectations "1.4.38"
+(defproject expectations "1.4.39"
   :description "testing framework"
   :jar-name "expectations.jar"
   :java-source-paths ["src/java"]

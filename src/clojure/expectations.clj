@@ -428,7 +428,7 @@
 (defmethod compare-expr ::from-each [e {a ::from-each} str-e str-a]
   (if-let [failures (seq (remove (comp #{:pass} :type)
                                  (map-indexed #(compare-expr e %2 str-e %2) a)))]
-    {:type :fail :raw [str-e str-a] :message (format "the list: %s" a) :list failures}
+    {:type :fail :raw [str-e str-a] :message (format "the list: %s" (pr-str a)) :list failures}
     {:type :pass}))
 
 (defmethod compare-expr ::in [e a str-e str-a]
