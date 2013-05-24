@@ -143,22 +143,23 @@
   (alter-meta! *test-var* assoc :status [:success "" (:line *test-meta*)])
   (inc-report-counter :pass))
 
-(defmethod report :fail [m]
+(defmethod report :fail [{:keys [raw result expected-message actual-message message]}]
   (inc-report-counter :fail)
   (let [current-test *test-var*
-        message (string-join "\n"
-                             [(when reminder
-                                (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
-                              (when-let [msg (:raw m)]
-                                (when (show-raw-choice) (colorize-raw (raw-str msg))))
-                              (when-let [msg (:result m)] (str "           " (string-join " " msg)))
-                              (when (or (:expected-message m) (:actual-message m) (:message m)) " ")
-                              (when-let [msg (:expected-message m)] (str "           " msg))
-                              (when-let [msg (:actual-message m)] (str "           " msg))
-                              (when-let [msg (:message m)] (str "           " msg))])]
+        result (string-join "\n"
+                            [(when reminder
+                               (colorize-warn (str "     ***** "
+                                                   (clojure.string/upper-case reminder)
+                                                   " *****")))
+                             (when raw (when (show-raw-choice) (colorize-raw (raw-str raw))))
+                             (when result (str "           " (string-join " " result)))
+                             (when (or expected-message actual-message message) " ")
+                             (when expected-message (str "           " expected-message))
+                             (when actual-message (str "           " actual-message))
+                             (when message (str "           " message))])]
     (alter-meta! current-test
-                 assoc :status [:fail message (:line *test-meta*)])
-    (fail *test-name* *test-meta* message)))
+                 assoc :status [:fail result (:line *test-meta*)])
+    (fail *test-name* *test-meta* result)))
 
 (defmethod report :error [{:keys [result raw] :as m}]
   (inc-report-counter :error)
@@ -341,7 +342,7 @@
      "\n           "
      (remove nil? (map
                    (partial ->disagreement
-                            (str (when prefix (str prefix " {")) k))
+                      (str (when prefix (str prefix " {")) k))
                    (map-intersection v1 v2))))
     (when (extended-not= v1 v2)
       (let [prefix-desc (str (when prefix (str prefix " {")) (pr-str k))
