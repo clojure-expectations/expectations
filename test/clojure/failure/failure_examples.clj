@@ -257,3 +257,7 @@
 
 (expect (interaction (no-op nil))
         (no-op))
+
+(expect Integer (from-each [1 2 3]))
+
+(expect even? (from-each [1 2 3]))

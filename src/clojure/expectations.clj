@@ -394,12 +394,12 @@
 
 (defmulti compare-expr (fn [e a _ _]
                          (cond
+                          (and (not (sorted? a)) (::from-each-flag a)) ::from-each
                           (and (isa? e Throwable) (not= e a)) ::expect-exception
                           (instance? Throwable e) ::expected-exception
                           (instance? Throwable a) ::actual-exception
                           (and (fn? e) (not= e a)) ::fn
                           (and (not (sorted? a)) (::in-flag a)) ::in
-                          (and (not (sorted? a)) (::from-each-flag a)) ::from-each
                           (and (not (sorted? e)) (::contains-kvs-flag e)) ::contains-kvs
                           :default [(class e) (class a)])))
 
