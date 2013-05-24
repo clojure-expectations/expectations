@@ -351,3 +351,5 @@
         (do
           (a-fn :an-actual-arg 1)
           (a-fn :some-other-arg 3)))
+
+(expect String (from-each ["a" "b" "c"]))

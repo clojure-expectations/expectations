@@ -14,6 +14,7 @@
 (defn a-fn3 [& _] true)
 
 (defn in [n] {::in n ::in-flag true})
+(defn from-each [x] {::from-each x ::from-each-flag true})
 (defn contains-kvs [& {:as kvs}] {::contains-kvs kvs ::contains-kvs-flag true})
 
 ;;; GLOBALS
@@ -137,7 +138,7 @@
                                   (str "           " className "$" methodName " (" fileName ":" lineNumber ")")))
                               (remove ignored-fns (map bean (.getStackTrace t)))))))
 
-(defn ->failure-message [{:keys [raw result expected-message actual-message message]}]
+(defn ->failure-message [{:keys [raw result expected-message actual-message message list]}]
   (string-join "\n"
                [(when reminder
                   (colorize-warn (str "     ***** "
@@ -145,10 +146,11 @@
                                       " *****")))
                 (when raw (when (show-raw-choice) (colorize-raw (raw-str raw))))
                 (when result (str "           " (string-join " " result)))
-                (when (or expected-message actual-message message) "")
+                (when (and result (or expected-message actual-message message)) "")
                 (when expected-message (str "           " expected-message))
                 (when actual-message (str "           " actual-message))
-                (when message (str "           " message))]))
+                (when message (str "           " message))
+                (when list (str "\n" (string-join "\n\n" (map ->failure-message list))))]))
 
 (defmulti report :type)
 
@@ -397,6 +399,7 @@
                           (instance? Throwable a) ::actual-exception
                           (and (fn? e) (not= e a)) ::fn
                           (and (not (sorted? a)) (::in-flag a)) ::in
+                          (and (not (sorted? a)) (::from-each-flag a)) ::from-each
                           (and (not (sorted? e)) (::contains-kvs-flag e)) ::contains-kvs
                           :default [(class e) (class a)])))
 
@@ -421,6 +424,12 @@
 
 (defmethod compare-expr ::contains-kvs [{e ::contains-kvs} a str-e str-a]
   (compare-expr e (in a) str-e str-a))
+
+(defmethod compare-expr ::from-each [e {a ::from-each} str-e str-a]
+  (if-let [failures (seq (remove (comp #{:pass} :type)
+                                 (map-indexed #(compare-expr e %2 str-e %2) a)))]
+    {:type :fail :raw [str-e str-a] :message (format "the list: %s" a) :list failures}
+    {:type :pass}))
 
 (defmethod compare-expr ::in [e a str-e str-a]
   (cond
