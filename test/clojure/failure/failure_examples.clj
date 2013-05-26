@@ -258,12 +258,20 @@
 (expect (interaction (no-op nil))
         (no-op))
 
-(expect-focused even? (from-each [i [1 2 3]]
+(expect even? (from-each [i [1 2 3]]
                     i))
 
-(expect-focused even? (from-each [i [1 2 3]
+(expect even? (from-each [i [1 2 3]
                                   :let [ii (inc i)
                                         iii (inc ii)]
                                   :let [iiii (inc iii)
                                         iiiii (inc iiii)]]
-                    (dec iiiii)))
+                                 (dec iiiii)))
+
+(expect even? (from-each [i [[1 3] [3 4]]
+                                  :let [ii (map inc i)
+                                        iii (map inc ii)]
+                                  j iii
+                                  :let [jj (inc j)
+                                        jjj (inc jj)]]
+                    (dec jjj)))
