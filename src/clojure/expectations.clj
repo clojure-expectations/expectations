@@ -14,8 +14,20 @@
 (defn a-fn3 [& _] true)
 
 (defn in [n] {::in n ::in-flag true})
-(defn from-each [& x] {::from-each x ::from-each-flag true})
 (defn contains-kvs [& {:as kvs}] {::contains-kvs kvs ::contains-kvs-flag true})
+
+(defmacro from-each [[fe & _ :as seq-exprs] body-expr]
+  (let [vs (for [pairs (partition 2 seq-exprs)
+                 :when (-> pairs first (= :let))
+                 :let [vars (->> pairs second
+                                 (keep-indexed #(when (even? %1) %2)))]
+                 v vars]
+             v)]
+    `(hash-map ::from-each (for ~seq-exprs
+                             {::the-seq ~body-expr
+                              ::ref-data ~(apply vector (str fe) fe
+                                                 (interleave (map str vs) vs))})
+               ::from-each-flag true)))
 
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
@@ -428,15 +440,14 @@
 (defmethod compare-expr ::contains-kvs [{e ::contains-kvs} a str-e str-a]
   (compare-expr e (in a) str-e str-a))
 
-(defmethod compare-expr ::from-each [e {[a & fns] ::from-each} str-e str-a]
+(defmethod compare-expr ::from-each [e {a ::from-each} str-e str-a]
   (if-let [failures (seq (remove (comp #{:pass} :type)
-                                 (map #(let [the-a ((apply comp (reverse fns)) %)]
-                                         (assoc (compare-expr e the-a str-e the-a)
-                                           :ref-data (reductions (fn [v f] (f v)) % fns)))
-                                      a)))]
+                                 (for [{ts ::the-seq rd ::ref-data} a]
+                                   (assoc (compare-expr e ts str-e ts)
+                                     :ref-data rd))))]
     {:type :fail
      :raw [str-e str-a]
-     :message (format "the list: %s" (pr-str (map (apply comp (reverse fns)) a)))
+     :message (format "the list: %s" (pr-str (map ::the-seq a)))
      :list (map #(assoc % :show-raw true) failures)}
     {:type :pass}))
 

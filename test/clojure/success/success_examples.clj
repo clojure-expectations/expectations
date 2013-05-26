@@ -352,4 +352,10 @@
           (a-fn :an-actual-arg 1)
           (a-fn :some-other-arg 3)))
 
-(expect String (from-each ["a" "b" "c"]))
+(expect String (from-each [letter ["a" "b" "c"]]
+                     letter))
+
+(expect even? (from-each [num [1 2 3]
+                     :let [numinc1 (inc num)
+                           numinc2 (inc num)]]
+                    (* 10 numinc2)))
