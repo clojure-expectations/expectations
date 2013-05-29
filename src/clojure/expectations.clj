@@ -150,12 +150,12 @@
                                       " *****")))
                 (when raw (when (or show-raw (show-raw-choice)) (colorize-raw (raw-str raw))))
                 (when-let [[n1 v1 & _] ref-data]
-                  (format "           ref-data %s: %s" n1 (pp-str v1)))
+                  (format "           ref-data %s: %s" n1 (pr-str v1)))
                 (when-let [[_ _ & the-rest] ref-data]
                   (when the-rest
                     (->> the-rest
                          (partition 2)
-                         (map #(format "                    %s: %s" (first %) (pp-str (second %))))
+                         (map #(format "                    %s: %s" (first %) (pr-str (second %))))
                          (string-join "\n"))))
                 (when result (str "           " (string-join " " result)))
                 (when (and result (or expected-message actual-message message)) "")
