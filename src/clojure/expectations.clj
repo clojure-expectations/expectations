@@ -439,10 +439,10 @@
 (defmethod compare-expr ::contains-kvs [{e ::contains-kvs} a str-e str-a]
   (compare-expr e (in a) str-e str-a))
 
-(defmethod compare-expr ::from-each [e {a ::from-each} str-e str-a]
+(defmethod compare-expr ::from-each [e {a ::from-each str-i-a ::from-each-body} str-e str-a]
   (if-let [failures (seq (remove (comp #{:pass} :type)
                                  (for [{ts ::the-seq rd ::ref-data} a]
-                                   (assoc (compare-expr e ts str-e ts)
+                                   (assoc (compare-expr e ts str-e str-i-a)
                                      :ref-data rd))))]
     {:type :fail
      :raw [str-e str-a]
@@ -890,4 +890,5 @@
     `(hash-map ::from-each (for ~seq-exprs
                              {::the-seq ~body-expr
                               ::ref-data ~(vec (interleave vs (map symbol vs)))})
+               ::from-each-body '~body-expr
                ::from-each-flag true)))
