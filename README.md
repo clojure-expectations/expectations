@@ -14,7 +14,7 @@ expectations is a minimalist's testing framework
 ## 10 second example (inferred testing demo)
 
 ```clojure
-;; expectations uses the format (expect expected actual) for all tests 
+;; expectations uses the format (expect expected actual) for all tests
 ;; (equality, expected exception, regex matching, interactions, etc).
 
 ;; use expectations to test equality
@@ -45,7 +45,7 @@ following dependency to your project.clj file:
 
 ```clojure
 [expectations "1.2.1"] ; clojure 1.2
-[expectations "1.4.42"] ; clojure 1.3
+[expectations "1.4.43"] ; clojure 1.3
 ```
 
 To build expectations from source, run the following commands:
