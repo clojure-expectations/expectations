@@ -16,18 +16,7 @@
 (defn in [n] {::in n ::in-flag true})
 (defn contains-kvs [& {:as kvs}] {::contains-kvs kvs ::contains-kvs-flag true})
 
-(defmacro from-each [[fe & _ :as seq-exprs] body-expr]
-  (let [vs (for [pairs (partition 2 seq-exprs)
-                 :when (-> pairs first (= :let))
-                 :let [vars (->> pairs second
-                                 (keep-indexed #(when (even? %1) %2)))]
-                 v vars]
-             v)]
-    `(hash-map ::from-each (for ~seq-exprs
-                             {::the-seq ~body-expr
-                              ::ref-data ~(apply vector (str fe) fe
-                                                 (interleave (map str vs) vs))})
-               ::from-each-flag true)))
+
 
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
@@ -121,6 +110,9 @@
 (defn raw-str [[e a]]
   (with-out-str (clojure.pprint/pprint `(~'expect ~e ~a))))
 
+(defn pp-str [e]
+  (clojure.string/trim (with-out-str (clojure.pprint/pprint e))))
+
 (defn ^{:dynamic true} fail [test-name test-meta msg]
   (println (str "\nfailure in (" (test-file test-meta) ") : " (:ns test-meta))) (println msg))
 
@@ -157,7 +149,14 @@
                                       (clojure.string/upper-case reminder)
                                       " *****")))
                 (when raw (when (or show-raw (show-raw-choice)) (colorize-raw (raw-str raw))))
-                (when ref-data (str "           ref-data: " (string-join ", " (map pr-str ref-data))))
+                (when-let [[n1 v1 & _] ref-data]
+                  (format "           ref-data %s: %s" n1 (pp-str v1)))
+                (when-let [[_ _ & the-rest] ref-data]
+                  (when the-rest
+                    (->> the-rest
+                         (partition 2)
+                         (map #(format "                    %s: %s" (first %) (pp-str (second %))))
+                         (string-join "\n"))))
                 (when result (str "           " (string-join " " result)))
                 (when (and result (or expected-message actual-message message)) "")
                 (when expected-message (str "           " expected-message))
@@ -874,3 +873,21 @@
     `(~(symbol (name sym-kw)) ~val
       (context ~(vec contexts)
                ~@forms))))
+
+(defmacro from-each [seq-exprs body-expr]
+  (let [vs (for [[p1 p2 :as pairs] (partition 2 seq-exprs)
+                 :when (and (not= :when p1) (not= :while p1))
+                 :let [vars (->> (if (= p1 :let)
+                                   p2
+                                   pairs)
+                                 destructure
+                                 (keep-indexed #(when (even? %1) %2))
+                                 (map str)
+                                 distinct
+                                 (remove (partial re-find #"^(map|vec)__\d+$")))]
+                 v vars]
+             v)]
+    `(hash-map ::from-each (for ~seq-exprs
+                             {::the-seq ~body-expr
+                              ::ref-data ~(vec (interleave vs (map symbol vs)))})
+               ::from-each-flag true)))

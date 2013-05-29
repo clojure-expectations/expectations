@@ -185,15 +185,15 @@
             (do))
 
 (expect-let [l (mock java.util.List)]
-                    (interaction (.get l 1))
-                    (do
-                      (.get l 2)
-                      (.get l 3)))
+            (interaction (.get l 1))
+            (do
+              (.get l 2)
+              (.get l 3)))
 
 ;; mock interaction based testing, expect zero interactions
 (expect-let [l (mock java.util.List)]
-                    (interaction (.get l 1) :never)
-                    (.get l 1))
+            (interaction (.get l 1) :never)
+            (.get l 1))
 
 ;; mock interaction based testing, expect two interactions
 (expect-let [l (mock java.util.List)]
@@ -248,7 +248,7 @@
             (a-fn 2)))
 
 (expect (interaction (a-fn map filter remove 2 3))
-                (a-fn identity 1 nil 2))
+        (a-fn identity 1 nil 2))
 
 (expect filter map)
 
@@ -259,19 +259,21 @@
         (no-op))
 
 (expect even? (from-each [i [1 2 3]]
-                    i))
+                         i))
 
 (expect even? (from-each [i [1 2 3]
-                                  :let [ii (inc i)
-                                        iii (inc ii)]
-                                  :let [iiii (inc iii)
-                                        iiiii (inc iiii)]]
-                                 (dec iiiii)))
+                          :let [ii (inc i)
+                                iii (inc ii)]
+                          :let [iiii (inc iii)
+                                iiiii (inc iiii)]]
+                         (dec iiiii)))
 
-(expect even? (from-each [i [[1 3] [3 4]]
-                                  :let [ii (map inc i)
-                                        iii (map inc ii)]
-                                  j iii
-                                  :let [jj (inc j)
-                                        jjj (inc jj)]]
-                    (dec jjj)))
+(expect even? (from-each [[i {:keys [v1] {:strs [v3] :syms [v4] :or {v4 9}} :v2 :as all-of-vs} :as z]
+                                   [[1 {:v1 3 :v2 {"v3" 5 'v4 7}}]
+                                    [3 {:v1 4 :v2 {"v3" 6}}]]
+                                   :let [ii (map inc [i v1 v3])
+                                         iii (map inc ii)]
+                                   j iii
+                                   :let [jj (inc j)
+                                         jjj (inc jj)]]
+                                  (dec jjj)))
