@@ -7,7 +7,6 @@ out
 .fig
 .lein-failures
 .lein-deps-sum
-package.fig
 target
 /*nrepl-server*
 /.idea/libraries/lib_jars.xml

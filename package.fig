@@ -1,0 +1,23 @@
+resource "target/expectations.jar"
+
+retrieve CLASSPATH->lib/jars
+retrieve SOURCEPATH->lib/sources
+
+config default
+  append CLASSPATH=@/target/expectations.jar
+  append SOURCEPATH=@/target/expectations.jar
+
+  include :core_deps
+end
+
+config build
+  include :core_deps
+  include joda.time/2.1
+end
+
+config core_deps
+  include clojure/1.3.0
+  include erajure/0.0.3
+  include junit/4.7
+  include mockito/1.8.0
+end
