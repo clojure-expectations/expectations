@@ -68,21 +68,20 @@ Writing the test should be straightforward - expect the interaction and then cal
 As I was adding this behavior I enhanced the error reporting. Below you can find a failing test and the output that is produced.
 <br><br>
 <script src="https://gist.github.com/jaycfields/5759131.js"></script>
-<pre> ;          expected: (one "hello" {:a :b, :c {:ff :gg, :dd :ee}}) once
+<pre> ;          expected: (one "hello" {:a :b, :c {:dd :ee, :ff :gg}})
+ ;               got: 0 times
  ;
- ;          got: (one "hello")
+ ;          -- got: (one "hello")
  ;          {:a :b, :c {:ff :gg, :dd :ee}} are in expected, but not in actual
  ;          expected is larger than actual
  ;
- ;          got: (one "hello" "world" "here")
+ ;          -- got: (one "hello" "world" "here")
  ;          "here", "world" are in actual, but not in expected
  ;          {:a :b, :c {:ff :gg, :dd :ee}} are in expected, but not in actual
  ;          actual is larger than expected
  ;
- ;          got: (one "hello" {2 3, :a 1})
- ;                   arg1: matches
- ;          expected arg2: {:a :b, :c {:ff :gg, :dd :ee}}
- ;            actual arg2: {2 3, :a 1}
+ ;          -- got: (one "hello" {2 3, :a 1})
+ ;          - arg2: {2 3, :a 1}
  ;          2 with val 3 is in actual, but not in expected
  ;          :c {:dd with val :ee is in expected, but not in actual
  ;          :c {:ff with val :gg is in expected, but not in actual
