@@ -54,77 +54,54 @@
 </blockquote>
 
 <h2>
-<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Advanced Usage</h2>
+<a name="collections" class="anchor" href="#collections"><span class="octicon octicon-link"></span></a>Collections</h2>
 
-In the <a href="introduction.html">last section</a> I gave examples of how to use <a href="https://github.com/jaycfields/expectations">expectations</a> to test for equality. This section focus on non-equality expectations that are also available.<br />
+I've previously written about verifying <a href="introduction.html">equality</a> and the <a href="advanced.html">various non-equality</a> expectations that are available.
+This section will focus on another type of comparison that is allowed in expectations - verifying that an 'expected' value is in an 'actual' value.<br />
 <br />
-<span style="font-weight: bold;">Regex</span><br />
-expectations allows you to use a regex as your expected value, and if the 'actual' string matches that regex the expectation passes. The following example shows both the successful and failing expectations that use regexes.<br />
-<pre>
-(expect #"in 14" "in 1400 and 92")
-
-jfields$ lein expectations
-Ran 1 tests containing 1 assertions in 4 msecs
-0 failures, 0 errors.
-
-(expect #"in 14" "in 1300 and 92")
-
-jfields$ lein expectations
-failure in (core.clj:17) : sample.test.core
-           (expect in 14 in 1300 and 92)
-           regex #"in 14" not found in "in 1300 and 92"
-Ran 1 tests containing 1 assertions in 5 msecs
-1 failures, 0 errors.</pre>
-As you can see from the previous example, writing an expectation using a regex is syntactically the same as writing an equality expectation -
-and this is true for all of the non-equality expectations. In expectations there is only one syntax for expect - it's always (expect expected actual).<br />
+A quick recap - expectations generally look like this: (expect expected actual)<br />
 <br />
-<span style="font-weight: bold;">Testing for a certain type</span><br />
-I basically never write tests that verify the result of a function is a certain type. However, for the once in a blue moon case where that's what I need,
-expectations allows me to verify that the result of a function call is a certain type simply by using that type as the expected value.
-The example below shows the successful and failing examples of testing that the actual is an instance of the expected type.<br />
-<pre>(expect String "in 1300 and 92")
+verifying an expected value is in an actual value is straightforward and hopefully not a surprising syntax: (expect expected (in actual))<br />
+<br />
+If that's not clear, these examples should make the concept completely clear.<br />
+<pre>;; expect a k/v pair in a map.
+(expect {:foo 1} (in {:foo 1 :cat 4}))
+
+;; expect a key in a set
+(expect :foo (in #{:foo :bar}))
+
+;; expect a val in a list
+(expect :foo (in [:foo :bar]))</pre>
+As you would expect, running these expectations results in 3 passing tests.<br />
+<pre>jfields$ lein expectations
+Ran 3 tests containing 3 assertions in 8 msecs
+0 failures, 0 errors.</pre>
+As usual, I'll show the failures as well.<br />
+<pre>;; expect a k/v pair in a map.
+(expect {:foo 2} (in {:foo 1 :cat 4}))
+
+;; expect a key in a set
+(expect :baz (in #{:foo :bar}))
+
+;; expect a val in a list
+(expect :baz (in [:foo :bar]))
 
 jfields$ lein expectations
-Ran 1 tests containing 1 assertions in 6 msecs
-0 failures, 0 errors.
-
-(expect Integer "in 1300 and 92")
-
-jfields$ lein expectations
-failure in (core.clj:17) : sample.test.core
-           (expect Integer in 1300 and 92)
-           in 1300 and 92 is not an instance of class java.lang.Integer
-Ran 1 tests containing 1 assertions in 5 msecs
-1 failures, 0 errors.</pre>
-<span style="font-weight: bold;">Expected Exceptions</span><br />
-Expected exceptions are another test that I rarely write; however, when I find myself in need - expectations has me covered.<br />
-<pre>(expect ArithmeticException (/ 12 0))
-
-jfields$ lein expectations
-Ran 1 tests containing 1 assertions in 6 msecs
-0 failures, 0 errors.
-
-(expect ClassCastException (/12 0))
-
-jfields$ lein expectations
-failure in (core.clj:19) : sample.test.core
-           (expect ClassCastException (/ 12 0))
-           (/ 12 0) did not throw ClassCastException
-Ran 1 tests containing 1 assertions in 4 msecs
-1 failures, 0 errors.</pre>
-There's another non-equality expectation that I do use fairly often - an expectation where the 'expected' value is a function. The following simple examples demonstrate that if you pass a function as the first argument to expect it will be called with the 'actual' value and it will pass or fail based on what the function returns. (<a href="http://blog.jayfields.com/2011/02/clojure-truthy-and-falsey.html">truthy</a> results pass, <a href="http://blog.jayfields.com/2011/02/clojure-truthy-and-falsey.html">falsey</a> results fail).<br />
-<pre>(expect nil? nil)
-(expect true? true)
-(expect false? true)
-
-jfields$ lein expectations
-failure in (core.clj:19) : sample.test.core
-           (expect false? true)
-           true is not false?
-Ran 3 tests containing 3 assertions in 4 msecs
-1 failures, 0 errors.</pre>
-These are the majority of the non-equality expectations; however, there is one remaining non-equality expectation - in. Using 'in' is fairly straightforward,
-but since it has examples for vectors, sets, and maps I felt it deserved it's own section - which is available <a href="collections.html">here.</a>
+failure in (core.clj:18) : sample.test.core
+           (expect {:foo 2} (in {:foo 1, :cat 4}))
+           expected: {:foo 2}
+                 in: {:foo 1, :cat 4}
+           :foo expected: 2
+                     was: 1
+failure in (core.clj:21) : sample.test.core
+           (expect :baz (in #{:foo :bar}))
+           key :baz not found in #{:foo :bar}
+failure in (core.clj:24) : sample.test.core
+           (expect :baz (in [:foo :bar]))
+           value :baz not found in [:foo :bar]</pre>
+expectations does it's best to provide you with any additional info that might be helpful. In the case of the vector and the set there's not much else that can be said; however, the map failure gives you additional information that can be used to track down the issue.<br />
+<br />
+There's nothing magical going on with 'in' expectations and you could easily do the equivalent with select-keys, contains?, or some, but expectations allows you to get that behavior while keeping your tests succinct.
 
       </section>
       <footer>
