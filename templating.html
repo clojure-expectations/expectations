@@ -68,86 +68,8 @@ One of the biggest problems with multiple assertions per test is when your test 
 </ol>
 Part of the problem is that the assertions that occurred before the altering of the state may or may not be relevant after the alteration. Additionally, if any of the assertions fail you have to stop running the entire test - thus some of your assertions will not be run (and you'll be lacking some information).<br />
 <br />
-expectations takes an alternate route - embracing the idea of multiple assertions by providing a specific syntax that allows multiple verifications and the least amount of duplication.<br />
-<br />
-The following example shows how you can test multiple properties of a Java object using the 'given' syntax.<br />
-<pre>(given (java.util.ArrayList.)
-       (expect
-         .size 0
-         .isEmpty true))
-
-jfields$ lein expectations
-Ran 2 tests containing 2 assertions in 4 msecs
-0 failures, 0 errors.</pre>
-The syntax is simple enough: (given an-object (expect method return-value [method return-value])) <br />
-note: [method return-value] may be repeated any number of times.<br />
-<br />
-This syntax allows us to expect return-values from as many methods as we care to verify, but encourages us not to change any state between our various assertions. This syntax also allows us to to run each assertion regardless of the outcome of any previous assertion.<br />
-<br />
-Obviously you could call methods that change the internal state of the object and at that point you're on your own. I definitely wouldn't recommend testing that way. However, as long as you call methods that don't change any state 'given' can help you write succinct tests that verify as many aspects of an object as you need to test.<br />
-<br />
-As usual, I'll show the output for tests that fail using this syntax.<br />
-<pre>(given (java.util.ArrayList.)
-       (expect
-         .size 1
-         .isEmpty false))
-
-jfields$ lein expectations
-failure in (core.clj:4) : sample.test.core
-           (expect 1 (.size (java.util.ArrayList.)))
-           expected: 1
-                was: 0
-failure in (core.clj:4) : sample.test.core
-           (expect false (.isEmpty (java.util.ArrayList.)))
-           expected: false
-                was: true</pre>
-This specific syntax was created for testing Java objects, but an interesting side effect is that it actually works on any value and you can substitute method calls with any function. For example, you can test a vector or a map using the examples below as a template.<br />
-<pre>(given [1 2 3]
-       (expect
-         first 1
-         last 3))
-
-(given {:a 2 :b 4}
-       (expect
-         :a 2
-         :b 4))
-
-jfields$ lein expectations
-Ran 4 tests containing 4 assertions in 8 msecs
-0 failures, 0 errors.</pre>
-And, of course, the failures.<br />
-<pre>(given [1 2 3]
-       (expect
-         first 2
-         last 1))
-
-(given {:a 2 :b 4}
-       (expect
-         :a 1
-         :b 1))
-
-jfields$ lein expectations
-failure in (core.clj:4) : sample.test.core
-           (expect 2 (first [1 2 3]))
-           expected: 2
-                was: 1
-failure in (core.clj:4) : sample.test.core
-           (expect 1 (last [1 2 3]))
-           expected: 1
-                was: 3
-failure in (core.clj:9) : sample.test.core
-           (expect 1 (:a {:a 2, :b 4}))
-           expected: 1
-                was: 2
-failure in (core.clj:9) : sample.test.core
-           (expect 1 (:b {:a 2, :b 4}))
-           expected: 1
-                was: 4
-Ran 4 tests containing 4 assertions in 14 msecs
-4 failures, 0 errors.</pre>
-When you want to call methods on a Java object or call functions with the same instance over and over the previous given syntax is really the simplest solution. However, there are times where you want something more flexible.<br />
-<br />
-expectations also has a 'given' syntax that allows you to specify a template - thus reducing code duplication. The following example shows a test that verifies + with various arguments.<br />
+expectations takes an alternate route - embracing the idea of multiple assertions by providing a specific syntax that allows multiple verifications and the least amount of duplication.
+The 'given' macro allows you to specify a template - thus reducing code duplication. The following example shows a test that verifies + with various arguments.<br />
 <pre>(given [x y] (expect 10 (+ x y))
        4 6
        6 4
