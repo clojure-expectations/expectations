@@ -56,9 +56,7 @@
 <h2>
 <a name="incontext" class="anchor" href="#incontext"><span class="octicon octicon-link"></span></a>Evaluating Tests Within a Context</h2>
 
-I've previously written about <a href="http://blog.jayfields.com/2013/01/clojure-expectations-before-run-hook.html">expectations' before run hook</a> and the built in support for <a href="http://blog.jayfields.com/2013/01/clojure-expectations-warn-on-state.html">detecting state changes</a>. These features are nice for reassigning vars you don't care about or detecting accidental state changes; however, there was no option for temporarily changing the context in which your tests are run. As of expectations 1.4.36, that's no longer true.
-<br><br>
-Version 1.4.36 allows you to alter the context in which your tests run by creating a function that takes the "run the tests" function as an arg, and do you as wish.
+expectations version 1.4.36 and higher allows you to alter the context in which your tests run by creating a function that takes the "run the tests" function as an arg, and do you as wish.
 <br><br>
 Too abstract, no problem, the code:
 <br><br>
