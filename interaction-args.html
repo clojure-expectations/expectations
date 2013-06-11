@@ -107,6 +107,9 @@ I also hope that the ability to use an arbitrary function for verification will 
 <h2>
 <a name="ignoreargs" class="anchor" href="#ignoreargs"><span class="octicon octicon-link"></span></a>Ignoring Interaction Arg(s)</h2>
 
+expectations takes advantage of using any function for verifying an arg, and adds an 'anything' funtion that can be used when you don't care about a specific argument. The anything function is defined simply as <code>(defn anything [& _] true)</code>.
+If you want to verify a function call and don't care about a specific argument, using the anything function as a 'matcher' for the irrelevant arg is an appropriate choice.
+<br><br>
 Over the past year I've written the same test a few times.
 <br><br>
 <script src="https://gist.github.com/jaycfields/5199020.js"></script>
