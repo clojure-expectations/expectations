@@ -101,7 +101,29 @@ Finally, expectations provides and additional function that can be used to verif
 <br>
 In the above example, (contains-kvs) is used to verify that the final argument to spit contains the key/value pairs :a :b :c :d.
 <br><br>
-I hope that interaction arg matching follows the principle of least surprise, since it behaves the same as expectations state based tests. I also hope that the ability to use an arbitrary function for verification will provide any necessary flexibility. If you're using expectations, give it a try and let me know.
+I hope that interaction arg matching follows the principle of least surprise, since it behaves the same as expectations state based tests.
+I also hope that the ability to use an arbitrary function for verification will provide any necessary flexibility.
+<br><br>
+<h2>
+<a name="interactionargs" class="anchor" href="#interactionargs"><span class="octicon octicon-link"></span></a>Ignoring Interaction Arg(s)</h2>
+
+Over the past year I've written the same test a few times.
+<br><br>
+<script src="https://gist.github.com/jaycfields/5199020.js"></script>
+<br>
+This test accomplishes what I'm looking for when I write it - verification that my-fn isn't called. However, it doesn't prevent me from future regressions where my-fn is called with 0, 2, or 2+ arguments. After being bitten by this issue a few times I decided to add an argument matching function that will accept any value for the argument at it's index, and any value for all of the arguments at a greater index. This argument matching function is <code>anything&</code>
+<br><br>
+The following example is similar to what's above, except any call to my-fn will result in a failure
+<br><br>
+<script src="https://gist.github.com/jaycfields/5199074.js"></script>
+<br>
+My original intent was to protect against the scenario I described above*; however, what I ended up with is actually flexible enough to allow me to test other situations as well. For example, I've often found myself testing that a log message was written at a certain level, but not being interested in testing the actual message. The logging I'm working with allows a variable number of arguments, so anything& is perfect for verifying that no matter what args are passed in, the tests passes as long as the level is set correctly.
+<br><br>
+<script src="https://gist.github.com/jaycfields/5199272.js"></script>
+<br>
+The <code>anything&</code> matching function gives me an extra bit of flexibility that can come in handy at times.
+<br><br>
+*which is similar to <a href="http://docs.mockito.googlecode.com/hg/org/mockito/Mockito.html#7">verifyZeroInteractions</a> in mockito
 
       </section>
       <footer>
