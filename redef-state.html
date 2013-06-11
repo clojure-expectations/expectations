@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Expectations by jaycfields</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Expectations</h1>
+        <p class="header">a minimalist's unit testing framework</p>
+
+        <ul>
+          <li><a class="buttons" href="index.html">Home</a></li>
+          <li><a class="buttons" href="installing.html">Installing</a></li>
+          <li><a class="buttons" href="introduction.html">Introduction</a></li>
+          <li><a class="buttons" href="advanced.html">Advanced</a></li>
+          <li><a class="buttons" href="collections.html">Collections</a></li>
+          <li><a class="buttons" href="double-nan.html">Double/NaN</a></li>
+          <li><a class="buttons" href="templating.html">Templating</a></li>
+          <li><a class="buttons" href="expect-let.html">Expect-Let</a></li>
+          <li><a class="buttons" href="odds-ends.html">Odds & Ends</a></li>
+          <li><a class="buttons" href="in-context.html">Around Each</a></li>
+          <li><a class="buttons" href="before-run-hook.html">Before Suite</a></li>
+          <li><a class="buttons" href="state-warnings.html">State Warnings</a></li>
+          <li><a class="buttons" href="redef-state.html">Redef State</a></li>
+          <li><a class="buttons" href="interactions.html">Interactions</a></li>
+          <li><a class="buttons" href="interaction-args.html">Interaction Args</a></li>
+          <li><a class="buttons" href="interaction-args.html">Java Interactions</a></li>
+          <li><a class="buttons" href="freeze-time.html">Freeze Time</a></li>
+          <li><a class="buttons" href="env-tweaks.html">ENV Tweaks</a></li>
+          <li><a class="buttons github" href="https://github.com/jaycfields/expectations">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/jaycfields">jaycfields</a></p>
+
+
+      </header>
+      <section>
+        <h1>
+<a name="expectations" class="anchor" href="#expectations"><span class="octicon octicon-link"></span></a>expectations</h1>
+
+<blockquote>
+<p>adding signal, removing noise</p>
+</blockquote>
+
+<h2>
+<a name="redefstate" class="anchor" href="#redefstate"><span class="octicon octicon-link"></span></a>Redefining State Within a Test</h2>
+
+When testing functions that reference some state (atom, ref, or agent), it's nice to be able to quickly replace the value of the state in the context of the test. When your function only interacts with one piece of state, a simple call to with-redefs will do the trick. However, there are times when the function that you're calling updates many different pieces of state, and you'd like to be able to redef all of them with one call. The <a href="https://github.com/jaycfields/expectations">expectations</a> testing framework (v 1.4.16 and above) provides you the ability to redef all atoms, refs, and agents in a namespace with one call to redef-state.
+<br><br>
+(this same feature existed in expectation.scenarios as 'localize-state')
+<br><br>
+Let's take a look at the following contrived namespace
+<br><br>
+<script src="https://gist.github.com/3988510.js?file=blog.clj"></script>
+<br>
+In the above namespace we have two atoms that are both updated when you process an update. Testing that the atoms are updated is fairly simple, which the tests below demonstrate.
+<br><br>
+<script src="https://gist.github.com/3988538.js?file=blog_expectations.clj"></script>
+<br>
+Unfortunately, these tests will not both pass, as they both update the same atom. We could clean up at the end of each test, but it's usually cleaner to simply redef the atoms in the context of the test. The tests below use with-redefs to ensure that the state is only manipulated in the context of the tests.
+<br><br>
+<script src="https://gist.github.com/3988585.js?file=blog_expectations.clj"></script>
+<br>
+At this point the tests all pass. This solution works fine, but expectations gives you the ability to trim a bit of code and simply specify the namespace instead. The following tests specify the namespace and let expectations take care of the rest.
+<br><br>
+<script src="https://gist.github.com/3988687.js?file=blog_expectations.clj"></script>
+<br>
+That's it. Now all atoms, refs, and agents that are defined in the 'blog' namespace will be redefined within the context of the (redef-state) call. It's also important to note that redef-state can take as many namespaces as you'd like to specify in the first arg vector.
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+
+  </body>
+</html>
