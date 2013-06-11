@@ -91,7 +91,7 @@ As I was adding this behavior I enhanced the error reporting. Below you can find
 As you can see, all three calls to the 'one' function are reported. If the number of args used to call 'one' are of the same size as the expected args, each arg is compared in detail; otherwise the two lists are compared in detail (but the elements are not).
 <br><br>
 As you can see in this failure the first argument, "hello", matches.
-<pre>  ;          -- got: (one "hello" {2 3, :a 1})
+<pre> ;          -- got: (one "hello" {2 3, :a 1})
  ;          - arg2: {2 3, :a 1}
  ;          2 with val 3 is in actual, but not in expected
  ;          :c {:dd with val :ee is in expected, but not in actual
