@@ -54,27 +54,38 @@
 </blockquote>
 
 <h2>
-<a name="redefstate" class="anchor" href="#redefstate"><span class="octicon octicon-link"></span></a>Redefining State Within a Test</h2>
+<a name="interactions" class="anchor" href="#interactions"><span class="octicon octicon-link"></span></a>Interaction Based Testing</h2>
 
-When testing functions that reference some state (atom, ref, or agent), it's nice to be able to quickly replace the value of the state in the context of the test. When your function only interacts with one piece of state, a simple call to with-redefs will do the trick. However, there are times when the function that you're calling updates many different pieces of state, and you'd like to be able to redef all of them with one call. The <a href="https://github.com/jaycfields/expectations">expectations</a> testing framework (v 1.4.16 and above) provides you the ability to redef all atoms, refs, and agents in a namespace with one call to redef-state.
+The vast majority of testing I do these days is state-based; however, there are times when I need to test an interaction (e.g. writing to a file or printing to standard out). The ability to test interactions has been in expectations.scenarios for quite awhile, but there isn't any reason that you need a scenario to test an interaction - so, as of version 1.4.16, you also have the ability to test interactions with bare expectations.
 <br><br>
-Let's take a look at the following contrived namespace
+The following test shows how you can specify an expected interaction. This test passes.
 <br><br>
-<script src="https://gist.github.com/3988510.js?file=blog.clj"></script>
+<script src="https://gist.github.com/3988880.js?file=blog_expectations.clj"></script>
 <br>
-In the above namespace we have two atoms that are both updated when you process an update. Testing that the atoms are updated is fairly simple, which the tests below demonstrate.
+Writing the test should be straightforward - expect the interaction and then call the code that causes the interaction to happen.
 <br><br>
-<script src="https://gist.github.com/3988538.js?file=blog_expectations.clj"></script>
-<br>
-Unfortunately, these tests will not both pass, as they both update the same atom. We could clean up at the end of each test, but it's usually cleaner to simply redef the atoms in the context of the test. The tests below use with-redefs to ensure that the state is only manipulated in the context of the tests.
+As I was adding this behavior I enhanced the error reporting. Below you can find a failing test and the output that is produced.
 <br><br>
-<script src="https://gist.github.com/3988585.js?file=blog_expectations.clj"></script>
+<script src="https://gist.github.com/3988958.js?file=blog_expectations.clj"></script>
 <br>
-At this point the tests all pass. This solution works fine, but expectations gives you the ability to trim a bit of code and simply specify the namespace instead. The following tests specify the namespace and let expectations take care of the rest.
+As you can see, all three calls to the 'one' function are reported. If the number of args used to call 'one' are of the same size as the expected args, each arg is compared in detail; otherwise the two lists are compared in detail (but the elements are not).
 <br><br>
-<script src="https://gist.github.com/3988687.js?file=blog_expectations.clj"></script>
+As you can see in this failure the first argument, "hello", matches.
+<pre> ;          got: (one "hello" {2 3, :a 1})
+ ;                   arg1: matches
+ ;          expected arg2: {:a :b, :c {:ff :gg, :dd :ee}}
+ ;            actual arg2: {2 3, :a 1}
+ ;          2 with val 3 is in actual, but not in expected
+ ;          :c {:dd with val :ee is in expected, but not in actual
+ ;          :c {:ff with val :gg is in expected, but not in actual
+ ;          :a expected: :b
+ ;                  was: 1</pre>
+Anytime an argument matches expectations will simply print "matches". You can also specify :anything as an argument, to ignore that argument and always 'match'. The following test shows an example of matching the second argument, while the first argument is no longer matching.
+<br><br>
+<script src="https://gist.github.com/3989075.js?file=blog_expectations.clj"></script>
 <br>
-That's it. Now all atoms, refs, and agents that are defined in the 'blog' namespace will be redefined within the context of the (redef-state) call. It's also important to note that redef-state can take as many namespaces as you'd like to specify in the first arg vector.
+That's it. Hopefully these interaction tests follow the principle of least surprise, and are easy for everyone to use.
+
       </section>
       <footer>
         <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
