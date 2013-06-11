@@ -59,7 +59,7 @@
 In the <a href="introduction.html">last section</a> I gave examples of how to use <a href="https://github.com/jaycfields/expectations">expectations</a> to test for equality. This section focus on non-equality expectations that are also available.<br />
 <br />
 <span style="font-weight: bold;">Regex</span><br />
-expectations allows you to specify that you expect a regex, and if the string matches that regex the expectation passes. The following example shows both the successful and failing expectations that use regexes.<br />
+expectations allows you to use a regex as your expected value, and if the 'actual' string matches that regex the expectation passes. The following example shows both the successful and failing expectations that use regexes.<br />
 <pre>
 (expect #"in 14" "in 1400 and 92")
 
