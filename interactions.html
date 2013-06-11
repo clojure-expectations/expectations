@@ -91,15 +91,14 @@ As I was adding this behavior I enhanced the error reporting. Below you can find
 As you can see, all three calls to the 'one' function are reported. If the number of args used to call 'one' are of the same size as the expected args, each arg is compared in detail; otherwise the two lists are compared in detail (but the elements are not).
 <br><br>
 As you can see in this failure the first argument, "hello", matches.
-<pre> ;          got: (one "hello" {2 3, :a 1})
- ;                   arg1: matches
- ;          expected arg2: {:a :b, :c {:ff :gg, :dd :ee}}
- ;            actual arg2: {2 3, :a 1}
+<pre>  ;          -- got: (one "hello" {2 3, :a 1})
+ ;          - arg2: {2 3, :a 1}
  ;          2 with val 3 is in actual, but not in expected
  ;          :c {:dd with val :ee is in expected, but not in actual
  ;          :c {:ff with val :gg is in expected, but not in actual
  ;          :a expected: :b
- ;                  was: 1</pre>
+ ;                  was: 1
+</pre>
 Anytime an argument matches expectations will simply print "matches". You can also specify :anything as an argument, to ignore that argument and always 'match'. The following test shows an example of matching the second argument, while the first argument is no longer matching.
 <br><br>
 <script src="https://gist.github.com/3989075.js?file=blog_expectations.clj"></script>
