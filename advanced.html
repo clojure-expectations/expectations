@@ -56,7 +56,7 @@
 <h2>
 <a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
 
-In my last blog post I gave examples of how to use <a href="https://github.com/jaycfields/expectations">expectations</a> to test for equality. This entry will focus on non-equality expectations that are also available.<br />
+In the <a href="introduction.html">last section</a> I gave examples of how to use <a href="https://github.com/jaycfields/expectations">expectations</a> to test for equality. This section focus on non-equality expectations that are also available.<br />
 <br />
 <span style="font-weight: bold;">Regex</span><br />
 expectations allows you to specify that you expect a regex, and if the string matches that regex the expectation passes. The following example shows both the successful and failing expectations that use regexes.<br />
@@ -75,10 +75,13 @@ failure in (core.clj:17) : sample.test.core
            regex #"in 14" not found in "in 1300 and 92"
 Ran 1 tests containing 1 assertions in 5 msecs
 1 failures, 0 errors.</pre>
-As you can see from the previous example, writing an expectation using a regex is syntactically the same as writing an equality expectation - and this is true for all of the non-equality expectations. In expectations there is only one syntax for expect - it's always (expect expected actual).<br />
+As you can see from the previous example, writing an expectation using a regex is syntactically the same as writing an equality expectation -
+and this is true for all of the non-equality expectations. In expectations there is only one syntax for expect - it's always (expect expected actual).<br />
 <br />
 <span style="font-weight: bold;">Testing for a certain type</span><br />
-I basically never write tests that verify the result of a function is a certain type. However, for the once in a blue moon case where that's what I need, expectations allows me to verify that the result of a function call is a certain type simply by using that type as the expected value. The example below shows the successful and failing examples of testing that the actual is an instance of the expected type.<br />
+I basically never write tests that verify the result of a function is a certain type. However, for the once in a blue moon case where that's what I need,
+expectations allows me to verify that the result of a function call is a certain type simply by using that type as the expected value.
+The example below shows the successful and failing examples of testing that the actual is an instance of the expected type.<br />
 <pre>(expect String "in 1300 and 92")
 
 jfields$ lein expectations
