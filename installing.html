@@ -37,31 +37,6 @@
 </blockquote>
 
 <h2>
-<a name="10-second-example-inferred-testing-demo" class="anchor" href="#10-second-example-inferred-testing-demo"><span class="octicon octicon-link"></span></a>10 second example</h2>
-
-<div class="highlight"><pre><span class="c1">;; expectations uses the format (expect expected actual) for all tests</span>
-<span class="c1">;; (equality, expected exception, regex matching, interactions, etc).</span>
-
-<span class="c1">;; use expectations to test equality</span>
-<span class="p">(</span><span class="nf">expect</span> <span class="mi">1</span> <span class="mi">1</span><span class="p">)</span>
-<span class="p">(</span><span class="nf">expect</span> <span class="s">"foo"</span> <span class="s">"foo"</span><span class="p">)</span>
-
-<span class="c1">;; test if the regex is in a string</span>
-<span class="p">(</span><span class="nf">expect</span> <span class="o">#</span><span class="s">"foo"</span> <span class="s">"boofooar"</span><span class="p">)</span>
-
-<span class="c1">;; does the form throw an expected exception</span>
-<span class="p">(</span><span class="nf">expect</span> <span class="nv">ArithmeticException</span> <span class="p">(</span><span class="nb">/ </span><span class="mi">12</span> <span class="mi">0</span><span class="p">))</span>
-
-<span class="c1">;; expect a value in a collection (k/v for maps)</span>
-<span class="p">(</span><span class="nf">expect</span> <span class="p">{</span><span class="ss">:foo</span> <span class="mi">1</span><span class="p">}</span> <span class="p">(</span><span class="nf">in</span> <span class="p">{</span><span class="ss">:foo</span> <span class="mi">1</span> <span class="ss">:cat</span> <span class="mi">4</span><span class="p">}))</span>
-<span class="p">(</span><span class="nf">expect</span> <span class="ss">:foo</span> <span class="p">(</span><span class="nf">in</span> <span class="o">#</span><span class="p">{</span><span class="ss">:foo</span> <span class="ss">:bar</span><span class="p">}))</span>
-<span class="p">(</span><span class="nf">expect</span> <span class="ss">:foo</span> <span class="p">(</span><span class="nf">in</span> <span class="p">[</span><span class="ss">:bar</span> <span class="ss">:foo</span><span class="p">]))</span>
-
-<span class="c1">;; expect a function to return a truthy value given the actual argument</span>
-<span class="p">(</span><span class="nf">expect</span> <span class="nv">empty?</span> <span class="p">(</span><span class="nf">list</span><span class="p">))</span>
-</pre></div>
-
-<h2>
 <a name="installing" class="anchor" href="#installing"><span class="octicon octicon-link"></span></a>Installing</h2>
 
 <p>The easiest way to use expectations in your own projects is via
@@ -182,59 +157,6 @@ expectations in a simple test.</p>
 <div class="highlight"><pre><span class="nv">$ </span>java -cp <span class="s2">"lib/*"</span> clojure.main -i /path/to/expectations/test/clojure/success/success_examples.clj
 </pre></div>
 
-<h2>
-<a name="examples" class="anchor" href="#examples"><span class="octicon octicon-link"></span></a>Examples</h2>
-
-<p>You're now ready to start using expectations as you see fit. There's not a ton of syntax; however, you'll probably want to take a quick look at the various ways you can write expectations: <a href="http://github.com/jaycfields/expectations/blob/master/test/clojure/success/success_examples.clj">Syntax Examples</a></p>
-
-<h2>
-<a name="detailed-examples-with-discussion" class="anchor" href="#detailed-examples-with-discussion"><span class="octicon octicon-link"></span></a>Detailed Examples with Discussion</h2>
-
-<p><a href="http://blog.jayfields.com/2011/11/clojure-expectations-introduction.html">Unit Testing Examples - Part One (Introduction)</a></p>
-
-<p><a href="http://blog.jayfields.com/2011/11/clojure-non-equality-expectations.html">Unit Testing Examples - Part Two (Non-Equality)</a></p>
-
-<p><a href="http://blog.jayfields.com/2011/11/clojure-expectations-with-values-in.html">Unit Testing Examples - Part Three (Using Values)</a></p>
-
-<p><a href="http://blog.jayfields.com/2011/11/clojure-expectations-and-doublenan.html">Unit Testing Examples - Part Four (Testing Double/NaN)</a></p>
-
-<p><a href="http://blog.jayfields.com/2011/11/clojure-expectations-removing.html">Unit Testing Examples - Part Five (Removing Duplication with 'given')</a></p>
-
-<p><a href="http://blog.jayfields.com/2011/11/clojure-expectations-unit-testing-wrap.html">Unit Testing Examples - Part Six (Wrap Up)</a></p>
-
-<p><a href="http://blog.jayfields.com/2012/11/clojure-use-expect-let-to-share-value.html">Use expect-let To Share A Value Between expected And actual</a></p>
-
-<p><a href="http://blog.jayfields.com/2012/11/clojure-freezing-time-added-to.html">Freezing Time Added To expectations</a></p>
-
-<p><a href="http://blog.jayfields.com/2012/11/clojure-interaction-based-testing-added.html">Interaction Based Testing Added To expectations</a></p>
-
-<p><a href="http://blog.jayfields.com/2012/10/clojure-redef-state-added-to.html">redef-state Added To expectations</a></p>
-
-<h2>
-<a name="colorizing" class="anchor" href="#colorizing"><span class="octicon octicon-link"></span></a>Colorizing</h2>
-
-<p>By default, expectations uses ansi escape codes to color output on non-windows environments. expectations also respects a EXPECTATIONS_COLORIZE environment variable - set the var to false if you'd like to turn off colorizing.
-<a href="http://blog.jayfields.com/2012/05/clojure-expectations-colorized.html">more info</a></p>
-
-<h2>
-<a name="credit" class="anchor" href="#credit"><span class="octicon octicon-link"></span></a>Credit</h2>
-
-<p>Expectations is based on clojure.test. clojure.test is distributed under the Eclipse license, with
-ownership assigned to Rich Hickey.</p>
-
-<h2>
-<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
-
-<p>Copyright (c) 2010, Jay Fields
-All rights reserved.</p>
-
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-
-<ul>
-<li><p>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</p></li>
-<li><p>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</p></li>
-<li><p>Neither the name Jay Fields nor the names of the contributors may be used to endorse or promote products derived from this software without specific prior written permission.</p></li>
-</ul><p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
       </section>
       <footer>
         <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
