@@ -56,7 +56,8 @@
 <h2>
 <a name="interactions" class="anchor" href="#interactions"><span class="octicon octicon-link"></span></a>Interaction Based Testing</h2>
 
-The vast majority of testing I do these days is state-based; however, there are times when I need to test an interaction (e.g. writing to a file or printing to standard out). The ability to test interactions has been in expectations.scenarios for quite awhile, but there isn't any reason that you need a scenario to test an interaction - so, as of version 1.4.16, you also have the ability to test interactions with bare expectations.
+The vast majority of testing I do these days is state-based; however, there are times when I need to test an interaction (e.g. writing to a file or printing to standard out).
+As of version 1.4.16, you also have the ability to test interactions with bare expectations.
 <br><br>
 The following test shows how you can specify an expected interaction. This test passes.
 <br><br>
@@ -67,7 +68,27 @@ Writing the test should be straightforward - expect the interaction and then cal
 As I was adding this behavior I enhanced the error reporting. Below you can find a failing test and the output that is produced.
 <br><br>
 <script src="https://gist.github.com/3988958.js?file=blog_expectations.clj"></script>
-<br>
+<pre> ;          expected: (one "hello" {:a :b, :c {:ff :gg, :dd :ee}}) once
+ ;
+ ;          got: (one "hello")
+ ;          {:a :b, :c {:ff :gg, :dd :ee}} are in expected, but not in actual
+ ;          expected is larger than actual
+ ;
+ ;          got: (one "hello" "world" "here")
+ ;          "here", "world" are in actual, but not in expected
+ ;          {:a :b, :c {:ff :gg, :dd :ee}} are in expected, but not in actual
+ ;          actual is larger than expected
+ ;
+ ;          got: (one "hello" {2 3, :a 1})
+ ;                   arg1: matches
+ ;          expected arg2: {:a :b, :c {:ff :gg, :dd :ee}}
+ ;            actual arg2: {2 3, :a 1}
+ ;          2 with val 3 is in actual, but not in expected
+ ;          :c {:dd with val :ee is in expected, but not in actual
+ ;          :c {:ff with val :gg is in expected, but not in actual
+ ;          :a expected: :b
+ ;                  was: 1
+</pre>
 As you can see, all three calls to the 'one' function are reported. If the number of args used to call 'one' are of the same size as the expected args, each arg is compared in detail; otherwise the two lists are compared in detail (but the elements are not).
 <br><br>
 As you can see in this failure the first argument, "hello", matches.
