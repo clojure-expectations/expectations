@@ -1,0 +1,160 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Expectations by jaycfields</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Expectations</h1>
+        <p class="header">a minimalist's unit testing framework</p>
+
+        <ul>
+          <li><a class="buttons" href="index.html">Home</a></li>
+          <li><a class="buttons" href="installing.html">Installing</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/jaycfields">jaycfields</a></p>
+
+
+      </header>
+      <section>
+        <h1>
+<a name="expectations" class="anchor" href="#expectations"><span class="octicon octicon-link"></span></a>expectations</h1>
+
+<blockquote>
+<p>adding signal, removing noise</p>
+</blockquote>
+
+<h2>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
+
+expectations is built with the idea that unit tests should contain <a href="http://blog.jayfields.com/2007/06/testing-one-assertion-per-test.html">one assertion per test</a>. A result of this design choice is that expectations has very minimal syntax.<br />
+<br />
+For example, if you want to verify the result of a function call, all you need to do is specify what return value you expect from the function call.<br />
+<pre>(expect 2 (+ 1 1)</pre>
+note: you'll want to (:use expectations); however, no other setup is required for using expectations. I created a sample project for this blog post and the entire test file looks like this (at this point):<br />
+<pre>(ns sample.test.core
+  (:use [expectations]))
+
+(expect 2 (+ 1 1))</pre>
+Again, we use lein to run our expectations.<br />
+<pre>jfields$ lein expectations
+Ran 1 tests containing 1 assertions in 2 msecs
+0 failures, 0 errors.</pre>
+That's the simplest, and most often used expectation - an equality comparison. The equality comparison works across all Clojure types - vectors, sets, maps, etc and any Java instances that return true when given to Clojure's = function.<br />
+<pre>(ns sample.test.core
+  (:use [expectations]))
+
+(expect 2 (+ 1 1))
+(expect [1 2] (conj [] 1 2))
+(expect #{1 2} (conj #{} 1 2))
+(expect {1 2} (assoc {} 1 2))</pre>
+Running the previous expectations produces similar output as before.<br />
+<pre>jfields$ lein expectations
+Ran 4 tests containing 4 assertions in 26 msecs
+0 failures, 0 errors.</pre>
+Successful equality comparison isn't very exciting; however, expectations really begins to prove it's worth with it's failure messages. When comparing two numbers there's not much additional information that expectations can provide. Therefore, the following output is what you would expect when your expectation fails.<br />
+<pre>(expect 2 (+ 1 3))
+
+jfields$ lein expectations
+failure in (core.clj:4) : sample.test.core
+           (expect 2 (+ 1 3))
+           expected: 2
+                was: 4</pre>
+expectations gives you the namespace, file name, and line number along with the expectation you specified, the expected value, and the actual value. Again, nothing surprising. However, when you compare vectors, sets, and maps expectations does a bit of additional work to give you clues on what the problem might be. <br />
+<br />
+The following 3 expectations using vectors will all fail, and expectations provides detailed information on what exactly failed.<br />
+<pre>(expect [1 2] (conj [] 1))
+(expect [1 2] (conj [] 2 1))
+(expect [1 2] (conj [] 1 3))
+
+jfields$ lein expectations
+failure in (core.clj:5) : sample.test.core
+           (expect [1 2] (conj [] 1))
+           expected: [1 2]
+                was: [1]
+           2 are in expected, but not in actual
+           expected is larger than actual
+failure in (core.clj:6) : sample.test.core
+           (expect [1 2] (conj [] 2 1))
+           expected: [1 2]
+                was: [2 1]
+           lists appears to contain the same items with different ordering
+failure in (core.clj:7) : sample.test.core
+           (expect [1 2] (conj [] 1 3))
+           expected: [1 2]
+                was: [1 3]
+           3 are in actual, but not in expected
+           2 are in expected, but not in actual
+Ran 3 tests containing 3 assertions in 22 msecs
+3 failures, 0 errors.</pre>
+In these simple examples it's easy to see what the issue is; however, when working with larger lists expectations can save you a lot of time by telling you which specific elements in the list are causing the equality to fail.<br />
+<br />
+Failure reporting on sets looks very similar:<br />
+<pre>(expect #{1 2} (conj #{} 1))
+(expect #{1 2} (conj #{} 1 3))
+
+jfields$ lein expectations
+failure in (core.clj:9) : sample.test.core
+           (expect #{1 2} (conj #{} 1))
+           expected: #{1 2}
+                was: #{1}
+           2 are in expected, but not in actual
+failure in (core.clj:10) : sample.test.core
+           (expect #{1 2} (conj #{} 1 3))
+           expected: #{1 2}
+                was: #{1 3}
+           3 are in actual, but not in expected
+           2 are in expected, but not in actual
+Ran 2 tests containing 2 assertions in 15 msecs
+2 failures, 0 errors.</pre>
+expectations does this type of detailed failure reporting for maps as well, and this might be one if the biggest advantages expectations has over clojure.test - especially when dealing with nested maps.<br />
+<pre>(expect {:one 1 :many {:two 2}}
+        (assoc {} :one 2 :many {:three 3}))
+
+jfields$ lein expectations
+failure in (core.clj:13) : sample.test.core
+           (expect {:one 1, :many {:two 2}} (assoc {} :one 2 :many {:three 3}))
+           expected: {:one 1, :many {:two 2}}
+                was: {:many {:three 3}, :one 2}
+           :many {:three with val 3 is in actual, but not in expected
+           :many {:two with val 2 is in expected, but not in actual
+           :one expected: 1
+                     was: 2
+Ran 1 tests containing 1 assertions in 19 msecs
+1 failures, 0 errors.</pre>
+expectations also provides a bit of additional help when comparing the equality of strings.<br />
+<pre>(expect "in 1400 and 92" "in 14OO and 92")
+
+jfields$ lein expectations
+failure in (core.clj:17) : sample.test.core
+           (expect in 1400 and 92 in 14OO and 92)
+           expected: "in 1400 and 92"
+                was: "in 14OO and 92"
+            matches: "in 14"
+           diverges: "00 and 92"
+                  &amp;: "OO and 92"
+Ran 1 tests containing 1 assertions in 8 msecs
+1 failures, 0 errors.</pre>
+That's basically all you'll need to know for using expectations to equality test. I'll be following up this blog post with more examples of using expectations with regexs, expected exceptions and type checking; however, if you don't want to wait you can take a quick look at the <a href="https://github.com/jaycfields/expectations/blob/master/test/clojure/success/success_examples.clj">success tests</a> that are found within the framework.
+
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+
+  </body>
+</html>
