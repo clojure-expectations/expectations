@@ -1,1 +1,9 @@
 /*nrepl-server*
+/.fig
+/lib
+/out
+/pom.*
+/target
+/.lein-failures
+/.lein-deps-sum
+/.idea
