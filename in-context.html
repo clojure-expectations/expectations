@@ -65,9 +65,6 @@ Too abstract, no problem, the code:
 That's it, if you add the previous function to your tests, you can define whatever you like in the in-context function, and your tests will be run in your custom context. The previous snippet is pulled from the expectations tests, which verify that success.success-examples-src/a-fn-to-be-rebound is correctly rebound. In the expectations tests an <a href="https://github.com/jaycfields/expectations/blob/5dd034c6835a197e38d5285b9f97ed5dc9c2bd9a/test/clojure/expectations_options.clj">expectations_options.clj</a> namespace is used to define in-context (expectations_options.clj explained <a href="http://blog.jayfields.com/2013/01/clojure-expectations-before-run-hook.html">here</a>).
 <br><br>
 Why would you want to define your own context? In the past I've used <code>in-context</code> for two reasons: rebinding things I don't care about (e.g. calls to logging) to <code>(constantly true)</code>, and rebinding things I never want called (e.g. create a new thread) to <code>#(throw (RuntimeException. "not allowed in tests"))</code>
-<br><br>
-I've been using in-context for about a month now, and it's worked well for me. Give it a shot and let me know how it's working for you.
-
 
       </section>
       <footer>
