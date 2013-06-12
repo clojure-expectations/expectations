@@ -54,16 +54,66 @@
 <p>adding signal, removing noise</p>
 </blockquote>
 
-<h2>
-<a name="freezetime" class="anchor" href="#freezetime"><span class="octicon octicon-link"></span></a>Freezing Time</h2>
+<h2> <a name="indent" class="anchor" href="#indent"><span class="octicon octicon-link"></span></a>Indention</h2>
 
-If you're using expectations and Joda Time, you now have the ability to freeze time in expectations (version 1.4.16 and above). The following code demonstrates how you can use the freeze-time macro to set the time, verify anything you need, and allow time to be reset for you.
-<br><br>
-<script src="https://gist.github.com/3989207.js?file=blog_expectations.clj"></script>
-<br>
-Under the covers freeze-time is setting the current millis using the DateTime you specify, running your code and resetting the current millis in a finally. As a result, after your code finishes executing, even if finishing involves throwing an exception, the millis of Joda Time will be set back to working as you'd expect.
-<br><br>
-The freeze-time macro can be used in both the expected and actual forms, and can be nested if you need to set the time multiple times within a single expectation.
+By default expectations fns and macros will indent like any other custom fns or macros. This works fine; however,
+I've added the following emacs lisp to my setup, and I definitely prefer this setup to the standard setup. The Indention
+level is based on the settings for clojure.core functions, but you're free to tweak things in whatever way you'd like.
+<pre>
+(define-clojure-indent
+  (expect 'defun)
+  (expect-let 'defun)
+  (given 'defun)
+  (context 1)
+  (freeze-time 1)
+  (redef-state 1)
+  (from-each 1))
+</pre>
+
+<h2> <a name="greeks" class="anchor" href="#greeks"><span class="octicon octicon-link"></span></a>Font Lock</h2>
+
+Syntax is very important to expectations; however, there are only so many short function names that you can
+responsibly use as part of a framework. However, I do like to shorten things when possible; therefore, I define
+the following font locks in my emacs setup. (note, not every function/marco I font lock is defined in expectations)
+<pre>
+(dolist (x '((true        т)
+             (false       ғ)
+             (nil         Ø)
+             (with-redefs я)
+             (interaction ι)
+             (a-fn1       α)
+             (a-fn2       β)
+             (a-fn3       γ)
+             (no-op       ε)))
+  (eval-after-load 'clojure-mode
+    '(font-lock-add-keywords
+      'clojure-mode `((,(concat "[\[({[:space:]]"
+                                "\\(" (symbol-name (first x)) "\\)"
+                                "[\])}[:space:]]")
+                       (0 (progn (compose-region (match-beginning 1)
+                                                 (match-end 1) ,(symbol-name (second x)))
+                                 nil))))))
+  (eval-after-load 'clojure-mode
+    '(font-lock-add-keywords
+      'clojure-mode `((,(concat "^"
+                                "\\(" (symbol-name (first x)) "\\)"
+                                "[\])}[:space:]]")
+                       (0 (progn (compose-region (match-beginning 1)
+                                                 (match-end 1) ,(symbol-name (second x)))
+                                 nil))))))
+  (eval-after-load 'clojure-mode
+    '(font-lock-add-keywords
+      'clojure-mode `((,(concat "[\[({[:space:]]"
+                                "\\(" (symbol-name (first x)) "\\)"
+                                "$")
+                       (0 (progn (compose-region (match-beginning 1)
+                                                 (match-end 1) ,(symbol-name (second x)))
+                                 nil)))))))
+</pre>
+The image below shows the before and after buffers. The top buffer is the buffer with the font locks applied.
+<div class="separator" style="clear: both;">
+<a href="images/fontlock.png"><img border="0" width="600" src="images/fontlock.png"/></a>
+</div>
 
       </section>
       <footer>
