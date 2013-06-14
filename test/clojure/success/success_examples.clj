@@ -337,20 +337,20 @@
 
 (expect :a-rebound-val (success.success-examples-src/a-fn-to-be-rebound))
 
-(expect (interaction (a-fn anything&) :twice)
+(expect (interaction (a-fn1 anything&) :twice)
         (do
-          (a-fn 1 2)
-          (a-fn 3)))
+          (a-fn1 1 2)
+          (a-fn1 3)))
 
-(expect (interaction (a-fn :an-actual-arg anything&))
+(expect (interaction (a-fn1 :an-actual-arg anything&))
         (do
-          (a-fn :an-actual-arg 1 2)
-          (a-fn :some-other-arg 3)))
+          (a-fn1 :an-actual-arg 1 2)
+          (a-fn1 :some-other-arg 3)))
 
-(expect (interaction (a-fn :an-actual-arg anything&))
+(expect (interaction (a-fn1 :an-actual-arg anything&))
         (do
-          (a-fn :an-actual-arg 1)
-          (a-fn :some-other-arg 3)))
+          (a-fn1 :an-actual-arg 1)
+          (a-fn1 :some-other-arg 3)))
 
 (expect String (from-each [letter ["a" "b" "c"]]
                      letter))
