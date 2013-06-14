@@ -3,20 +3,17 @@
   (:require clojure.template clojure.string clojure.pprint clojure.data))
 
 (def nothing "no arg given")
-(defn no-op [& x])
+(defn no-op [& _])
 
 (defn anything [& _] true)
 (defn anything& [& _] true)
 
-(defn a-fn  [& _] true)
-(defn a-fn1 [& _] true)
-(defn a-fn2 [& _] true)
-(defn a-fn3 [& _] true)
+(defn a-fn1 [& _])
+(defn a-fn2 [& _])
+(defn a-fn3 [& _])
 
 (defn in [n] {::in n ::in-flag true})
 (defn contains-kvs [& {:as kvs}] {::contains-kvs kvs ::contains-kvs-flag true})
-
-
 
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
