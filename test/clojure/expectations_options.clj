@@ -7,6 +7,12 @@
   []
   (expectations/warn-on-iref-updates))
 
+(defn am-i-done?
+  "turn iref modification warnings on"
+  {:expectations-options :after-run}
+  []
+  (println "yeah, you're done."))
+
 (defn in-context
   "rebind a var to verify that the expecations are run in the defined context"
   {:expectations-options :in-context}
