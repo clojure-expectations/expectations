@@ -275,22 +275,22 @@
   (-> (find-expectations-vars :before-run) (execute-vars))
   (when @warn-on-iref-updates-boolean
     (add-watch-every-iref-for-updates))
-  (create-context
-   #(binding [*report-counters* (ref *initial-report-counters*)]
-      (let [ns->vars (group-by (comp :ns meta) vars)
-            start (System/nanoTime)]
-        (doseq [[a-ns the-vars] ns->vars]
-          (doseq [v the-vars]
-            (test-var v)
-            (expectation-finished v))
-          (ns-finished (ns-name a-ns)))
-        (let [result (assoc @*report-counters*
-                       :run-time (int (/ (- (System/nanoTime) start) 1000000))
-                       :ignored-expectations ignored-expectations)]
-          (when @warn-on-iref-updates-boolean
-            (remove-watch-every-iref-for-updates))
-          (-> (find-expectations-vars :after-run) (execute-vars))
-          result)))))
+  (binding [*report-counters* (ref *initial-report-counters*)]
+    (let [ns->vars (group-by (comp :ns meta) vars)
+          start (System/nanoTime)]
+      (doseq [[a-ns the-vars] ns->vars]
+        (doseq [v the-vars]
+          (create-context
+           #(test-var v))
+          (expectation-finished v))
+        (ns-finished (ns-name a-ns)))
+      (let [result (assoc @*report-counters*
+                     :run-time (int (/ (- (System/nanoTime) start) 1000000))
+                     :ignored-expectations ignored-expectations)]
+        (when @warn-on-iref-updates-boolean
+          (remove-watch-every-iref-for-updates))
+        (-> (find-expectations-vars :after-run) (execute-vars))
+        result))))
 
 (defn run-tests-in-vars [vars]
   (doto (assoc (test-vars vars 0) :type :summary)
