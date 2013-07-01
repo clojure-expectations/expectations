@@ -33,7 +33,6 @@
 (def ^{:dynamic true} reminder nil)
 
 ;;; UTILITIES FOR REPORTING FUNCTIONS
-
 (defn getenv [var]
   (System/getenv var))
 
