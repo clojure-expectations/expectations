@@ -12,3 +12,4 @@ target
 /.idea/libraries/lib_jars.xml
 /pom.xml.asc
 /repl-port
+/.lein-repl-history
