@@ -165,7 +165,7 @@
 (defmulti report :type)
 
 (defmethod report :pass [m]
-  (alter-meta! *test-var* assoc :status [:success "" (:line *test-meta*)])
+  (alter-meta! *test-var* assoc ::run true :status [:success "" (:line *test-meta*)])
   (inc-report-counter :pass))
 
 (defmethod report :fail [m]
@@ -295,12 +295,15 @@
   (doto (assoc (test-vars vars 0) :type :summary)
     (report)))
 
+(defn unrun-expectation [{:keys [expectation] run? ::run}]
+  (and expectation (not run?)))
+
 (defn ->expectation [ns]
   (->> ns
        ns-interns
        vals
        (sort-by str)
-       (filter (comp :expectation meta))))
+       (filter (comp unrun-expectation meta))))
 
 (defn ->focused-expectations [expectations]
   (->> expectations (filter (comp :focused meta)) seq))
@@ -404,13 +407,13 @@
 
 (defmulti compare-expr (fn [e a _ _]
                          (cond
-                          (and (not (sorted? a)) (::from-each-flag a)) ::from-each
+                          (and (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
                           (and (isa? e Throwable) (not= e a)) ::expect-exception
                           (instance? Throwable e) ::expected-exception
                           (instance? Throwable a) ::actual-exception
                           (and (fn? e) (not= e a)) ::fn
-                          (and (not (sorted? a)) (::in-flag a)) ::in
-                          (and (not (sorted? e)) (::contains-kvs-flag e)) ::contains-kvs
+                          (and (not (sorted? a)) (contains? a ::in-flag)) ::in
+                          (and (not (sorted? e)) (contains? e ::contains-kvs-flag)) ::contains-kvs
                           :default [(class e) (class a)])))
 
 (defmethod compare-expr :default [e a str-e str-a]
