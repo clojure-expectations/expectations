@@ -172,7 +172,7 @@
   (inc-report-counter :fail)
   (let [current-test *test-var*
         message (->failure-message m)]
-    (alter-meta! current-test assoc :status [:fail message (:line *test-meta*)])
+    (alter-meta! current-test assoc ::run true :status [:fail message (:line *test-meta*)])
     (fail *test-name* *test-meta* message)))
 
 (defmethod report :error [{:keys [result raw] :as m}]
@@ -187,7 +187,7 @@
                               (str "    threw: " (class result) " - " (.getMessage result))
                               (pruned-stack-trace result)])]
     (alter-meta! current-test
-                 assoc :status [:error message (:line *test-meta*)])
+                 assoc ::run true :status [:error message (:line *test-meta*)])
     (fail *test-name* *test-meta* message)))
 
 (defmethod report :summary [{:keys [test pass fail error run-time ignored-expectations]}]
