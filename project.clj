@@ -1,10 +1,10 @@
-(defproject expectations "1.4.51"
+(defproject expectations "1.4.52"
   :description "testing framework"
   :jar-name "expectations.jar"
   :java-source-paths ["src/java"]
   :source-paths ["src/clojure"]
   :test-paths ["test/clojure"]
-  :dependencies [[org.clojure/clojure "1.3.0"]
+  :dependencies [[org.clojure/clojure "1.5.1"]
                  [erajure/erajure "0.0.3"]
                  [junit/junit "4.8.1"]]
   :plugins [[lein-expectations "0.0.7"]

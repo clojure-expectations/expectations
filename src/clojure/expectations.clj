@@ -407,13 +407,13 @@
 
 (defmulti compare-expr (fn [e a _ _]
                          (cond
-                          (and (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
+                          (and (map? a) (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
                           (and (isa? e Throwable) (not= e a)) ::expect-exception
                           (instance? Throwable e) ::expected-exception
                           (instance? Throwable a) ::actual-exception
                           (and (fn? e) (not= e a)) ::fn
-                          (and (not (sorted? a)) (contains? a ::in-flag)) ::in
-                          (and (not (sorted? e)) (contains? e ::contains-kvs-flag)) ::contains-kvs
+                          (and (map? a) (not (sorted? a)) (contains? a ::in-flag)) ::in
+                          (and (map? e) (not (sorted? e)) (contains? e ::contains-kvs-flag)) ::contains-kvs
                           :default [(class e) (class a)])))
 
 (defmethod compare-expr :default [e a str-e str-a]
