@@ -428,7 +428,7 @@
     (if (e a)
       {:type :pass}
       {:type :fail :raw [str-e str-a] :result [(pr-str a) "is not" str-e]})
-    (catch clojure.lang.ArityException ex
+    (catch Exception ex
       {:type :fail :raw [str-e str-a]
        :expected-message (str "also attempted: (" str-e " " str-a ")")
        :actual-message (str   "       and got: " (.getMessage ex))
