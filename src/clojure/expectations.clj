@@ -1,6 +1,6 @@
 (ns expectations
   (:use clojure.set)
-  (:require clojure.template clojure.string clojure.pprint clojure.data))
+  (:require expectations.clojure.walk clojure.template clojure.string clojure.pprint clojure.data))
 
 (def nothing "no arg given")
 (defn no-op [& _])
@@ -326,7 +326,7 @@
   (if (instance? clojure.lang.IRecord m)
     (nan->keyword (into {} (seq m)))
     (let [f (fn [[k v]] [k (if (and (number? v) (Double/isNaN v)) :DoubleNaN v)])]
-      (clojure.walk/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m))))
+      (expectations.clojure.walk/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m))))
 
 (defmethod nan->keyword java.util.List [m]
   (map #(if (and (number? %) (Double/isNaN %)) :DoubleNaN %) m))
