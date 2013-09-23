@@ -528,7 +528,7 @@
 (defmethod compare-expr [java.util.Set java.util.Set] [e a str-e str-a]
   (if (= (nan->keyword e) (nan->keyword a))
     {:type :pass}
-    (let [diff-fn (fn [e a] (seq (difference e a)))]
+    (let [diff-fn (fn [e a] (seq (difference (set e) (set a))))]
       {:type :fail
        :actual-message (when-let [v (diff-fn e a)]
                          (str (string-join ", " v)
