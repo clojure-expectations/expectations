@@ -359,3 +359,12 @@
                      :let [numinc1 (inc num)
                            numinc2 (inc num)]]
                     (* 10 numinc2)))
+
+(defrecord ConstantlyTrue []
+  CustomPred
+  (expect-fn [e a] true)
+  (expected-message [e a str-e str-a] (format "expected %s" e))
+  (actual-message [e a str-e str-a] (format "actual %s" a))
+  (message [e a str-e str-a] (format "%s & %s" str-e str-a)))
+
+(expect (->ConstantlyTrue) [1 2 3 4])

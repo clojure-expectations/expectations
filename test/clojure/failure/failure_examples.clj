@@ -232,23 +232,23 @@
             (interaction (.get l 1) (at-least (2 :times)))
             (.get l 1))
 
-(expect (interaction (a-fn anything&) :never)
-        (a-fn 1 2 3))
+(expect (interaction (a-fn1 anything&) :never)
+        (a-fn1 1 2 3))
 
-(expect (interaction (a-fn anything&) :never)
-        (a-fn 1))
+(expect (interaction (a-fn1 anything&) :never)
+        (a-fn1 1))
 
-(expect (interaction (a-fn 1 anything&))
+(expect (interaction (a-fn1 1 anything&))
         (do
-          (a-fn 1 :one-thing)
-          (a-fn 1 :two :things)))
+          (a-fn1 1 :one-thing)
+          (a-fn1 1 :two :things)))
 
-(expect (interaction (a-fn))
-        (do (a-fn 1)
-            (a-fn 2)))
+(expect (interaction (a-fn1))
+        (do (a-fn1 1)
+            (a-fn1 2)))
 
-(expect (interaction (a-fn map filter remove 2 3))
-        (a-fn identity 1 nil 2))
+(expect (interaction (a-fn2 map filter remove 2 3))
+        (a-fn2 identity 1 nil 2))
 
 (expect filter map)
 
@@ -277,3 +277,12 @@
                                    :let [jj (inc j)
                                          jjj (inc jj)]]
                                   (dec jjj)))
+
+(defrecord ConstantlyFalse []
+  CustomPred
+  (expect-fn [e a] false)
+  (expected-message [e a str-e str-a] (format "expected %s" e))
+  (actual-message [e a str-e str-a] (format "actual %s" a))
+  (message [e a str-e str-a] (format "%s & %s" str-e str-a)))
+
+(expect (->ConstantlyFalse) [1 2 3 4])

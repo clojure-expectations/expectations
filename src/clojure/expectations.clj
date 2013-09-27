@@ -405,6 +405,12 @@
      :result ["expected:" (pr-str e) "\n" but-string (pr-str original-a)]
      :message (when-let [messages (map-diff-message e a "")] (string-join "\n           " messages))}))
 
+(defprotocol CustomPred
+  (expect-fn [e a])
+  (expected-message [e a str-e str-a])
+  (actual-message [e a str-e str-a])
+  (message [e a str-e str-a]))
+
 (defmulti compare-expr (fn [e a _ _]
                          (cond
                           (and (map? a) (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
@@ -414,6 +420,7 @@
                           (and (fn? e) (not= e a)) ::fn
                           (and (map? a) (not (sorted? a)) (contains? a ::in-flag)) ::in
                           (and (map? e) (not (sorted? e)) (contains? e ::contains-kvs-flag)) ::contains-kvs
+                          (instance? expectations.CustomPred e) :custom-pred
                           :default [(class e) (class a)])))
 
 (defmethod compare-expr :default [e a str-e str-a]
@@ -422,6 +429,15 @@
     {:type :fail :raw [str-e str-a]
      :result ["expected:" (pr-str e)
               "\n                was:" (pr-str a)]}))
+
+(defmethod compare-expr :custom-pred [e a str-e str-a]
+  (if (expect-fn e a)
+    {:type :pass}
+    {:type :fail
+     :raw [str-e str-a]
+     :expected-message (expected-message e a str-e str-a)
+     :actual-message (actual-message e a str-e str-a)
+     :message (message e a str-e str-a)}))
 
 (defmethod compare-expr ::fn [e a str-e str-a]
   (try

@@ -1,5 +1,5 @@
 (ns expectations.expectations-expectations
-  (:use expectations expectations))
+  (:use expectations))
 
 (expect "\n
            -- got: (hello-fn {} 3 4)
