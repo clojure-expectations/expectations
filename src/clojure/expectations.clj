@@ -655,7 +655,7 @@
    (= times :once) 1
    (= times :twice) 2
    (and (list? times) (number? (first times)) (= :times (last times))) (first times)
-   :detault `(throw (RuntimeException.
+   :default `(throw (RuntimeException.
                      (str '~times
                           " is not a supported number of interactions."
                           " use :never, :once, :twice or"
@@ -711,7 +711,7 @@
    (= times :once) 1
    (= times :twice) 2
    (and (list? times) (number? (first times)) (= :times (last times))) (first times)
-   :detault `(throw (RuntimeException.
+   :default `(throw (RuntimeException.
                      (str '~times
                           " is not a supported number of interactions."
                           " use :never, :once, :twice or"
