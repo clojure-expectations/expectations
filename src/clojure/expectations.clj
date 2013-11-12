@@ -256,14 +256,13 @@
       (when-let [vv (var-get var)]
         (vv)))))
 
-(defn create-context [work]
-  (let [vars (find-expectations-vars :in-context)]
-    (cond
-     (= 0 (count vars)) (work)
-     (= 1 (count vars)) ((var-get (first vars)) work)
-     :default (do
-                (println "expectations only supports 0 or 1 :in-context fns. Ignoring:" vars)
-                (work)))))
+(defn create-context [in-context-vars work]
+  (case (count in-context-vars)
+    0 (work)
+    1 ((var-get (first in-context-vars)) work)
+    (do
+      (println "expectations only supports 0 or 1 :in-context fns. Ignoring:" in-context-vars)
+      (work))))
 
 (defn test-vars [vars ignored-expectations]
   (remove-ns 'expectations-options)
@@ -276,11 +275,11 @@
     (add-watch-every-iref-for-updates))
   (binding [*report-counters* (ref *initial-report-counters*)]
     (let [ns->vars (group-by (comp :ns meta) vars)
-          start (System/nanoTime)]
+          start (System/nanoTime)
+          in-context-vars (vec (find-expectations-vars :in-context))]
       (doseq [[a-ns the-vars] ns->vars]
         (doseq [v the-vars]
-          (create-context
-           #(test-var v))
+          (create-context in-context-vars #(test-var v))
           (expectation-finished v))
         (ns-finished (ns-name a-ns)))
       (let [result (assoc @*report-counters*
