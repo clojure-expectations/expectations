@@ -146,7 +146,7 @@
                                       " *****")))
                 (when raw (when (or show-raw (show-raw-choice)) (colorize-raw (raw-str raw))))
                 (when-let [[n1 v1 & _] ref-data]
-                  (format "           ref-data %s: %s" n1 (pr-str v1)))
+                  (format "             locals %s: %s" n1 (pr-str v1)))
                 (when-let [[_ _ & the-rest] ref-data]
                   (when the-rest
                     (->> the-rest
