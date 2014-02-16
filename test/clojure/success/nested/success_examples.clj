@@ -30,23 +30,3 @@
 
 ;; expect boolean
 (expect empty? (list))
-
-;; multiple expects with form
-(given [x y] (expect x (+ y y))
-	4 2
-	6 3
-	12 6)
-
-(given [x y] (expect 10 (+ x y))
-	4 6
-	6 4
-	12 -2)
-
-(given [x y] (expect x (in y))
-	:a #{:a :b}
-	{:a :b} {:a :b :c :d})
-
-(given [x y] (expect x y)
-	nil? nil
-	fn? +
-	empty? [])

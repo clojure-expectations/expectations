@@ -3,17 +3,14 @@
   (:require expectations.clojure.walk clojure.template clojure.string clojure.pprint clojure.data))
 
 (def nothing "no arg given")
-(defn no-op [& _])
-
-(defn anything [& _] true)
-(defn anything& [& _] true)
 
 (defn a-fn1 [& _])
 (defn a-fn2 [& _])
 (defn a-fn3 [& _])
 
+(defn no-op [& _])
+
 (defn in [n] {::in n ::in-flag true})
-(defn contains-kvs [& {:as kvs}] {::contains-kvs kvs ::contains-kvs-flag true})
 
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
@@ -413,12 +410,12 @@
 (defmulti compare-expr (fn [e a _ _]
                          (cond
                           (and (map? a) (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
+                          (and (map? a) (not (sorted? a)) (contains? a ::in-flag)) ::in
+                          (and (map? e) (not (sorted? e)) (contains? e ::more)) ::more
                           (and (isa? e Throwable) (not= e a)) ::expect-exception
                           (instance? Throwable e) ::expected-exception
                           (instance? Throwable a) ::actual-exception
                           (and (fn? e) (not= e a)) ::fn
-                          (and (map? a) (not (sorted? a)) (contains? a ::in-flag)) ::in
-                          (and (map? e) (not (sorted? e)) (contains? e ::contains-kvs-flag)) ::contains-kvs
                           (instance? expectations.CustomPred e) :custom-pred
                           :default [(class e) (class a)])))
 
@@ -450,32 +447,44 @@
        :result ["expected:" str-e
                 "\n                was:" (pr-str a)]})))
 
-(defmethod compare-expr ::contains-kvs [{e ::contains-kvs} a str-e str-a]
-  (compare-expr e (in a) str-e str-a))
+(defn find-failures [the-seq]
+  (seq (remove (comp #{:pass} :type) the-seq)))
+
+(defn find-successes [the-seq]
+  (first (filter (comp #{:pass} :type) the-seq)))
 
 (defmethod compare-expr ::from-each [e {a ::from-each str-i-a ::from-each-body} str-e str-a]
-  (if-let [failures (seq (remove (comp #{:pass} :type)
-                                 (for [{ts ::the-seq rd ::ref-data} a]
-                                   (assoc (compare-expr e ts str-e str-i-a)
-                                     :ref-data rd))))]
+  (if-let [failures (find-failures (for [{ts ::the-seq rd ::ref-data} a]
+                                     (assoc (compare-expr e ts str-e str-i-a)
+                                       :ref-data rd)))]
     {:type :fail
      :raw [str-e str-a]
-     :message (format "the list: %s" (pr-str (map ::the-seq a)))
+     :message (format "the list: %s" (pr-str (map (fn [x] (if-let [y (::in x)] y x))
+                                                  (map ::the-seq a))))
+     :list (map #(assoc % :show-raw true) failures)}
+    {:type :pass}))
+
+(defmethod compare-expr ::more [{es ::more} a str-e str-a]
+  (if-let [failures (find-failures (for [{:keys [e str-e a-fn gen-str-a]} es]
+                                     (compare-expr e (a-fn a) str-e (gen-str-a str-a))))]
+    {:type :fail
+     :raw [str-e str-a]
+     :message (format "actual val: %s" (pr-str a))
      :list (map #(assoc % :show-raw true) failures)}
     {:type :pass}))
 
 (defmethod compare-expr ::in [e a str-e str-a]
   (cond
-   (instance? java.util.List (::in a))
-   (if (seq (filter (fn [item] (= (nan->keyword e) (nan->keyword item))) (::in a)))
+   (or (instance? java.util.List (::in a)) (instance? java.util.Set (::in a)))
+   (if (find-successes (for [a (::in a)]
+                         (compare-expr e a str-e str-a)))
      {:type :pass}
-     {:type :fail :raw [str-e str-a]
-      :result ["value" (pr-str e) "not found in" (::in a)]})
-   (instance? java.util.Set (::in a))
-   (if ((nan->keyword (::in a)) (nan->keyword e))
-     {:type :pass}
-     {:type :fail :raw [str-e str-a]
-      :result ["key" (pr-str e) "not found in" (::in a)]})
+     {:type :fail
+      :raw [str-e str-a]
+      :list (map #(assoc % :show-raw true) (find-failures
+                                         (for [a (::in a)]
+                                           (compare-expr e a str-e str-a))))
+      :result [(if (::more e) str-e (format "val %s" (pr-str e))) "not found in" (::in a)]})
    (instance? java.util.Map (::in a))
    (map-compare e (select-keys (::in a) (keys e)) str-e str-a (::in a) "                in:")
    :default {:type :fail :raw [str-e str-a]
@@ -582,222 +591,13 @@
                  (> (count e) (count a))
                  "expected is larger than actual")})))
 
-(defn fn-string [f-name f-args]
-  (str "(" f-name (when (seq f-args) " ") (string-join " " (map pr-str f-args)) ")"))
-
-(defn compare-individual-args [idx arg1 arg2 raw-e]
-  (let [{:keys [expected-message actual-message result message type]}
-        (compare-expr arg1 arg2 raw-e (pr-str arg2))]
-    (when-not (= type :pass)
-      (str
-       "\n           - arg" idx ": " (pr-str arg2)
-       (when expected-message (str "\n           " expected-message))
-       (when actual-message (str "\n           " actual-message))
-       (when message (str "\n           " message))))))
-
-(defn compare-each-arg [result
-                        [raw-e-first & raw-e-rest]
-                        idx
-                        {e-first 0 :as e-args :or {e-first nothing}}
-                        {a-first 0 :as a-args :or {a-first nothing}}
-                        max-idx]
-  (if (> idx max-idx)
-    result
-    (recur (str result (compare-individual-args idx e-first a-first raw-e-first))
-           raw-e-rest
-           (inc idx) (vec (rest e-args)) (vec (rest a-args)) max-idx)))
-
-(defn compare-args [raw-e f-name expected-args actual-args]
-  (compare-each-arg (str "\n\n           -- got: " (fn-string f-name actual-args))
-                    raw-e
-                    1
-                    (vec expected-args)
-                    (vec actual-args)
-                    (count expected-args)))
-
-(defn matches? [e-arg a-arg]
-  (-> (compare-expr e-arg a-arg nil nil) :type (= :pass)))
-
-(defn matching [e-args a-args]
-  (cond
-   (and (empty? e-args) (not-empty a-args)) false
-   (and (empty? a-args) (not-empty e-args)) false
-   :default (let [[e-first & e-rest] e-args
-                  [a-first & a-rest] a-args
-                  match (matches? e-first a-first)]
-              (cond
-               (and (nil? e-rest) (nil? a-rest)) match
-               (false? match) false
-               (= e-first anything&) true
-               :default (recur e-rest a-rest)))))
-
-(defn compare-interaction [expected-expr f args interactions
-                           {:keys [times-fn times]} raw-times raw-e str-e str-a]
-  (let [actual-times (count (filter (partial matching args) interactions))]
-    (if (times-fn times actual-times)
-      {:type :pass}
-      (if (empty? interactions)
-        {:type :fail
-         :raw [str-e str-a]
-         :result ["expected:" expected-expr
-                  raw-times
-                  "\n                but:" f "was never called"]}
-        {:type :fail
-         :raw [str-e str-a]
-         :result (concat ["expected:" expected-expr raw-times
-                          "\n                got:" actual-times "times"]
-                         (map (partial compare-args raw-e f args) interactions))}))))
-
-(defn ->number-of-times [times]
-  (cond
-   (= times :never) 0
-   (= times :once) 1
-   (= times :twice) 2
-   (and (list? times) (number? (first times)) (= :times (last times))) (first times)
-   :default `(throw (RuntimeException.
-                     (str '~times
-                          " is not a supported number of interactions."
-                          " use :never, :once, :twice or"
-                          " (x times) where x is a number - e.g. (5 times)")))))
-
-(defn ->times [times]
-  (cond
-   (nil? times) {:times-fn = :times 1}
-   (keyword? times) {:times-fn = :times (->number-of-times times)}
-   (and (list? times) (number? (first times)) (= :times (last times))) {:times-fn =
-                                                                        :times (first times)}
-   (and (list? times) (= 'at-least (first times))) {:times-fn <=
-                                                    :times (->number-of-times (last times))}
-   (and (list? times) (= 'at-most (first times))) {:times-fn >=
-                                                   :times (->number-of-times
-                                                           (last times))}
-   :default `(throw (RuntimeException.
-                     (str '~times
-                          " is not a supported number of interaction times."
-                          " use :never, :once, :twice, (at-least ..) (at-most ..), or"
-                          " (x times) where x is a number - e.g. (5 times).")))))
-
-(defmacro do-fn-interaction-expect [[_ [f & args :as expected-expr] times :as e] a]
-  (if-not (resolve f)
-    `(report (compare-expr (RuntimeException. (str '~f
-                                                   " needs to be a var."
-                                                   " Either specify the actual var from the"
-                                                   " ns or use expectations/no-op or"
-                                                   " expectations/a-fn if you want to pass"
-                                                   " a fn around."
-                                                   )) nil '~e '~a))
-    `(try
-       (let [expected-interactions# (atom [])]
-         (with-redefs [~f (comp (partial swap! expected-interactions# conj) vector)]
-           (let [expected-args# (vector ~@args)]
-             (try ~a
-                  (report (compare-interaction '~expected-expr
-                                               ~(str f)
-                                               expected-args#
-                                               @expected-interactions#
-                                               ~(->times times)
-                                               '~times
-                                               '~(rest (nth e 1))
-                                               '~e '~a))
-                  (catch Throwable t#
-                    (report (compare-expr nil t# '~e '~a)))))))
-       (catch Throwable t#
-         (report (compare-expr t# nil '~e '~a))))))
-
-(defn ->number-of-mock-times [times]
-  (cond
-   (= times :never) 0
-   (= times :once) 1
-   (= times :twice) 2
-   (and (list? times) (number? (first times)) (= :times (last times))) (first times)
-   :default `(throw (RuntimeException.
-                     (str '~times
-                          " is not a supported number of interactions."
-                          " use :never, :once, :twice or"
-                          " (x times) where x is a number - e.g. (5 times)")))))
-
-(defn ->mock-times [times]
-  (cond
-   (nil? times) '(org.mockito.Mockito/times 1)
-   (keyword? times) `(org.mockito.Mockito/times ~(->number-of-mock-times times))
-   (and (list? times) (number? (first times)) (= :times (last times))) `(org.mockito.Mockito/times ~(first times))
-   (and (list? times) (= 'at-least (first times))) `(org.mockito.Mockito/atLeast ~(->number-of-mock-times (last times)))
-   (and (list? times) (= 'at-most (first times))) `(org.mockito.Mockito/atMost ~(->number-of-mock-times (last times)))
-   :default `(throw (RuntimeException.
-                     (str '~times
-                          " is not a supported number of interaction times."
-                          " use :never, :once, :twice, (at-least ..) (at-most ..), or"
-                          " (x times) where x is a number - e.g. (5 times).")))))
-
-(defmulti format-mockito-failure (comp class first vector))
-(defmethod format-mockito-failure org.mockito.exceptions.verification.WantedButNotInvoked [e expected-expr times]
-  {:type :fail
-   :result ["expected:" expected-expr
-            times
-            "\n" (.getMessage e)]})
-
-(defmethod format-mockito-failure org.mockito.exceptions.verification.junit.ArgumentsAreDifferent [e expected-expr times]
-  {:type :fail
-   :result ["expected:" expected-expr
-            times
-            "\n" (.getMessage e)]})
-
-(defmethod format-mockito-failure org.mockito.exceptions.verification.NeverWantedButInvoked [e expected-expr times]
-  {:type :fail
-   :result ["expected:" expected-expr
-            times
-            "\n" (.getMessage e)]})
-
-(defmethod format-mockito-failure org.mockito.exceptions.verification.TooLittleActualInvocations [e expected-expr times]
-  {:type :fail
-   :result ["expected:" expected-expr
-            times
-            "\n" (.getMessage e)]})
-
-(defmethod format-mockito-failure org.mockito.exceptions.base.MockitoAssertionError [e expected-expr times]
-  {:type :fail
-   :result ["expected:" expected-expr
-            times
-            "\n" (.getMessage e)]})
-
-(defmacro do-mock-interaction-expect [[_ [method o & args :as expected-expr] times :as e] a]
-  `(try
-     ~a
-     (try
-       (~'verify ~o ~(->mock-times times) (~method ~@args))
-       (report {:type :pass})
-       (catch org.mockito.exceptions.base.MockitoAssertionError e#
-         (report (format-mockito-failure e# '~expected-expr '~times)))
-       (catch org.mockito.exceptions.verification.TooLittleActualInvocations e#
-         (report (format-mockito-failure e# '~expected-expr '~times)))
-       (catch org.mockito.exceptions.verification.WantedButNotInvoked e#
-         (report (format-mockito-failure e# '~expected-expr '~times)))
-       (catch org.mockito.exceptions.verification.junit.ArgumentsAreDifferent e#
-         (report (format-mockito-failure e# '~expected-expr '~times)))
-       (catch org.mockito.exceptions.verification.NeverWantedButInvoked e#
-         (report (format-mockito-failure e# '~expected-expr '~times)))
-       (catch Throwable t#
-         (report (compare-expr t# nil '~e '~a))))
-     (catch Throwable t#
-       (report (compare-expr nil t# '~e '~a)))))
-
-(defmacro do-interaction-expect [[_ [f & args :as expected-expr] times :as e] a]
-  (if (= \. (first (name f)))
-    `(do-mock-interaction-expect ~e ~a)
-    `(do-fn-interaction-expect ~e ~a)))
-
-(defmacro do-value-expect [e a]
+(defmacro doexpect [e a]
   `(let [e# (try ~e (catch Throwable t# t#))
          a# (try ~a (catch Throwable t# t#))]
      (report
       (try (compare-expr e# a# '~e '~a)
            (catch Throwable e2#
              (compare-expr e2# a# '~e '~a))))))
-
-(defmacro doexpect [e a]
-  (if (and (list? e) (= 'interaction (first e)))
-    `(do-interaction-expect ~e ~a)
-    `(do-value-expect ~e ~a)))
 
 (defmacro expect
   ([a] `(expect true (if ~a true false)))
@@ -819,11 +619,6 @@
   `(def ~(vary-meta (gensym) assoc :expectation true :focused true)
      (fn [] (let ~bindings (doexpect ~e ~a)))))
 
-(defmacro given [bindings form & args]
-  (if args
-    `(clojure.template/do-template ~bindings ~form ~@args)
-    `(clojure.template/do-template [~'x ~'y] ~(list 'expect 'y (list 'x bindings)) ~@(rest form))))
-
 (defmacro expanding [n] (list 'quote  (macroexpand-1 n)))
 
 (->
@@ -831,10 +626,6 @@
  (.addShutdownHook
   (proxy [Thread] []
     (run [] (when @run-tests-on-shutdown (run-all-tests))))))
-
-(defn interaction
-  ([form])
-  ([form times])) ;;; this is never used, but it's nice for auto-completion and documentation
 
 (defn var->symbol [v]
   (symbol (str (.ns v) "/" (.sym v))))
@@ -906,3 +697,39 @@
                               ::ref-data ~(vec (interleave vs (map symbol vs)))})
                ::from-each-body '~body-expr
                ::from-each-flag true)))
+
+(defmacro more [& expects]
+  `(hash-map ::more ~(vec (map (fn [e] {:e e :str-e `(quote ~e)
+                                       :gen-str-a identity
+                                       :a-fn identity})
+                               expects))))
+
+(defmacro more-> [& expect-pairs]
+  (assert-args more->
+               (even? (count expect-pairs)) "an even number of forms.")
+  `(hash-map ::more ~(vec (map (fn [[e a-form]]
+                                 {:e e :str-e `(quote ~e)
+                                  :gen-str-a `(fn [x#] (macroexpand-1 (list '-> x# '~a-form)))
+                                  :a-fn `(fn [x#] (-> x# ~a-form))})
+                               (partition 2 expect-pairs)))))
+
+(defmacro more-of [let-sexp & expect-pairs]
+  (assert-args more-of
+               (even? (count expect-pairs)) "an even number of expect-pairs")
+  `(hash-map ::more ~(vec (map (fn [[e a-form]]
+                                 {:e e :str-e `(quote ~e)
+                                  :gen-str-a `(fn [x#] (list '~'let ['~let-sexp x#]
+                                                            '~a-form))
+                                  :a-fn `(fn [~let-sexp] ~a-form)})
+                               (partition 2 expect-pairs)))))
+
+
+
+(defmacro side-effects [fn-vec & forms]
+  (assert-args side-effects
+               (vector? fn-vec) "a vector for its fn-vec")
+  (let [side-effects-sym (gensym "conf-fn")]
+    `(let [~side-effects-sym (atom [])]
+       (with-redefs ~(vec (interleave fn-vec (repeat `(fn [& args#] (swap! ~side-effects-sym conj args#)))))
+         ~@forms)
+       @~side-effects-sym)))

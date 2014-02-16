@@ -43,30 +43,8 @@
 ;; val in list
 (expect :foo (in (conj [:bar] :foo)))
 
-(expect (contains-kvs :a :b :c :d)
-        {:a :b :c :d :e :f})
-
-;; expect boolean
+;; expect truthy fn return
 (expect empty? (list))
-
-;; allow Double/NaN equality in a map
-(expect {:a Double/NaN :b {:c Double/NaN}} {:a Double/NaN :b {:c Double/NaN}})
-
-;; allow Double/NaN equality with in fn and map
-(expect {:a Double/NaN :b {:c Double/NaN}}
-        (in {:a Double/NaN :b {:c Double/NaN} :d "other stuff"}))
-
-;; allow Double/NaN equality in a set
-(expect #{1 Double/NaN} #{1 Double/NaN})
-
-;; allow Double/NaN equality with in fn and set
-(expect Double/NaN (in #{1 Double/NaN}))
-
-;; allow Double/NaN equality in a list
-(expect [1 Double/NaN] [1 Double/NaN])
-
-;; allow Double/NaN equality with in fn and list
-(expect Double/NaN (in [1 Double/NaN]))
 
 ;; sorted map equality
 (expect (sorted-map-by > 1 :a 2 :b) (sorted-map-by > 1 :a 2 :b))
@@ -76,233 +54,109 @@
   `(println ~@args))
 
 (expect '(clojure.core/println 1 2 (println 100) 3)
-        (expanding (a-macro 1 2 (println 100) 3)))
+  (expanding (a-macro 1 2 (println 100) 3)))
 
-;; easy java object return value testing
-(given (java.util.ArrayList.)
-       (expect
-        .size 0
-        .isEmpty true))
+(expect (more vector? not-empty) [1 2 3])
 
-;; multiple expects on an instance
-(given [1 2 3]
-       (expect
-        first 1
-        last 3))
+(expect (more-> 0 .size
+                true .isEmpty)
+  (java.util.ArrayList.))
 
-(given {:a 2 :b 4}
-       (expect
-        :a 2
-        :b 4))
+(expect (more-> 2 (-> first (+ 1))
+                3 last)
+  [1 2 3])
 
-;; multiple expects with form
-(given [x y] (expect 10 (+ x y))
-       4 6
-       6 4
-       12 -2)
+(expect (more-> 2 :a
+                4 :b)
+  {:a 2 :b 4})
 
-(given [x y] (expect x (in y))
-       :a #{:a :b}
-       {:a :b} {:a :b :c :d})
+(expect (more-of x
+                 vector? x
+                 1 (first x))
+  [1 2 3])
 
-(given [x y] (expect x y)
-       nil? nil
-       fn? +
-       empty? [])
+(expect ["/tmp/hello-world" "some data" :append true]
+  (second (side-effects [spit]
+                        (spit "some other stuff" "xy")
+                        (spit "/tmp/hello-world" "some data" :append true))))
 
-;; interaction based testing
-(expect (interaction (spit "/tmp/hello-world" "some data" :append true))
-        (do
-          (spit "some other stuff" "xy")
-          (spit "/tmp/hello-world" "some data" :append true)))
+(expect empty?
+  (side-effects [spit] "spit never called"))
 
-;; interaction based testing, expect zero interactions
-(expect (interaction
-         (spit "/tmp/hello-world" "some data" :append true)
-         :never)
-        (spit "some other stuff" "xy"))
+(expect [["/tmp/hello-world" "some data" :append true]
+         ["/tmp/hello-world" "some data" :append true]]
+  (side-effects [spit]
+                (spit "/tmp/hello-world" "some data" :append true)
+                (spit "/tmp/hello-world" "some data" :append true)))
 
-;; interaction based testing, expect two interactions
-(expect (interaction
-         (spit "/tmp/hello-world" "some data" :append true)
-         :twice)
-        (do
-          (spit "/tmp/hello-world" "some data" :append true)
-          (spit "/tmp/hello-world" "some data" :append true)))
+(expect ["/tmp/hello-world" "some data" :append true]
+  (in (side-effects [spit]
+                    (spit "some other stuff" "xy")
+                    (spit "/tmp/hello-world" "some data" :append true))))
 
-;; interaction based testing, expect at least one interaction
-(expect (interaction
-         (spit "/tmp/hello-world" "some data" :append true)
-         (at-least :once))
-        (spit "/tmp/hello-world" "some data" :append true))
+(expect (more-of [path data action flags]
+                 String path
+                 #"some da" data
+                 keyword? action
+                 {:a :b :c :d} (in flags))
+  (first (side-effects [spit]
+                       (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
 
-;; interaction based testing, expect at least one interaction
-(expect (interaction
-         (spit "/tmp/hello-world" "some data" :append true)
-         (at-least :once))
-        (do
-          (spit "/tmp/hello-world" "some data" :append true)
-          (spit "/tmp/hello-world" "some data" :append true)))
+(expect (more-of [a b] number? a)
+  (from-each [x [[1 2] [1 3]]]
+    x))
 
-;; interaction based testing, expect at most one interaction
-(expect (interaction
-         (spit "/tmp/hello-world" "some data" :append true)
-         (at-most :once))
-        (spit "/tmp/hello-world" "some data" :append true))
+(expect 1
+  (from-each [x [[1 2] [1 3]]]
+    (in x)))
 
-;; interaction based testing, expect at most one interaction
-(expect (interaction
-         (spit "/tmp/hello-world" "some data" :append true)
-         (at-most :once))
-        (do))
+(expect (more identity not-empty)
+  (in (side-effects [spit]
+                    (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
 
-;; interaction based testing, expect exactly 2 interactions
-(expect (interaction
-         (spit "/tmp/hello-world" "some data" :append true)
-         (2 :times))
-        (do
-          (spit "/tmp/hello-world" "some data" :append true)
-          (spit "/tmp/hello-world" "some data" :append true)))
+(expect (more-> String (nth 0)
+                #"some da" (nth 1)
+                keyword? (nth 2)
+                {:a :b :c :d} (-> (nth 3) (select-keys [:a :c])))
+  (in (side-effects [spit]
+                    (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
 
-;; interaction based testing, expect exactly 3 interactions
-(expect (interaction
-         (spit "/tmp/hello-world" "some data" :append true)
-         (3 :times))
-        (do
-          (spit "/tmp/hello-world" "some data" :append true)
-          (spit "/tmp/hello-world" "some data" :append true)
-          (spit "/tmp/hello-world" "some data" :append true)))
+(expect (more-of [path data action {:keys [a c]}]
+                 String path
+                 #"some da" data
+                 keyword? action
+                 :b a
+                 :d c)
+  (in (side-effects [spit]
+                    (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
 
-;; interaction based testing, expect at least 2 interactions
-(expect (interaction
-         (spit "/tmp/hello-world" "some data" :append true)
-         (at-least (2 :times)))
-        (do
-          (spit "/tmp/hello-world" "some data" :append true)
-          (spit "/tmp/hello-world" "some data" :append true)))
-
-;; interaction based testing, expect at least 2 interactions
-(expect (interaction
-         (spit "/tmp/hello-world" "some data" :append true)
-         (at-least (2 :times)))
-        (do
-          (spit "/tmp/hello-world" "some data" :append true)
-          (spit "/tmp/hello-world" "some data" :append true)
-          (spit "/tmp/hello-world" "some data" :append true)))
-
-;; interaction based test where the args are matched
-;; by something other than equality
-;; - the first arg is checked to be a String
-;; - the second arg is checked to see if it matches a regex
-;; - the third arg is verified via a function
-(expect (interaction (spit String #"some da" keyword? (contains-kvs :a :b :c :d)))
-        (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))
-
-;; use anything when you don't care about any of the args
-(expect (interaction (spit anything anything anything anything))
-        (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))
-
-(expect (interaction (no-op "runnable run called"))
-        (.run (reify Runnable
-                (run [_]
-                  (no-op "runnable run called")))))
-
-;; mock interaction based testing
-(expect-let [r (mock Runnable)]
-            (interaction (.run r))
-            (.run r))
-
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1))
-            (.get l 1))
-
-;; mock interaction based testing, expect zero interactions
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) :never)
-            (.get l 2))
-
-;; mock interaction based testing, expect two interactions
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) :twice)
-            (do
-              (.get l 1)
-              (.get l 1)))
-
-;; mock interaction based testing, expect at least one interaction
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (at-least :once))
-            (.get l 1))
-
-;; mock interaction based testing, expect at least one interaction
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (at-least :once))
-            (do
-              (.get l 1)
-              (.get l 1)))
-
-;; mock interaction based testing, expect at most one interaction
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (at-most :once))
-            (.get l 1))
-
-;; mock interaction based testing, expect at most one interaction
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (at-most :once))
-            (do))
-
-;; mock interaction based testing, expect exactly 2 interactions
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (2 :times))
-            (do
-              (.get l 1)
-              (.get l 1)))
-
-;; mock interaction based testing, expect exactly 3 interactions
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (3 :times))
-            (do
-              (.get l 1)
-              (.get l 1)
-              (.get l 1)))
-
-;; mock interaction based testing, expect at least 2 interactions
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (at-least (2 :times)))
-            (do
-              (.get l 1)
-              (.get l 1)))
-
-;; mock interaction based testing, expect at least 2 interactions
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (at-least (2 :times)))
-            (do
-              (.get l 1)
-              (.get l 1)
-              (.get l 1)))
+(expect not-empty
+  (side-effects [spit]
+                (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f})))
 
 ;; redef state within the context of a test
 (expect :atom
-        (do
-          (reset! success.success-examples-src/an-atom "atom")
-          (redef-state [success.success-examples-src]
-                       (reset! success.success-examples-src/an-atom :atom)
-                       @success.success-examples-src/an-atom)))
+  (do
+    (reset! success.success-examples-src/an-atom "atom")
+    (redef-state [success.success-examples-src]
+      (reset! success.success-examples-src/an-atom :atom)
+      @success.success-examples-src/an-atom)))
 
 (expect "atom"
-        (do
-          (reset! success.success-examples-src/an-atom "atom")
-          (redef-state [success.success-examples-src]
-                       (reset! success.success-examples-src/an-atom :atom))
-          @success.success-examples-src/an-atom))
+  (do
+    (reset! success.success-examples-src/an-atom "atom")
+    (redef-state [success.success-examples-src]
+      (reset! success.success-examples-src/an-atom :atom))
+    @success.success-examples-src/an-atom))
 
 ;; use expect-let to share a value between the actual and expected forms
 (expect-let [x 2]
-            (* x x) (+ x x))
+  (* x x) (+ x x))
 
 ;; use freeze-time to set the current time while a test is running
 (expect-let [now (DateTime.)]
-            (freeze-time now (DateTime.))
-            (freeze-time now (DateTime.)))
+  (freeze-time now (DateTime.))
+  (freeze-time now (DateTime.)))
 
 ;; freeze-time only affects wrapped forms
 (expect (not= (DateTime. 1)
@@ -315,19 +169,18 @@
               (do
                 (try
                   (freeze-time (DateTime. 1)
-                               (throw (RuntimeException. "test finally")))
+                    (throw (RuntimeException. "test finally")))
                   (catch Exception e))
                 (DateTime.))))
 
 ;; use context to limit the number of indentions while using redef-state, with-redefs or freeze-time
 (expect-let [now (DateTime.)]
-            (interaction (println "trades" now))
-            (context [:redef-state [success.success-examples-src]
-                      :with-redefs [vector identity
-                                    spit no-op]
-                      :freeze-time now]
-                     (spit now)
-                     (println "trades" (vector (DateTime.)))))
+  [now now]
+  (context [:redef-state [success.success-examples-src]
+            :with-redefs [spit no-op]
+            :freeze-time now]
+    (spit now)
+    (vector now (DateTime.))))
 
 ;; ensure equality matching where possible
 (expect no-op no-op)
@@ -337,28 +190,13 @@
 
 (expect :a-rebound-val (success.success-examples-src/a-fn-to-be-rebound))
 
-(expect (interaction (a-fn1 anything&) :twice)
-        (do
-          (a-fn1 1 2)
-          (a-fn1 3)))
-
-(expect (interaction (a-fn1 :an-actual-arg anything&))
-        (do
-          (a-fn1 :an-actual-arg 1 2)
-          (a-fn1 :some-other-arg 3)))
-
-(expect (interaction (a-fn1 :an-actual-arg anything&))
-        (do
-          (a-fn1 :an-actual-arg 1)
-          (a-fn1 :some-other-arg 3)))
-
-(expect String (from-each [letter ["a" "b" "c"]]
-                     letter))
+(expect String
+  (from-each [letter ["a" "b" "c"]] letter))
 
 (expect even? (from-each [num [1 2 3]
-                     :let [numinc1 (inc num)
-                           numinc2 (inc num)]]
-                    (* 10 numinc2)))
+                          :let [numinc1 (inc num)
+                                numinc2 (inc num)]]
+                (* 10 numinc2)))
 
 (defrecord ConstantlyTrue []
   CustomPred

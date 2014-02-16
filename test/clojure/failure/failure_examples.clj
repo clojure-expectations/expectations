@@ -83,57 +83,11 @@
 (expect '(clojure.core/println 1 2 (println 100) 3)
         (expanding (a-macro 1 2 (println 101) 3)))
 
-;; multiple expects with form
-(given [x y] (expect x (+ y y))
-       6 4
-       12 12)
-
-(given [x y] (expect 10 (+ x y))
-       6 3
-       12 -20)
-
-(given [x y] (expect x (in y))
-       :c #{:a :b }
-       {:a :z} {:a :b :c :d})
-
-(given [x y] (expect x y)
-       nil? 1
-       fn? 1
-       empty? [1])
-
-;; multiple expects on a java instance
-(given (java.util.ArrayList.)
-       (expect
-        .size 1
-        .isEmpty false))
-
-;; multiple expects on an instance
-(given [1 2 3]
-       (expect
-        first 0
-        last 4))
-
-(given {:a 2 :b 4}
-       (expect
-        :a 99
-        :b 100))
-
 ;; nested issues
 (expect {nil {nil nil} :z 1 :a 9 :b {:c Double/NaN :d 1 :e 2 :f {:g 10 :i 22}}}
         {:x 1 :a Double/NaN :b {:c Double/NaN :d 2 :e 4 :f {:g 11 :h 12}}})
 
 (expect "the cat jumped over the moon" "the cat jumped under the moon")
-
-(expect (interaction (one))
-        (do ))
-
-(expect (interaction (one) :never) (one))
-
-(expect (interaction (one) :twice) (do))
-
-(expect (interaction (one) :twice) (one))
-
-(expect (interaction (one) :twice) (do (one) (one) (one)))
 
 (expect :original
         (with-redefs [success.success-examples-src/an-atom (atom :original)]
@@ -151,112 +105,10 @@
 (expect-let [x 2]
             4 x)
 
-(expect (interaction (one "hello" {:a :b :c {:dd :ee :ff :gg}}))
-        (do
-          (one "hello")
-          (one "hello" "world" "here")
-          (one "hello" {:a 1 2 3})))
-
-
-(expect (interaction (one "hello"))
-        (throw (RuntimeException. "do you see me?")))
-
-(expect (interaction (one
-                      (do (throw (RuntimeException. "do you see me?")))))
-        (one "hello"))
-
-(expect (interaction (spit Integer #"some data not found" (contains-kvs 1 2 :c :d :x {:y nil}) symbol?))
-        (spit "/tmp/hello-world" "some data" {:a :b :c :d :e :f} :append))
-
-(expect (contains-kvs 1 2) {:a :b})
-
 (expect nil)
 (expect false)
 
-;; interaction test where the fn is not a var
-(expect-let [foo #(%)]
-            (interaction (foo 1))
-            (foo 1))
-
-
-;; mock interaction based testing
-(expect-let [r (mock Runnable)]
-            (interaction (.run r))
-            (do))
-
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1))
-            (do
-              (.get l 2)
-              (.get l 3)))
-
-;; mock interaction based testing, expect zero interactions
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) :never)
-            (.get l 1))
-
-;; mock interaction based testing, expect two interactions
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) :twice)
-            (.get l 1))
-
-;; mock interaction based testing, expect at least one interaction
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (at-least :twice))
-            (do
-              (.get l 1)))
-
-;; mock interaction based testing, expect at most one interaction
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (at-most :once))
-            (do (.get l 1)
-                (.get l 1)))
-
-;; mock interaction based testing, expect exactly 2 interactions
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (2 :times))
-            (do
-              (.get l 1)
-              (.get l 1)
-              (.get l 1)))
-
-;; mock interaction based testing, expect exactly 3 interactions
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (3 :times))
-            (do
-              (.get l 1)
-              (.get l 1)))
-
-;; mock interaction based testing, expect at least 2 interactions
-(expect-let [l (mock java.util.List)]
-            (interaction (.get l 1) (at-least (2 :times)))
-            (.get l 1))
-
-(expect (interaction (a-fn1 anything&) :never)
-        (a-fn1 1 2 3))
-
-(expect (interaction (a-fn1 anything&) :never)
-        (a-fn1 1))
-
-(expect (interaction (a-fn1 1 anything&))
-        (do
-          (a-fn1 1 :one-thing)
-          (a-fn1 1 :two :things)))
-
-(expect (interaction (a-fn1))
-        (do (a-fn1 1)
-            (a-fn1 2)))
-
-(expect (interaction (a-fn2 map filter remove 2 3))
-        (a-fn2 identity 1 nil 2))
-
 (expect filter map)
-
-(expect (interaction (no-op))
-        (no-op nil))
-
-(expect (interaction (no-op nil))
-        (no-op))
 
 (expect even? (from-each [i [1 2 3]]
                          i))
@@ -286,3 +138,35 @@
   (message [e a str-e str-a] (format "%s & %s" str-e str-a)))
 
 (expect (->ConstantlyFalse) [1 2 3 4])
+
+(expect 4
+  (from-each [x [[1 2] [1 3]]]
+    (in x)))
+
+(expect (more-of x list? x
+                 vector? x)
+  (in (side-effects [spit]
+                    (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f})
+                    (spit "/tmp/hello-world" "some data" :append 1))))
+
+(expect (more-of x
+                 list? x
+                 2 (first x))
+  (conj [] 1 2 3))
+
+(expect (more-of [x y z :as full-list]
+                 list? full-list
+                 2 x
+                 3 y
+                 4 z)
+  (conj [] 1 2 3))
+
+(expect (more list? empty?) [1 2 3])
+
+(expect (more-> 1 (-> identity .size)
+                false .isEmpty)
+  (java.util.ArrayList.))
+
+(expect (more-> 1 (-> first (+ 1))
+                4 last)
+  (conj [] 1 2 3))
