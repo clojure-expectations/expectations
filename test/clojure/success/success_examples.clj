@@ -49,12 +49,8 @@
 ;; sorted map equality
 (expect (sorted-map-by > 1 :a 2 :b) (sorted-map-by > 1 :a 2 :b))
 
-;; macro expansion
-(defmacro a-macro [& args]
-  `(println ~@args))
-
 (expect '(clojure.core/println 1 2 (println 100) 3)
-  (expanding (a-macro 1 2 (println 100) 3)))
+  (expanding (success.success-examples-src/a-macro 1 2 (println 100) 3)))
 
 (expect (more vector? not-empty) [1 2 3])
 
@@ -108,6 +104,14 @@
 
 (expect 1
   (from-each [x [[1 2] [1 3]]]
+    (in x)))
+
+(expect (more-of a number? a)
+  (from-each [x [[1 2] [1 3]]]
+    (in x)))
+
+(expect {1 2}
+  (from-each [x [{1 2} {1 2 3 4}]]
     (in x)))
 
 (expect (more identity not-empty)
@@ -198,11 +202,4 @@
                                 numinc2 (inc num)]]
                 (* 10 numinc2)))
 
-(defrecord ConstantlyTrue []
-  CustomPred
-  (expect-fn [e a] true)
-  (expected-message [e a str-e str-a] (format "expected %s" e))
-  (actual-message [e a str-e str-a] (format "actual %s" a))
-  (message [e a str-e str-a] (format "%s & %s" str-e str-a)))
-
-(expect (->ConstantlyTrue) [1 2 3 4])
+(expect (success.success-examples-src/->ConstantlyTrue) [1 2 3 4])

@@ -20,13 +20,18 @@
 (expect "foos" (identity "foode"))
 
 ;; map equality
-(expect {:foo 2 :bar 3 :dog 3 :car 4} (assoc {} :foo 1 :bar "3" :cat 4))
+(expect {:foo 1 :bar 3 :dog 3 :car 4} (assoc {} :foo 1 :bar "3" :cat 4))
 
 ;; record equality
 (expect (->Foo :a :b :c) (->Foo :c :b :a))
 
 ;; list equality
-(expect [1 2 3 2 4] [3 2 1 3])
+(expect [1 2 3 2 4] [3 2 1 3]) ;; expected larger msg
+(expect [3 2 1 3] [1 2 3 2 4]) ;; actual larger msg
+(expect [1 2 3 5] [5 2 1 3]) ;; wrong ordering msg
+(expect [2 2 1 3] [2 1 3]) ;; dupes in expected, not actual msg
+(expect [2 1 3] [2 2 1 3]) ;; dupes in actual, not expected msg
+(expect [99 1 2] [100 1 3]) ;; show diff results
 
 ;; set equality
 (expect #{:foo :bar :dog :car } (conj #{} :foo :bar :cat ))
@@ -47,7 +52,7 @@
 (expect {:foos 1 :cat 5} (in {:foo 1 :cat 4}))
 
 ;; k/v pair in record. matches subset
-(expect {:a :a} (in (->Foo :c :b :a)))
+(expect {:a :a :b :b} (in (->Foo :c :b :a)))
 
 ;; key in set
 (expect "foos" (in (conj #{:foo :bar } "cat")))
@@ -60,24 +65,6 @@
 
 ;; expect boolean
 (expect empty? (list 1))
-
-;; Double/NaN equality in a set
-(expect #{1 9} #{1 Double/NaN})
-
-;; Double/NaN equality with in fn and set
-(expect Double/NaN (in #{1}))
-
-;; Double/NaN equality in a list
-(expect [1 Double/NaN] [1])
-
-;; Double/NaN equality with in fn and list
-(expect Double/NaN (in [1]))
-
-;; Double/NaN equality in a map
-(expect {:a Double/NaN :b {:c 9}} {:a Double/NaN :b {:c Double/NaN}})
-
-;; Double/NaN equality with in fn and map
-(expect {:a Double/NaN :b {:c 9}} (in {:a Double/NaN :b {:c Double/NaN} :d "other stuff"}))
 
 ;; macro expansion
 (expect '(clojure.core/println 1 2 (println 100) 3)

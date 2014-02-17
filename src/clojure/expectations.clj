@@ -316,91 +316,6 @@
   ([] (run-tests (all-ns)))
   ([re] (run-tests (filter #(re-matches re (name (ns-name %))) (all-ns)))))
 
-(defmulti nan->keyword class :default :default)
-
-(defmethod nan->keyword java.util.Map [m]
-  (if (instance? clojure.lang.IRecord m)
-    (nan->keyword (into {} (seq m)))
-    (let [f (fn [[k v]] [k (if (and (number? v) (Double/isNaN v)) :DoubleNaN v)])]
-      (expectations.clojure.walk/postwalk (fn [x] (if (map? x) (into {} (map f x)) x)) m))))
-
-(defmethod nan->keyword java.util.List [m]
-  (map #(if (and (number? %) (Double/isNaN %)) :DoubleNaN %) m))
-
-(defmethod nan->keyword Double [m]
-  (if (Double/isNaN m) :DoubleNaN m))
-
-(defmethod nan->keyword java.util.Set [m]
-  (reduce #(conj %1 (if (and (number? %2) (Double/isNaN %2)) :DoubleNaN %2)) #{} m))
-
-(defmethod nan->keyword :default [m]
-  (if (and (number? m) (Double/isNaN m)) :DoubleNaN m))
-
-(defmulti extended-not= (fn [x y] [(class x) (class y)]) :default :default)
-
-(defmethod extended-not= [Double Double] [x y]
-  (if (and (Double/isNaN x) (Double/isNaN y))
-    false
-    (not= x y)))
-
-(defmethod extended-not= :default [x y] (not= x y))
-
-(defn map-intersection [e a]
-  (let [in-both (intersection (set (keys e)) (set (keys a)))]
-    (select-keys (merge-with vector e a) in-both)))
-
-(defn ->disagreement [prefix [k [v1 v2]]]
-  (if (and (map? v1) (map? v2))
-    (string-join
-     "\n           "
-     (remove nil? (map
-                   (partial ->disagreement
-                      (str (when prefix (str prefix " {")) k))
-                   (map-intersection v1 v2))))
-    (when (extended-not= v1 v2)
-      (let [prefix-desc (str (when prefix (str prefix " {")) (pr-str k))
-            prefix-space (apply str (take (count prefix-desc) (repeat " ")))]
-        (str prefix-desc " expected: "
-             (pr-str v1) "\n           " prefix-space "      was: " (pr-str v2))))))
-
-(defn map-diff-message [e a padding]
-  (->>
-   (map (partial ->disagreement nil) (map-intersection e a))
-   (remove nil?)
-   (remove empty?)
-   seq))
-
-(defn normalize-keys* [a ks m]
-  (if (map? m)
-    (reduce into [] (map (fn [[k v]] (normalize-keys* a (conj ks k) v)) (seq m)))
-    (conj a ks)))
-
-(defn normalize-keys [m] (normalize-keys* [] [] m))
-
-(defn ->missing-message [m msg item]
-  (str (string-join " {" (map pr-str item)) " with val " (pr-str (get-in m item)) msg))
-
-(defn map-difference [e a]
-  (difference (set (normalize-keys e)) (set (normalize-keys a))))
-
-(defn map-missing-message [e a msg]
-  (->>
-   (map-difference e a)
-   (map (partial ->missing-message e msg))
-   seq))
-
-(defn map-compare [e a str-e str-a original-a but-string]
-  (if (= (nan->keyword e) (nan->keyword a))
-    {:type :pass}
-    {:type :fail
-     :actual-message (when-let [messages (map-missing-message e a " is in expected, but not in actual")]
-                       (string-join "\n           " messages))
-     :expected-message (when-let [messages (map-missing-message a e " is in actual, but not in expected")]
-                         (string-join "\n           " messages))
-     :raw [str-e str-a]
-     :result ["expected:" (pr-str e) "\n" but-string (pr-str original-a)]
-     :message (when-let [messages (map-diff-message e a "")] (string-join "\n           " messages))}))
-
 (defprotocol CustomPred
   (expect-fn [e a])
   (expected-message [e a str-e str-a])
@@ -483,10 +398,20 @@
       :raw [str-e str-a]
       :list (map #(assoc % :show-raw true) (find-failures
                                          (for [a (::in a)]
-                                           (compare-expr e a str-e str-a))))
+                                           (compare-expr e a str-e a))))
       :result [(if (::more e) str-e (format "val %s" (pr-str e))) "not found in" (::in a)]})
+   (and (instance? java.util.Map (::in a)) (::more e))
+   {:type :fail :raw [str-e str-a]
+    :message "Using both 'in with a map and 'more is not supported."}
    (instance? java.util.Map (::in a))
-   (map-compare e (select-keys (::in a) (keys e)) str-e str-a (::in a) "                in:")
+   (let [a (::in a)]
+     (if (= e (select-keys a (keys e)))
+       {:type :pass}
+       {:type :fail
+        :expected-message (format "in expected, not actual: %s" (first (clojure.data/diff e a)))
+        :actual-message (format "in actual, not expected: %s" (first (clojure.data/diff a e)))
+        :raw [str-e str-a]
+        :result ["expected:" (pr-str e) "in" (pr-str a)]}))
    :default {:type :fail :raw [str-e str-a]
              :result ["You supplied:" (pr-str (::in a))]
              :message "You must supply a list, set, or map when using (in)"}))
@@ -547,33 +472,30 @@
      :result [str-a "did not throw" str-e]}))
 
 (defmethod compare-expr [java.util.Map java.util.Map] [e a str-e str-a]
-  (map-compare e a str-e str-a a "               was:"))
+  (if (.equals e (select-keys a (keys e)))
+       {:type :pass}
+       {:type :fail
+        :expected-message (format "in expected, not actual: %s" (first (clojure.data/diff e a)))
+        :actual-message (format "in actual, not expected: %s" (first (clojure.data/diff a e)))
+        :raw [str-e str-a]
+        :result ["expected:" (pr-str e) "\n                was:" (pr-str a)]}))
 
 (defmethod compare-expr [java.util.Set java.util.Set] [e a str-e str-a]
-  (if (= (nan->keyword e) (nan->keyword a))
+  (if (= e a)
     {:type :pass}
-    (let [diff-fn (fn [e a] (seq (difference (set e) (set a))))]
-      {:type :fail
-       :actual-message (when-let [v (diff-fn e a)]
-                         (str (string-join ", " v)
-                              " are in expected, but not in actual"))
-       :expected-message (when-let [v (diff-fn a e)]
-                           (str (string-join ", " v)
-                                " are in actual, but not in expected"))
-       :raw [str-e str-a]
-       :result ["expected:" e "\n                was:" (pr-str a)]})))
+    {:type :fail
+     :actual-message (format "in actual, not expected: %s" (first (clojure.data/diff a e)))
+     :expected-message (format "in expected, not actual: %s" (first (clojure.data/diff e a)))
+     :raw [str-e str-a]
+     :result ["expected:" e "\n                was:" (pr-str a)]}))
 
 (defmethod compare-expr [java.util.List java.util.List] [e a str-e str-a]
-  (if (= (nan->keyword e) (nan->keyword a))
+  (if (= e a)
     {:type :pass}
     (let [diff-fn (fn [e a] (seq (difference (set e) (set a))))]
       {:type :fail
-       :actual-message (when-let [v (diff-fn e a)]
-                         (str (string-join ", " (map pr-str v))
-                              " are in expected, but not in actual"))
-       :expected-message (when-let [v (diff-fn a e)]
-                           (str (string-join ", " (map pr-str v))
-                                " are in actual, but not in expected"))
+       :actual-message (format "in actual, not expected: %s" (first (clojure.data/diff a e)))
+       :expected-message (format "in expected, not actual: %s" (first (clojure.data/diff e a)))
        :raw [str-e str-a]
        :result ["expected:" e "\n                was:" (pr-str a)]
        :message (cond
