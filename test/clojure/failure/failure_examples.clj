@@ -157,3 +157,6 @@
 (expect (more-> 1 (-> first (+ 1))
                 4 last)
   (conj [] 1 2 3))
+
+(expect-focused "w" (from-each [x [1 2 3]]
+                      (/ x 0)))

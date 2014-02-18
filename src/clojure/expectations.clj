@@ -614,9 +614,9 @@
                                  (remove (partial re-find #"^(map|vec)__\d+$")))]
                  v vars]
              v)]
-    `(hash-map ::from-each (for ~seq-exprs
-                             {::the-seq ~body-expr
-                              ::ref-data ~(vec (interleave vs (map symbol vs)))})
+    `(hash-map ::from-each (doall (for ~seq-exprs
+                                    {::the-seq ~body-expr
+                                     ::ref-data ~(vec (interleave vs (map symbol vs)))}))
                ::from-each-body '~body-expr
                ::from-each-flag true)))
 
