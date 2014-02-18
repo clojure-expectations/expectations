@@ -369,13 +369,13 @@
   (first (filter (comp #{:pass} :type) the-seq)))
 
 (defmethod compare-expr ::from-each [e {a ::from-each str-i-a ::from-each-body} str-e str-a]
-  (if-let [failures (find-failures (for [{ts ::the-seq rd ::ref-data} a]
+  (if-let [failures (find-failures (for [{ts ::the-result rd ::ref-data} a]
                                      (assoc (compare-expr e ts str-e str-i-a)
                                        :ref-data rd)))]
     {:type :fail
      :raw [str-e str-a]
      :message (format "the list: %s" (pr-str (map (fn [x] (if-let [y (::in x)] y x))
-                                                  (map ::the-seq a))))
+                                                  (map ::the-result a))))
      :list (map #(assoc % :show-raw true) failures)}
     {:type :pass}))
 
@@ -433,13 +433,13 @@
   {:type :error
    :raw [str-e str-a]
    :actual-message (str "exception in actual: " str-a)
-   :result a})
+   :result [a]})
 
 (defmethod compare-expr ::expected-exception [e a str-e str-a]
   {:type :error
    :raw [str-e str-a]
    :expected-message (str "exception in expected: " str-e)
-   :result e})
+   :result [e]})
 
 (defmethod compare-expr [java.util.regex.Pattern java.util.regex.Pattern] [e a str-e str-a]
   (compare-expr (.pattern e) (.pattern a) str-e str-a))
@@ -614,9 +614,10 @@
                                  (remove (partial re-find #"^(map|vec)__\d+$")))]
                  v vars]
              v)]
-    `(hash-map ::from-each (doall (for ~seq-exprs
-                                    {::the-seq ~body-expr
-                                     ::ref-data ~(vec (interleave vs (map symbol vs)))}))
+    `(hash-map ::from-each (for ~seq-exprs
+                             {::the-result (try ~body-expr
+                                                (catch Exception e# e#))
+                              ::ref-data ~(vec (interleave vs (map symbol vs)))})
                ::from-each-body '~body-expr
                ::from-each-flag true)))
 
