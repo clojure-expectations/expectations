@@ -174,7 +174,8 @@
 
 (defmethod report :error [{:keys [result raw] :as m}]
   (inc-report-counter :error)
-  (let [current-test *test-var*
+  (let [result (first result)
+        current-test *test-var*
         message (string-join "\n"
                              [(when reminder (colorize-warn (str "     ***** " (clojure.string/upper-case reminder) " *****")))
                               (when raw
@@ -363,7 +364,7 @@
                 "\n                was:" (pr-str a)]})))
 
 (defn find-failures [the-seq]
-  (seq (remove (comp #{:pass} :type) the-seq)))
+  (seq (doall (remove (comp #{:pass} :type) the-seq))))
 
 (defn find-successes [the-seq]
   (first (filter (comp #{:pass} :type) the-seq)))
@@ -376,7 +377,7 @@
      :raw [str-e str-a]
      :message (format "the list: %s" (pr-str (map (fn [x] (if-let [y (::in x)] y x))
                                                   (map ::the-result a))))
-     :list (map #(assoc % :show-raw true) failures)}
+     :list (mapv #(assoc % :show-raw true) failures)}
     {:type :pass}))
 
 (defmethod compare-expr ::more [{es ::more} a str-e str-a]
@@ -385,7 +386,7 @@
     {:type :fail
      :raw [str-e str-a]
      :message (format "actual val: %s" (pr-str a))
-     :list (map #(assoc % :show-raw true) failures)}
+     :list (mapv #(assoc % :show-raw true) failures)}
     {:type :pass}))
 
 (defmethod compare-expr ::in [e a str-e str-a]
@@ -614,10 +615,10 @@
                                  (remove (partial re-find #"^(map|vec)__\d+$")))]
                  v vars]
              v)]
-    `(hash-map ::from-each (for ~seq-exprs
-                             {::the-result (try ~body-expr
-                                                (catch Exception e# e#))
-                              ::ref-data ~(vec (interleave vs (map symbol vs)))})
+    `(hash-map ::from-each (doall (for ~seq-exprs
+                                    {::the-result (try ~body-expr
+                                                       (catch Exception e# e#))
+                                     ::ref-data ~(vec (interleave vs (map symbol vs)))}))
                ::from-each-body '~body-expr
                ::from-each-flag true)))
 
