@@ -1,5 +1,5 @@
 (ns failure.failure-examples
-  (:use expectations erajure.core)
+  (:use expectations)
   (:require success.success-examples-src))
 
 (defn two [] (/ 12 0))

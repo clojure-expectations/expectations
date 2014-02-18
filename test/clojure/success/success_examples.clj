@@ -1,5 +1,5 @@
 (ns success.success-examples
-  (:use expectations erajure.core)
+  (:use expectations)
   (:require success.success-examples-src)
   (:import [org.joda.time DateTime]))
 
