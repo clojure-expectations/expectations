@@ -15,7 +15,11 @@
 (expect "foo" (identity "foo"))
 
 ;; map equality
-(expect {:foo 1 :bar 2 :car 4} (assoc {} :foo 1 :bar 2 :car 4))
+(expect {:foo 1 :bar 2 :car 4} (assoc {} :bar 2 :foo 1 :car 4))
+(expect {:foo 1 :bar 2 :car 4} {:bar 2 :foo 1 :car 4})
+(expect {:foo 1 :bar 2 :car 4} (array-map :bar 2 :foo 1 :car 4))
+(expect {:foo 1 :bar 2 :car 4} (sorted-map :bar 2 :foo 1 :car 4))
+(expect {:foo 1 :bar 2 :car 4} (hash-map :bar 2 :foo 1 :car 4))
 
 ;; record equality
 (defrecord Foo [a b c])
