@@ -95,13 +95,14 @@
                     (spit "some other stuff" "xy")
                     (spit "/tmp/hello-world" "some data" :append true))))
 
-(expect (more-of [path data action flags]
+(expect (more-of [path data action {:keys [a c]}]
                  String path
                  #"some da" data
                  keyword? action
-                 {:a :b :c :d} (in flags))
-  (first (side-effects [spit]
-                       (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
+                 :b a
+                 :d c)
+  (in (side-effects [spit]
+        (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
 
 (expect (more-of [a b] number? a)
   (from-each [x [[1 2] [1 3]]]
