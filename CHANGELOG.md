@@ -114,7 +114,7 @@ give it.
 It's fairly common to expect some behavior where you know the
 exact values for some of the args, and you have something more
 general in mind for the additional args. By combining 'side-effects
-and 'more-of you can easily great a call into it's args and verify
+and 'more-of you can easily destructure a call into it's args and verify
 as many as you care to verify.
 ```clojure
     (expect (more-of [path data action {:keys [a c]}]
