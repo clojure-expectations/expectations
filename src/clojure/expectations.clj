@@ -473,7 +473,7 @@
      :result [str-a "did not throw" str-e]}))
 
 (defmethod compare-expr [java.util.Map java.util.Map] [e a str-e str-a]
-  (if (.equals e (select-keys a (keys e)))
+  (if (= e a)
        {:type :pass}
        {:type :fail
         :expected-message (format "in expected, not actual: %s" (first (clojure.data/diff e a)))
