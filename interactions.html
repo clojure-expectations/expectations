@@ -89,13 +89,17 @@ note: if you haven't read <a href="templating.html">Expect More</a>, you'll prob
                  :d c)
   (in (side-effects [spit]
         (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))</pre>
-The above test is a bit much to swallow at first glance; however, it's actually very straightforward once you've gotten used to the 'more-of syntax. In the above example the 'spit fn is called with the args "/tmp/hello-world", "some data" :append {:a :b :c :d :e :f}. Using 'more-of, we destructure those args, and expect them individually. The path arg is expected to be of type String. The data arg is expected to be a string that matches the regex "some da". The action is expected to be a 'keyword?. Finally, the options map is destructured to it's :a and :c values, and equality expected.
+The above test is a bit much to swallow at first glance; however, it's actually very straightforward 
+once you've gotten used to the 'more-of syntax. In the above example the 'spit fn is called with 
+the args "/tmp/hello-world", "some data" :append {:a :b :c :d :e :f}. Using 'more-of, 
+we destructure those args, and expect them individually. The path arg is expected to be of type String. 
+The data arg is expected to be a string that matches the regex #"some da". The action is expected to be a 'keyword?. Finally, the options map is destructured to it's :a and :c values, and equality expected.
 
 
 
 
 
-      </section> 
+      </section>
       <footer>
         <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
       </footer>
