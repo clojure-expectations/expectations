@@ -183,6 +183,7 @@ The above test would definitely fail, but it's not
 immediately obvious what the issue is. However, the failure
 message should quickly lead you to the underlying issue.
 
+```clojure
     failure in (success_examples.clj:206) : success.success-examples
     (expect
      odd?
@@ -195,6 +196,7 @@ message should quickly lead you to the underlying issue.
                  locals num: 2
                         numinc1: 3
                4 is not odd?
+```
 
 As you can see above, when 'from-each fails it will give you
 values of every var defined within the 'from-each bindings. As
