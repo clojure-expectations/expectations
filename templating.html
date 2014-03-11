@@ -54,7 +54,7 @@
 </blockquote>
 
 <h2>
-<a name="templating" class="anchor" href="#templating"><span class="octicon octicon-link"></span></a>Templating with Given</h2>
+<a name="templating" class="anchor" href="#templating"><span class="octicon octicon-link"></span></a>Templating</h2>
 
 
 <a href="https://github.com/jaycfields/expectations">expectations</a> obviously has a bias towards <a href="http://blog.jayfields.com/2007/06/testing-one-assertion-per-test.html">one assertion per test</a>; however, there are times that verifying several things at the same time does make sense. For example, if you want to verify a few different properties of the same Java object it probably makes sense to make multiple assertions on the same instance.<br />
@@ -66,8 +66,7 @@ One of the biggest problems with multiple assertions per test is when your test 
 <li>alter the state</li>
 <li>verify more about the state</li>
 </ol>
-Part of the problem is that the assertions that occurred before the altering of the state may or may not be relevant after the alteration. Additionally, if any of the assertions fail you have to stop running the entire test - thus some of your assertions will not be run (and you'll be lacking some information).<br />
-<br />
+Part of the problem is that the assertions that occurred before the altering of the state may or may not be relevant after the alteration. Additionally, if any of the assertions fail you have to stop running the entire test - thus some of your assertions will not be run (and you'll be lacking some information).
 <h4>more, more->, & more-of</h4>
 expectations takes an alternate route - embracing the idea of multiple assertions by providing a specific syntax that allows multiple verifications and the least amount of duplication.
 <br><br>
