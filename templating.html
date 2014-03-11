@@ -117,31 +117,29 @@ If you've ever found yourself wishing you had destructuring in clojure.test/are 
 <h4>from-each</h4>
 
 It's common to expect something from a list of actual values. Traditionally 'given was used to generate many tests from one form. Unfortunately 'given suffered from many issues: no ability to destructure values, failure line numbers were almost completely useless, and little visibility into what the problem was when a failure did occur.
-
+<br><br>
 In expectations 2.0 'from-each was introduced to provide a more powerful syntax as well as more helpful failure messages.
-
+<br><br>
 Below you can see a very simple expectation that verifies each of the elements of a vector is a String.
-
-    (expect String
-      (from-each [letter ["a" "b" "c"]]
-        letter))
+<br><br><pre>(expect String
+  (from-each [letter ["a" "b" "c"]]
+    letter))</pre>
 Hopefully the syntax of 'from-each feels very familiar, it's been written to handle the same options as 'for and 'doseq - :let and :when.
+<br><br>
+<pre>(expect odd? (from-each [num [1 2 3]
+                         :when (not= num 2)]
+               num))
 
-    (expect odd? (from-each [num [1 2 3]
-                             :when (not= num 2)]
-                   num))
-
-    (expect odd? (from-each [num [1 2 3]
-                             :when (not= num 2)
-                             :let [numinc1 (inc num)]]
-                   (inc numinc1)))
+(expect odd? (from-each [num [1 2 3]
+                         :when (not= num 2)
+                         :let [numinc1 (inc num)]]
+               (inc numinc1)))</pre>
 While 'from-each is helpful in creating concise tests, I actually find it's most value when a test fails. If you take the above test and remove the :when, you would have the test below.
-
-    (expect odd? (from-each [num [1 2 3]
-                             :let [numinc1 (inc num)]]
-                   (inc numinc1)))
+<br><br><pre>(expect odd? (from-each [num [1 2 3]
+                         :let [numinc1 (inc num)]]
+               (inc numinc1)))</pre>
 The above test would definitely fail, but it's not immediately obvious what the issue is. However, the failure message should quickly lead you to the underlying issue.
-
+<br><br><pre>
     failure in (success_examples.clj:206) : success.success-examples
     (expect
      odd?
@@ -153,49 +151,8 @@ The above test would definitely fail, but it's not immediately obvious what the 
 
                  locals num: 2
                         numinc1: 3
-               4 is not odd?
-
+               4 is not odd?</pre>
 As you can see above, when 'from-each fails it will give you values of every var defined within the 'from-each bindings. As a result, it's fairly easy to find the combination of vars that led to a failing test.
-
-
-
-
-The 'given' macro allows you to specify a template - thus reducing code duplication. The following example shows a test that verifies + with various arguments.<br />
-<pre>(given [x y] (expect 10 (+ x y))
-       4 6
-       6 4
-       12 -2)
-
-jfields$ lein expectations
-Ran 3 tests containing 3 assertions in 5 msecs
-0 failures, 0 errors.</pre>
-The syntax for this flavor of given is: (given bindings template-form values-to-be-bound). The template form can be anything you need - just remember to put the expect in there.<br />
-<br />
-Here's another example where we combine given with in to test a few different things. This example shows both the successful and failing versions.<br />
-<pre>;; successful
-(given [x y] (expect x (in y))
-       :a #{:a :b}
-       {:a :b} {:a :b :c :d})
-
-;; failure
-(given [x y] (expect x (in y))
-       :c #{:a :b}
-       {:a :d} {:a :b :c :d})
-
-lein expectations
-failure in (core.clj:8) : sample.test.core
-           (expect :c (in #{:a :b}))
-           key :c not found in #{:a :b}
-failure in (core.clj:8) : sample.test.core
-           (expect {:a :d} (in {:a :b, :c :d}))
-           expected: {:a :d}
-                 in: {:a :b, :c :d}
-           :a expected: :d
-                   was: :b
-Ran 4 tests containing 4 assertions in 13 msecs
-2 failures, 0 errors.</pre>
-That's basically it for 'given' syntax within expectations. It's nothing more than a simple tempate, allowing you to reduce the amount of boiler-plate code your similar tests will need.
-
       </section>
       <footer>
         <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
