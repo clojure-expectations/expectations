@@ -6,7 +6,7 @@
 
 ### 1.1 side-effects
 
-expectations 2.0 introduces the 'side-effets macro, which allows you to
+expectations 2.0 introduces the 'side-effects macro, which allows you to
 capture arguments to functions you specify. Previous to version 2.0
 behavior was often tested using the 'interaction macro. expectations 2.0
 removes the 'interaction macro and embraces the idea of verifying
@@ -135,7 +135,7 @@ individually. The path arg is expected to be of type String. The
 data arg is expected to be a string that matches the regex
 "some da". The action is expected to be a 'keyword?. Finally,
 the options map is destructured to it's :a and :c values, and
-equality expeted.
+equality expected.
 
 ### 1.4 from-each
 
@@ -247,7 +247,7 @@ be far more maintainable.
 
 expectations 2.0 abandons behavior based testing and the
 interaction syntax. Existing tests relying on interaction
-should be easily convertable to side-effects.
+should be easy to convert to side-effects.
 
 ### 3.3 java mock interaction tests
 
