@@ -133,7 +133,7 @@ the args "/tmp/hello-world", "some data" :append {:a :b :c :d :e :f}.
 Using 'more-of, we destructure those args, and expect them
 individually. The path arg is expected to be of type String. The
 data arg is expected to be a string that matches the regex
-#"some da". The action is expected to be a 'keyword?. Finally,
+"some da". The action is expected to be a 'keyword?. Finally,
 the options map is destructured to it's :a and :c values, and
 equality expeted.
 
