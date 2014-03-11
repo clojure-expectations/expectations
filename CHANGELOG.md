@@ -25,18 +25,18 @@ In the above example, you specify that spit is a side effect
 fn, and the 'side-effects macro will return a list of all calls
 made, with the arguments used in the call. The above example
 uses simple equality for verification.
-
+```clojure
     (expect empty?
       (side-effects [spit] "spit never called"))
-
+```
 The above example demonstrates how you can use non-equality to
 to verify the data returned.
-
+```clojure
     (expect ["/tmp/hello-world" "some data" :append true]
       (in (side-effects [spit]
                     (spit "some other stuff" "xy")
                     (spit "/tmp/hello-world" "some data" :append true))))
-
+```
 Immediately above is an example of combining 'side-effects with 'in
 for a more concise test. Here we're testing that the expected data
 will exist somewhere within the list returned by 'side-effects
@@ -45,18 +45,18 @@ will exist somewhere within the list returned by 'side-effects
 
 expectations has always given you the ability to test against an
 arbitrary fn, similar to the example below.
-
+```clojure
     (expect nil? nil)
-
+```
 The ability to specify any fn is powerful, but it doesn't always give
 you the most descriptive failure messages. In expectations 2.0 we
 introduce the 'more, 'more->, & 'more-of macros, which are designed
 to allow you to expect more of your actual values.
 
 Below is a simple example of using the more macro.
-
+```clojure
     (expect (more vector? not-empty) [1 2 3])
-
+```
 As you can see from the above example, we're simply expecting that
 the actual value '[1 2 3] is both a 'vector? and 'not-empty. The
 'more macro is great when you want to test a few 1 arg fns; however,
@@ -66,21 +66,21 @@ I expect you'll more often find yourself reaching for 'more-> and
 The 'more-> macro is used for threading the actual value and
 comparing the result to an expected value. Below is a simple example
 of using 'more to pull values out of a vector and test their equality.
-
+```clojure
     (expect (more-> 1 first
                     3 last)
       [1 2 3])
-
+```
 The 'more-> macro threads using -> (thread-first), so you're able
 to put any form you'd like in the actual transformation.
-
+```clojure
     (expect (more-> 2 (-> first (+ 1))
                     3 last)
       [1 2 3])
-
+```
 Finally, 'more-> can be very helpful for testing various kv pairs
 within a map, or various Java fields.
-
+```clojure
     (expect (more-> 0 .size
                     true .isEmpty)
        (java.util.ArrayList.))
@@ -88,27 +88,27 @@ within a map, or various Java fields.
     (expect (more-> 2 :a
                     4 :b)
        {:a 2 :b 4})
-
+```
 Threading is great work, if you can get it. For the times when
 you need to name your actual value, 'more-of should do the trick.
 The following example demonstrates how to name your actual value
 and then specify a few expectations.
-
+```clojure
     (expect (more-of x
                      vector? x
                      1 (first x))
       [1 2 3])
-
+```
 If you've ever found yourself wishing you had destructuring in
 clojure.test/are or expectations/given, you're not alone. The
 good news is, 'more-of supports any destructuring you want to
 give it.
-
+```clojure
     (expect (more-of [x :as all]
                      vector? all
                      1 x)
       [1 2 3])
-
+```
 ### 1.3 combining side-effects and more-of
 
 It's fairly common to expect some behavior where you know the
@@ -116,7 +116,7 @@ exact values for some of the args, and you have something more
 general in mind for the additional args. By combining 'side-effects
 and 'more-of you can easily great a call into it's args and verify
 as many as you care to verify.
-
+```clojure
     (expect (more-of [path data action {:keys [a c]}]
                      String path
                      #"some da" data
@@ -125,7 +125,7 @@ as many as you care to verify.
                      :d c)
       (in (side-effects [spit]
             (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
-
+```
 The above test is a bit much to swallow at first glance; however,
 it's actually very straightforward once you've gotten used to the
 'more-of syntax. In the above example the 'spit fn is called with
@@ -152,15 +152,15 @@ messages.
 
 Below you can see a very simple expectation that verifies
 each of the elements of a vector is a String.
-
+```clojure
     (expect String
       (from-each [letter ["a" "b" "c"]]
         letter))
-
+```
 Hopefully the syntax of 'from-each feels very familiar, it's
 been written to handle the same options as 'for and 'doseq -
 :let and :when.
-
+```clojure
     (expect odd? (from-each [num [1 2 3]
                              :when (not= num 2)]
                    num))
@@ -169,16 +169,16 @@ been written to handle the same options as 'for and 'doseq -
                              :when (not= num 2)
                              :let [numinc1 (inc num)]]
                    (inc numinc1)))
-
+```
 While 'from-each is helpful in creating concise tests, I
 actually find it's most value when a test fails. If you
 take the above test and remove the :when, you would have
 the test below.
-
+```clojure
     (expect odd? (from-each [num [1 2 3]
                              :let [numinc1 (inc num)]]
                    (inc numinc1)))
-
+```
 The above test would definitely fail, but it's not
 immediately obvious what the issue is. However, the failure
 message should quickly lead you to the underlying issue.
@@ -197,7 +197,6 @@ message should quickly lead you to the underlying issue.
                         numinc1: 3
                4 is not odd?
 ```
-
 As you can see above, when 'from-each fails it will give you
 values of every var defined within the 'from-each bindings. As
 a result, it's fairly easy to find the combination of vars that
@@ -216,7 +215,7 @@ have been converted to simply use clojure.data/diff result maps.
 
 Below is an example failure message that utilizes
 clojure.data/diff for reporting the inconsistencies.
-
+```
     failure in (failure_examples.clj:23) : failure.failure-examples
     (expect
      {:foo 1, :bar 3, :dog 3, :car 4}
@@ -227,7 +226,7 @@ clojure.data/diff for reporting the inconsistencies.
 
                in expected, not actual: {:car 4, :dog 3, :bar 3}
                in actual, not expected: {:cat 4, :bar "3"}
-
+```
 ## 3 removed
 
 ### 3.1 given
