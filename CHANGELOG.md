@@ -14,13 +14,13 @@ interactions at the data level, using the same type of comparison that
 is used for all other data.
 
 Examples:
-
+```clojure
     (expect [["/tmp/hello-world" "some data" :append true]
              ["/tmp/hello-world" "some data" :append true]]
       (side-effects [spit]
                 (spit "/tmp/hello-world" "some data" :append true)
                 (spit "/tmp/hello-world" "some data" :append true)))
-
+```
 In the above example, you specify that spit is a side effect
 fn, and the 'side-effects macro will return a list of all calls
 made, with the arguments used in the call. The above example
@@ -183,7 +183,7 @@ The above test would definitely fail, but it's not
 immediately obvious what the issue is. However, the failure
 message should quickly lead you to the underlying issue.
 
-```clojure
+```
     failure in (success_examples.clj:206) : success.success-examples
     (expect
      odd?
