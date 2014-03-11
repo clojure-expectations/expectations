@@ -71,7 +71,7 @@ Part of the problem is that the assertions that occurred before the altering of 
 expectations takes an alternate route - embracing the idea of multiple assertions by providing a specific syntax that allows multiple verifications and the least amount of duplication.
 <br>
 expectations has always given you the ability to test against an arbitrary fn, similar to the example below.
-<br>
+<br><br>
 <pre>(expect nil? nil)</pre>
 
 The ability to specify any fn is powerful, but it doesn't always give you the most descriptive failure messages.
@@ -79,7 +79,7 @@ In expectations 2.0 we introduce the 'more, 'more->, & 'more-of macros, which ar
 more of your actual values.
 <br>
 Below is a simple example of using the more macro.
-<br>
+<br><br>
 <pre>(expect (more vector? not-empty) [1 2 3])</pre>
 As you can see from the above example, we're simply expecting that the actual value '[1 2 3] is both a 'vector? and 'not-empty.
 The 'more macro is great when you want to test a few 1 arg fns; however, I expect you'll more often find yourself reaching for
@@ -87,7 +87,7 @@ The 'more macro is great when you want to test a few 1 arg fns; however, I expec
 <br>
 The 'more-> macro is used for threading the actual value and comparing the result to an expected value. Below is a simple
 example of using 'more to pull values out of a vector and test their equality.
-<br>
+<br><br>
 <pre>(expect (more-> 1 first
                 3 last)
   [1 2 3])</pre>
