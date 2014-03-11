@@ -69,6 +69,112 @@ One of the biggest problems with multiple assertions per test is when your test 
 Part of the problem is that the assertions that occurred before the altering of the state may or may not be relevant after the alteration. Additionally, if any of the assertions fail you have to stop running the entire test - thus some of your assertions will not be run (and you'll be lacking some information).<br />
 <br />
 expectations takes an alternate route - embracing the idea of multiple assertions by providing a specific syntax that allows multiple verifications and the least amount of duplication.
+<br>
+expectations has always given you the ability to test against an arbitrary fn, similar to the example below.
+<pre>(expect nil? nil)</pre>
+
+The ability to specify any fn is powerful, but it doesn't always give you the most descriptive failure messages.
+In expectations 2.0 we introduce the 'more, 'more->, & 'more-of macros, which are designed to allow you to expect
+more of your actual values.
+<br>
+Below is a simple example of using the more macro.
+<pre>(expect (more vector? not-empty) [1 2 3])</pre>
+As you can see from the above example, we're simply expecting that the actual value '[1 2 3] is both a 'vector? and 'not-empty.
+The 'more macro is great when you want to test a few 1 arg fns; however, I expect you'll more often find yourself reaching for
+'more-> and 'more-of.
+<br>
+The 'more-> macro is used for threading the actual value and comparing the result to an expected value. Below is a simple
+example of using 'more to pull values out of a vector and test their equality.
+<pre>(expect (more-> 1 first
+                3 last)
+  [1 2 3])</pre>
+
+The 'more-> macro threads using -> (thread-first), so you're able to put any form you'd like in the actual transformation.
+
+    (expect (more-> 2 (-> first (+ 1))
+                    3 last)
+      [1 2 3])
+Finally, 'more-> can be very helpful for testing various kv pairs within a map, or various Java fields.
+
+    (expect (more-> 0 .size
+                    true .isEmpty)
+       (java.util.ArrayList.))
+
+    (expect (more-> 2 :a
+                    4 :b)
+       {:a 2 :b 4})
+Threading is great work, if you can get it. For the times when you need to name your actual value, 'more-of should do the trick. The following example demonstrates how to name your actual value and then specify a few expectations.
+
+    (expect (more-of x
+                     vector? x
+                     1 (first x))
+      [1 2 3])
+If you've ever found yourself wishing you had destructuring in clojure.test/are or expectations/given, you're not alone. The good news is, 'more-of supports any destructuring you want to give it.
+
+    (expect (more-of [x :as all]
+                     vector? all
+                     1 x)
+      [1 2 3])
+1.3 combining side-effects and more-of
+
+It's fairly common to expect some behavior where you know the exact values for some of the args, and you have something more general in mind for the additional args. By combining 'side-effects and 'more-of you can easily great a call into it's args and verify as many as you care to verify.
+
+    (expect (more-of [path data action {:keys [a c]}]
+                     String path
+                     #"some da" data
+                     keyword? action
+                     :b a
+                     :d c)
+      (in (side-effects [spit]
+            (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
+The above test is a bit much to swallow at first glance; however, it's actually very straightforward once you've gotten used to the 'more-of syntax. In the above example the 'spit fn is called with the args "/tmp/hello-world", "some data" :append {:a :b :c :d :e :f}. Using 'more-of, we destructure those args, and expect them individually. The path arg is expected to be of type String. The data arg is expected to be a string that matches the regex "some da". The action is expected to be a 'keyword?. Finally, the options map is destructured to it's :a and :c values, and equality expected.
+
+1.4 from-each
+
+It's common to expect something from a list of actual values. Traditionally 'given was used to generate many tests from one form. Unfortunately 'given suffered from many issues: no ability to destructure values, failure line numbers were almost completely useless, and little visibility into what the problem was when a failure did occur.
+
+In expectations 2.0 'from-each was introduced to provide a more powerful syntax as well as more helpful failure messages.
+
+Below you can see a very simple expectation that verifies each of the elements of a vector is a String.
+
+    (expect String
+      (from-each [letter ["a" "b" "c"]]
+        letter))
+Hopefully the syntax of 'from-each feels very familiar, it's been written to handle the same options as 'for and 'doseq - :let and :when.
+
+    (expect odd? (from-each [num [1 2 3]
+                             :when (not= num 2)]
+                   num))
+
+    (expect odd? (from-each [num [1 2 3]
+                             :when (not= num 2)
+                             :let [numinc1 (inc num)]]
+                   (inc numinc1)))
+While 'from-each is helpful in creating concise tests, I actually find it's most value when a test fails. If you take the above test and remove the :when, you would have the test below.
+
+    (expect odd? (from-each [num [1 2 3]
+                             :let [numinc1 (inc num)]]
+                   (inc numinc1)))
+The above test would definitely fail, but it's not immediately obvious what the issue is. However, the failure message should quickly lead you to the underlying issue.
+
+    failure in (success_examples.clj:206) : success.success-examples
+    (expect
+     odd?
+     (from-each [num [1 2 3] :let [numinc1 (inc num)]] (inc numinc1)))
+
+               the list: (3 4 5)
+
+    (expect odd? (inc numinc1))
+
+                 locals num: 2
+                        numinc1: 3
+               4 is not odd?
+
+As you can see above, when 'from-each fails it will give you values of every var defined within the 'from-each bindings. As a result, it's fairly easy to find the combination of vars that led to a failing test.
+
+
+
+
 The 'given' macro allows you to specify a template - thus reducing code duplication. The following example shows a test that verifies + with various arguments.<br />
 <pre>(given [x y] (expect 10 (+ x y))
        4 6
