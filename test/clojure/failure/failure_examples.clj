@@ -160,3 +160,5 @@
 
 (expect "need to see exceptions here" (from-each [x [1 2 3]]
                                         (/ x 0)))
+
+(expect-focused AssertionError (from-each [a ["2" 1]] (assert (string? a))))

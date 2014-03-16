@@ -209,3 +209,9 @@
                 (* 10 numinc2)))
 
 (expect (success.success-examples-src/->ConstantlyTrue) [1 2 3 4])
+
+(expect (more-> false identity
+                AssertionError assert)
+  false)
+
+(expect AssertionError (from-each [a [1 2]] (assert (string? a))))

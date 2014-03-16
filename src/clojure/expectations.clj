@@ -382,7 +382,10 @@
 
 (defmethod compare-expr ::more [{es ::more} a str-e str-a]
   (if-let [failures (find-failures (for [{:keys [e str-e a-fn gen-str-a]} es]
-                                     (compare-expr e (a-fn a) str-e (gen-str-a str-a))))]
+                                     (compare-expr
+                                      e
+                                      (try (a-fn a) (catch Throwable t t))
+                                      str-e (gen-str-a str-a))))]
     {:type :fail
      :raw [str-e str-a]
      :message (format "actual val: %s" (pr-str a))
