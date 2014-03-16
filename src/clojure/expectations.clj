@@ -620,7 +620,7 @@
              v)]
     `(hash-map ::from-each (doall (for ~seq-exprs
                                     {::the-result (try ~body-expr
-                                                       (catch Exception e# e#))
+                                                       (catch Throwable t# t#))
                                      ::ref-data ~(vec (interleave vs (map symbol vs)))}))
                ::from-each-body '~body-expr
                ::from-each-flag true)))
