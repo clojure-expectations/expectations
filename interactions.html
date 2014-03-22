@@ -67,7 +67,7 @@ Examples:
 In the above example, you specify that spit is a side effect fn, and the 'side-effects macro will return a list of all calls made, with the arguments used in the call. The above example uses simple equality for verification.
 <br><br><pre>(expect empty?
   (side-effects [spit] "spit never called"))</pre>
-The above example demonstrates how you can use non-equality to to verify the data returned.
+The above example demonstrates how you can use non-equality to verify the data returned.
 <br><br><pre>(expect ["/tmp/hello-world" "some data" :append true]
   (in (side-effects [spit]
                 (spit "some other stuff" "xy")
