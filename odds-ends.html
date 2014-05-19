@@ -54,7 +54,7 @@
 <h2>
 <a name="oe" class="anchor" href="#oe"><span class="octicon octicon-link"></span></a>Stacktraces, Test Names, Focused Tests, & JUnit Integration</h2>
 
-The previous sectionss on <a href="https://github.com/jaycfields/expectations">expectations</a> unit testing syntax cover all of the various ways that expectations can be used to write tests
+The previous sections on <a href="https://github.com/jaycfields/expectations">expectations</a> unit testing syntax cover all of the various ways that expectations can be used to write tests
 and what you can expect when your tests fail. However, there are a few other things worth knowing about expectations.<br />
 <br />
 <span style="font-weight: bold;">Stacktraces</span><br />
@@ -87,7 +87,7 @@ IGNORED 2 EXPECTATIONS
 0 failures, 0 errors.</pre>
 As you can see, expectations only ran one test - the expect-focused on line 6. If the other tests had been run the test on line 5 would have created a failure. It can be easy to accidentally leave a few expect-focused calls in, so expectations prints the number of ignored expectations in capital letters as a reminder. Focused expectation running is yet another way to remove noise while working through a problem.<br />
 <br />
-<span style="font-weight: bold;">Tests Running</span><br />
+<span style="font-weight: bold;">Test Running</span><br />
 If you always use 'lein expectations' to run your tests you'll never even care; however, if you ever want to run individual test files it's important to know that your tests run by default on JVM shutdown. When I'm working with Clojure and Java I usually end up using IntelliJ, and therefore have the ability to easily run individual files. When I switched from clojure.test to expectations I wanted to make test running as simple as possible - so I removed the need to specify (run-all-tests). Of course, if you don't want expectations to run for some reason you can disable this feature by calling (expectations/disable-run-on-shutdown).<br />
 <br />
 <span style="font-weight: bold;">JUnit Integration</span><br />
