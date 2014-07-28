@@ -17,3 +17,5 @@
 ;; macro expansion
 (defmacro a-macro [& args]
   `(println ~@args))
+
+(defrecord ARecord [data])

@@ -476,13 +476,14 @@
      :result [str-a "did not throw" str-e]}))
 
 (defmethod compare-expr [java.util.Map java.util.Map] [e a str-e str-a]
-  (if (= e a)
-       {:type :pass}
-       {:type :fail
-        :expected-message (format "in expected, not actual: %s" (first (clojure.data/diff e a)))
-        :actual-message (format "in actual, not expected: %s" (first (clojure.data/diff a e)))
-        :raw [str-e str-a]
-        :result ["expected:" (pr-str e) "\n                was:" (pr-str a)]}))
+  (let [[in-e in-a] (first (clojure.data/diff e a))]
+       (if (and (nil? in-e) (nil? in-a))
+         {:type :pass}
+         {:type :fail
+          :expected-message (some->> in-e (format "in expected, not actual: %s"))
+          :actual-message (some->> in-a (format "in actual, not expected: %s"))
+          :raw [str-e str-a]
+          :result ["expected:" (pr-str e) "\n                was:" (pr-str a)]})))
 
 (defmethod compare-expr [java.util.Set java.util.Set] [e a str-e str-a]
   (if (= e a)

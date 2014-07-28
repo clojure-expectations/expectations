@@ -26,6 +26,10 @@
 (defrecord Foo [a b c])
 
 (expect (->Foo :a :b :c) (->Foo :a :b :c))
+(expect (->Foo "a" "b" "c") (->Foo "a" "b" "c"))
+
+(expect (success.success-examples-src/->ARecord "data")
+  (success.success-examples-src/->ARecord "data"))
 
 ;; is the regex in the string
 (expect #"foo" (str "boo" "foo" "ar"))
