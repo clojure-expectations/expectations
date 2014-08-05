@@ -476,7 +476,7 @@
      :result [str-a "did not throw" str-e]}))
 
 (defmethod compare-expr [java.util.Map java.util.Map] [e a str-e str-a]
-  (let [[in-e in-a] (first (clojure.data/diff e a))]
+  (let [[in-e in-a] (clojure.data/diff e a)]
        (if (and (nil? in-e) (nil? in-a))
          {:type :pass}
          {:type :fail
