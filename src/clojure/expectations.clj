@@ -277,7 +277,7 @@
           in-context-vars (vec (find-expectations-vars :in-context))]
       (doseq [[a-ns the-vars] ns->vars]
         (doseq [v the-vars]
-          (create-context in-context-vars #(test-var v))
+          (create-context in-context-vars ^{:the-var v} #(test-var v))
           (expectation-finished v))
         (ns-finished (ns-name a-ns)))
       (let [result (assoc @*report-counters*
