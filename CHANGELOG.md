@@ -267,3 +267,30 @@ fight and removed Double/NaN support.
 If you find yourself fighting the NaN battle, I'd suggest
 writing a helper method and simply using that in your tests.
 Here are a few [examples](https://gist.github.com/jaycfields/9050825)
+
+# Changes in version 2.0.10
+
+## metadata added to 'work argument used in in-context
+
+Since version 1.4.36 expectations has allowed you 
+to alter the context in which 
+your tests run by creating a function that takes the "run the tests" 
+function as an arg, and do you as wish. [more info](http://jayfields.com/expectations/in-context.html)
+
+In version 2.0.10 of expecatations, the "run the tests" function
+has metadata that allows you to see the var for the test.
+
+The following code would allow you to see the metadata of each
+test being run.
+
+```clj
+(defn in-context
+  {:expectations-options :in-context}
+  [work]
+    (println (meta (:the-var (meta work))))
+    (work))
+```    
+
+# Changes in version 2.0.11 and 2.0.12
+
+None. Both versions were released as the result of automating deployment.
