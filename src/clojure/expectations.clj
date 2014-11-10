@@ -272,7 +272,7 @@
   (when @warn-on-iref-updates-boolean
     (add-watch-every-iref-for-updates))
   (binding [*report-counters* (ref *initial-report-counters*)]
-    (let [ns->vars (group-by (comp :ns meta) vars)
+    (let [ns->vars (group-by (comp :ns meta) (sort-by (comp :line meta) vars))
           start (System/nanoTime)
           in-context-vars (vec (find-expectations-vars :in-context))]
       (doseq [[a-ns the-vars] ns->vars]
