@@ -4,9 +4,9 @@
   :java-source-paths ["src/java"]
   :source-paths ["src/clojure"]
   :test-paths ["test/clojure"]
-  :dependencies [[org.clojure/clojure "1.5.1"]
-                 [junit/junit "4.8.1"]]
-  :plugins [[lein-expectations "0.0.7"]
-            [lein-publishers "1.0.11"]]
+  :dependencies [[org.clojure/clojure "1.6.0"]
+                 [junit/junit "4.12"]]
+  :plugins [[lein-expectations "0.0.8"]
+            [lein-publishers "1.0.13"]]
   :deploy-repositories [["releases" :clojars]]
-  :profiles {:dev {:dependencies [[joda-time/joda-time "2.1"]]}})
+  :profiles {:dev {:dependencies [[joda-time/joda-time "2.7"]]}})
