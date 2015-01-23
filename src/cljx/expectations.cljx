@@ -1,6 +1,8 @@
 (ns expectations
-  (:use clojure.set)
-  (:require expectations.clojure.walk clojure.template clojure.string clojure.pprint clojure.data))
+  (:require [clojure.data]
+            [clojure.pprint]
+            [clojure.set :refer [difference]]
+            [clojure.string]))
 
 (def nothing "no arg given")
 
