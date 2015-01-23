@@ -1,4 +1,4 @@
-(defproject expectations "2.0.17-SNAPSHOT"
+(defproject expectations "2.1.0-SNAPSHOT"
   :description "testing framework"
   :jar-name "expectations.jar"
   :jar-exclusions [#"\.cljx|\.swp|\.swo|\.DS_Store"]
@@ -10,7 +10,7 @@
 
   :plugins [[com.keminglabs/cljx "0.5.0"]
             [lein-cljsbuild "1.0.4"]
-            [lein-expectations "0.0.8"]
+            ;[lein-expectations "0.0.8"]
             [lein-publishers "1.0.13"]]
 
   :deploy-repositories [["releases" :clojars]]
@@ -18,7 +18,7 @@
   :profiles {:dev {:dependencies [[joda-time/joda-time "2.7"]
                                   [org.clojure/clojurescript "0.0-2665"]]}}
 
-  :prep-tasks [["cljx" "once"] "javac" "compile"]
+  :prep-tasks ["clean" "cljx" "javac"]
   :auto-clean false
 
   :cljx {:builds [{:source-paths ["src/cljx"]

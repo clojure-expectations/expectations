@@ -1,3 +1,16 @@
+# Changes in version 2.1.0
+
+## ClojureScript support
+
+TODO: write more!
+
+### Maintainer notes
+
+This version uses [cljx](https://github.com/lynaghk/cljx) to add support for ClojureScript.
+
+Use `lein test` to run Expectations' internal tests.
+Currently only _success-examples_ tests have been migrated.
+
 # Changes to expectations in Version 2.0
 
 ## CONTENTS
