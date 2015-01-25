@@ -294,3 +294,7 @@ test being run.
 # Changes in version 2.0.11 and 2.0.12
 
 None. Both versions were released as the result of automating deployment.
+
+# Changes in version 2.0.13
+
+Tests within a namespace are run in order.
