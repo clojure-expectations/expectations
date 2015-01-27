@@ -22,25 +22,25 @@
   :auto-clean false
 
   :cljx {:builds [{:source-paths ["src/cljx"]
-                   :output-path "target/classes"
-                   :rules :clj}
+                   :output-path  "target/classes"
+                   :rules        :clj}
 
                   {:source-paths ["src/cljx"]
-                   :output-path "target/classes"
-                   :rules :cljs}
+                   :output-path  "target/classes"
+                   :rules        :cljs}
 
                   {:source-paths ["test/cljx"]
-                  :output-path "target/test-classes"
-                  :rules :clj}
+                   :output-path  "target/test-classes"
+                   :rules        :clj}
 
                   {:source-paths ["test/cljx"]
-                  :output-path "target/test-classes"
-                  :rules :cljs}]}
+                   :output-path  "target/test-classes"
+                   :rules        :cljs}]}
 
   :cljsbuild {:test-commands {"node" ["node" :node-runner "target/testable.js"]}
-              :builds [{:source-paths ["target/classes" "target/test-classes"]
-                        :compiler {:output-to "target/testable.js"
-                                   :optimizations :advanced
-                                   :pretty-print true}}]}
+              :builds        [{:source-paths ["target/classes" "target/test-classes"]
+                               :compiler     {:output-to     "target/testable.js"
+                                              :optimizations :advanced
+                                              :pretty-print  true}}]}
 
   :min-lein-version "2.5.0")
