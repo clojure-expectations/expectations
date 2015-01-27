@@ -16,7 +16,7 @@
   :deploy-repositories [["releases" :clojars]]
 
   :profiles {:dev {:dependencies [[joda-time/joda-time "2.7"]
-                                  [org.clojure/clojurescript "0.0-2665"]]}}
+                                  [org.clojure/clojurescript "0.0-2727"]]}}
 
   :prep-tasks ["clean" "cljx" "javac"]
   :auto-clean false
