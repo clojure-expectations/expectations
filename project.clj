@@ -5,8 +5,7 @@
   :java-source-paths ["src/java"]
   :source-paths ["src/cljx" "src/clojure"]
   :test-paths ["target/test-classes"]
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 [junit/junit "4.12"]]
+  :dependencies [[org.clojure/clojure "1.6.0"]]
 
   :plugins [[com.keminglabs/cljx "0.5.0"]
             [lein-cljsbuild "1.0.4"]
@@ -15,8 +14,11 @@
 
   :deploy-repositories [["releases" :clojars]]
 
-  :profiles {:dev {:dependencies [[joda-time/joda-time "2.7"]
-                                  [org.clojure/clojurescript "0.0-2727"]]}}
+  :profiles {:dev {:dependencies      [[joda-time/joda-time "2.7"]
+                                       [junit/junit "4.12"]
+                                       [org.clojure/clojurescript "0.0-2727"]]
+                   :node-dependencies [[source-map-support "^0.2.9"]]
+                   :plugins           [[lein-npm "0.5.0"]]}}
 
   :prep-tasks ["clean" "cljx" "javac"]
   :auto-clean false

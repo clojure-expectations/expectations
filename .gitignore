@@ -12,5 +12,6 @@ pom.xml.asc
 /repl-port
 /.lein-*
 /.nrepl-port
+/node_modules
 /.idea
 *.iml
