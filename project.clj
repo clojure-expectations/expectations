@@ -7,20 +7,20 @@
   :test-paths ["target/test-classes"]
   :dependencies [[org.clojure/clojure "1.6.0"]]
 
-  :plugins [[com.keminglabs/cljx "0.5.0"]
-            [lein-cljsbuild "1.0.4"]
-            ;[lein-expectations "0.0.8"]
+  :plugins [[lein-expectations "0.0.8"]
             [lein-publishers "1.0.13"]]
 
   :deploy-repositories [["releases" :clojars]]
 
   :profiles {:dev {:dependencies      [[joda-time/joda-time "2.7"]
                                        [junit/junit "4.12"]
-                                       [org.clojure/clojurescript "0.0-2727"]]
+                                       [org.clojure/clojurescript "0.0-2740"]]
                    :node-dependencies [[source-map-support "^0.2.9"]]
-                   :plugins           [[lein-npm "0.5.0"]]}}
+                   :plugins           [[com.keminglabs/cljx "0.5.1-SNAPSHOT"]
+                                       [lein-cljsbuild "1.0.4"]
+                                       [lein-npm "0.5.0"]]}}
 
-  :prep-tasks ["clean" "cljx" "javac"]
+  ;:prep-tasks ["clean" "cljx" "javac"]
   :auto-clean false
 
   :cljx {:builds [{:source-paths ["src/cljx"]
@@ -39,10 +39,14 @@
                    :output-path  "target/test-classes"
                    :rules        :cljs}]}
 
-  :cljsbuild {:test-commands {"node" ["node" :node-runner "target/testable.js"]}
-              :builds        [{:source-paths ["target/classes" "target/test-classes"]
-                               :compiler     {:output-to     "target/testable.js"
-                                              :optimizations :advanced
-                                              :pretty-print  true}}]}
+  :cljsbuild {:builds        [{:source-paths ["target/classes" "target/test-classes"]
+                               :notify-command ["node" "./scripts/run-tests.js"]
+                               :compiler     {:target :nodejs
+                                              :output-to      "target/out/test.js"
+                                              :output-dir     "target/out"
+                                              :optimizations  :none
+                                              :cache-analysis true
+                                              :source-map     true
+                                              :pretty-print   true}}]}
 
   :min-lein-version "2.5.0")

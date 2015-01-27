@@ -1,5 +1,6 @@
 (ns expectations-options
-  (:require expectations success.success-examples-src))
+  (:require [expectations]
+            [success.success-examples-src]))
 
 (defn turn-iref-warnings-on
   "turn iref modification warnings on"

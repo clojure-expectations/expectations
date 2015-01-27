@@ -1,9 +1,9 @@
 (ns success.success-examples-src
-  (:use expectations))
+  (:require [expectations :refer :all]))
 
 (def an-atom (atom "atom"))
-(def a-ref (ref "ref"))
-(def an-agent (agent "agent"))
+#+clj (def a-ref (ref "ref"))
+#+clj (def an-agent (agent "agent"))
 
 (defn a-fn-to-be-rebound [])
 
@@ -15,6 +15,7 @@
   (message [e a str-e str-a] (format "%s & %s" str-e str-a)))
 
 ;; macro expansion
+#+clj
 (defmacro a-macro [& args]
   `(println ~@args))
 

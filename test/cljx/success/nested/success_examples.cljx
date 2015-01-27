@@ -1,5 +1,5 @@
 (ns success.nested.success-examples
-  (:use expectations))
+  (:require [expectations :refer :all]))
 
 ;; number equality
 (expect 1 (do 1))
