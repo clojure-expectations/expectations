@@ -2,7 +2,12 @@
   (:require [clojure.data]
             #+clj [clojure.pprint :as pprint]
             [clojure.set :refer [difference]]
-            [clojure.string]))
+            [clojure.string]
+            #+cljs [goog.string]
+            #+cljs [goog.string.format]))
+
+#+cljs
+(defn format [fmt & args] (apply goog.string/format fmt args))
 
 (def pprint
   #+clj pprint/pprint
