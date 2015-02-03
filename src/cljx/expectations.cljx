@@ -191,6 +191,10 @@
     (alter-meta! current-test assoc ::run true :status [:fail message (:line *test-meta*)])
     (fail *test-name* *test-meta* message)))
 
+(defn- get-message [e] (-> e
+                           #+clj .getMessage
+                           #+cljs .-message))
+
 (defmethod report :error [{:keys [result raw] :as m}]
   (inc-report-counter :error)
   (let [result (first result)
@@ -201,7 +205,7 @@
                      (when (show-raw-choice) (colorize-raw (raw-str raw))))
                    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
                    (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
-                   (str "    threw: " (class result) " - " (.getMessage result))
+                   (str "    threw: " (type result) " - " (get-message result))
                    (pruned-stack-trace result)])]
     (alter-meta! current-test
       assoc ::run true :status [:error message (:line *test-meta*)])
@@ -219,14 +223,20 @@
 (defn disable-run-on-shutdown [] (reset! run-tests-on-shutdown false))
 (defn warn-on-iref-updates [] (reset! warn-on-iref-updates-boolean true))
 
+(def reference-types*
+  #+clj #{clojure.lang.Agent clojure.lang.Atom clojure.lang.Ref}
+  #+cljs #{cljs.core/Atom})
+
+#+clj
 (defn find-every-iref []
   (->> (all-ns)
     (remove #(re-seq #"(clojure\.|expectations)" (str (.name %))))
     (mapcat (comp vals ns-interns))
     (filter bound?)
     (keep #(when-let [val (var-get %)] [% val]))
-    (filter (comp #{clojure.lang.Agent clojure.lang.Atom clojure.lang.Ref} class second))))
+    (filter (comp reference-types* type second))))
 
+#+clj
 (defn add-watch-every-iref-for-updates []
   (doseq [[var iref] (find-every-iref)]
     (add-watch iref ::expectations-watching-state-modifications
@@ -241,6 +251,7 @@
         (when-not *test-name*
           (.printStackTrace (RuntimeException. "stacktrace for var modification") System/out))))))
 
+#+clj
 (defn remove-watch-every-iref-for-updates []
   (doseq [[var iref] (find-every-iref)]
     (remove-watch iref ::expectations-watching-state-modifications)))
@@ -288,6 +299,7 @@
     (catch java.io.FileNotFoundException e))
 
   (-> (find-expectations-vars :before-run) (execute-vars))
+  #+clj
   (when @warn-on-iref-updates-boolean
     (add-watch-every-iref-for-updates))
   (binding [*report-counters* (atom initial-report-counters)]
@@ -302,6 +314,7 @@
       (let [result (assoc @*report-counters*
                      :run-time (int (/ (- (System/nanoTime) start) 1000000))
                      :ignored-expectations ignored-expectations)]
+        #+clj
         (when @warn-on-iref-updates-boolean
           (remove-watch-every-iref-for-updates))
         (-> (find-expectations-vars :after-run) (execute-vars))
@@ -352,7 +365,7 @@
                            (instance? Throwable a) ::actual-exception
                            (and (fn? e) (not= e a)) ::fn
                            (instance? expectations.CustomPred e) :custom-pred
-                           :default [(class e) (class a)])))
+                           :default [(type e) (type a)])))
 
 (defmethod compare-expr :default [e a str-e str-a]
   (if (= e a)
@@ -378,7 +391,7 @@
     (catch Exception ex
       {:type             :fail :raw [str-e str-a]
        :expected-message (str "also attempted: (" str-e " " str-a ")")
-       :actual-message   (str "       and got: " (.getMessage ex))
+       :actual-message   (str "       and got: " (get-message ex))
        :result           ["expected:" str-e
                           "\n                was:" (pr-str a)]})))
 
@@ -444,7 +457,7 @@
     {:type :pass}
     {:type             :fail :raw [str-e str-a]
      :expected-message (str "expected: " a " to be an instance of " e)
-     :actual-message   (str "     was: " a " is an instance of " (class a))}))
+     :actual-message   (str "     was: " a " is an instance of " (type a))}))
 
 (defmethod compare-expr [Class Class] [e a str-e str-a]
   (if (isa? a e)
@@ -582,7 +595,7 @@
 (defn var->symbol [v]
   (symbol (str (.ns v) "/" (.sym v))))
 
-(defmulti localize class)
+(defmulti localize type)
 (defmethod localize clojure.lang.Atom [a] (atom @a))
 (defmethod localize clojure.lang.Agent [a] (agent @a))
 (defmethod localize clojure.lang.Ref [a] (ref @a))
@@ -591,7 +604,7 @@
 (defn binding-&-localized-val [var]
   (when (bound? var)
     (when-let [vv (var-get var)]
-      (when (#{clojure.lang.Agent clojure.lang.Atom clojure.lang.Ref} (class vv))
+      (when (reference-types* (type vv))
         [(var->symbol var) (list 'localize (var->symbol var))]))))
 
 (defn default-local-vals [namespaces]
