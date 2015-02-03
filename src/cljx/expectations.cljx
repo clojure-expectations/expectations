@@ -233,7 +233,7 @@
     (remove #(re-seq #"(clojure\.|expectations)" (str (.name %))))
     (mapcat (comp vals ns-interns))
     (filter bound?)
-    (keep #(when-let [val (var-get %)] [% val]))
+    (keep #(when-let [val @%] [% val]))
     (filter (comp reference-types* type second))))
 
 #+clj
@@ -257,7 +257,7 @@
     (remove-watch iref ::expectations-watching-state-modifications)))
 
 (defn test-var [v]
-  (when-let [t (var-get v)]
+  (when-let [t @v]
     (let [tn (test-name (meta v))
           tm (meta v)]
       (started tn tm)
@@ -281,13 +281,13 @@
 (defn execute-vars [vars]
   (doseq [var vars]
     (when (bound? var)
-      (when-let [vv (var-get var)]
+      (when-let [vv @var]
         (vv)))))
 
 (defn create-context [in-context-vars work]
   (case (count in-context-vars)
     0 (work)
-    1 ((var-get (first in-context-vars)) work)
+    1 (@(first in-context-vars) work)
     (do
       (println "expectations only supports 0 or 1 :in-context fns. Ignoring:" in-context-vars)
       (work))))
@@ -593,7 +593,7 @@
       (run [] (when @run-tests-on-shutdown (run-all-tests))))))
 
 (defn var->symbol [v]
-  (symbol (str (.ns v) "/" (.sym v))))
+  (symbol (str (.ns v) "/" (.sym v))))                      ;FIXME
 
 (defmulti localize type)
 (defmethod localize clojure.lang.Atom [a] (atom @a))
@@ -603,7 +603,7 @@
 
 (defn binding-&-localized-val [var]
   (when (bound? var)
-    (when-let [vv (var-get var)]
+    (when-let [vv @var]
       (when (reference-types* (type vv))
         [(var->symbol var) (list 'localize (var->symbol var))]))))
 
