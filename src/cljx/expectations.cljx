@@ -138,13 +138,16 @@
       (re-seq #"java\.lang" className)
       (re-seq #"java\.util\.concurrent\.ThreadPoolExecutor\$Worker" className))))
 
+(defn- stackline->str [{:keys [className methodName fileName lineNumber]}]
+  (if (= methodName "invoke")
+    (str "           on (" fileName ":" lineNumber ")")
+    (str "           " className "$" methodName " (" fileName ":" lineNumber ")")))
+
 (defn pruned-stack-trace [t]
-  (string-join "\n"
-    (distinct (map (fn [{:keys [className methodName fileName lineNumber] :as m}]
-                     (if (= methodName "invoke")
-                       (str "           on (" fileName ":" lineNumber ")")
-                       (str "           " className "$" methodName " (" fileName ":" lineNumber ")")))
-                (remove ignored-fns (map bean (.getStackTrace t)))))))
+  #+clj (string-join "\n"
+          (distinct (map stackline->str
+                      (remove ignored-fns (map bean (.getStackTrace t))))))
+  #+cljs (.-stack t))
 
 (defn ->failure-message [{:keys [raw ref-data result expected-message actual-message message list show-raw]}]
   (string-join "\n"
