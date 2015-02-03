@@ -192,8 +192,8 @@
     (fail *test-name* *test-meta* message)))
 
 (defn- get-message [e] (-> e
-                           #+clj .getMessage
-                           #+cljs .-message))
+                         #+clj .getMessage
+                         #+cljs .-message))
 
 (defmethod report :error [{:keys [result raw] :as m}]
   (inc-report-counter :error)
@@ -267,9 +267,11 @@
                 *test-var* v]
         (try
           (t)
-          (catch Throwable e
+          (catch #+clj Throwable #+cljs js/Error e
             (println "\nunexpected error in" tn)
-            (.printStackTrace e))))
+            (-> e
+              #+clj .printStackTrace
+              #+cljs .-stack println))))
       (finished tn tm))))
 
 (defn find-expectations-vars [option-type]
@@ -360,9 +362,9 @@
                            (and (map? a) (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
                            (and (map? a) (not (sorted? a)) (contains? a ::in-flag)) ::in
                            (and (map? e) (not (sorted? e)) (contains? e ::more)) ::more
-                           (and (isa? e Throwable) (not= e a)) ::expect-exception
-                           (instance? Throwable e) ::expected-exception
-                           (instance? Throwable a) ::actual-exception
+                           (and (isa? e #+clj Throwable #+cljs js/Error) (not= e a)) ::expect-exception
+                           (instance? #+clj Throwable #+cljs js/Error e) ::expected-exception
+                           (instance? #+clj Throwable #+cljs js/Error a) ::actual-exception
                            (and (fn? e) (not= e a)) ::fn
                            (instance? expectations.CustomPred e) :custom-pred
                            :default [(type e) (type a)])))
@@ -416,7 +418,7 @@
   (if-let [failures (find-failures (for [{:keys [e str-e a-fn gen-str-a]} es]
                                      (compare-expr
                                        e
-                                       (try (a-fn a) (catch Throwable t t))
+                                       (try (a-fn a) (catch #+clj Throwable #+cljs js/Error t t))
                                        str-e (gen-str-a str-a))))]
     {:type    :fail
      :raw     [str-e str-a]
@@ -552,11 +554,11 @@
 
 #+clj
 (defmacro doexpect [e a]
-  `(let [e# (try ~e (catch Throwable t# t#))
-         a# (try ~a (catch Throwable t# t#))]
+  `(let [e# (try ~e (catch #+clj Throwable #+cljs js/Error t# t#))
+         a# (try ~a (catch #+clj Throwable #+cljs js/Error t# t#))]
      (report
        (try (compare-expr e# a# '~e '~a)
-            (catch Throwable e2#
+            (catch #+clj Throwable #+cljs js/Error e2#
               (compare-expr e2# a# '~e '~a))))))
 
 #+clj
@@ -664,7 +666,7 @@
              v)]
     `(hash-map ::from-each (doall (for ~seq-exprs
                                     {::the-result (try ~body-expr
-                                                       (catch Throwable t# t#))
+                                                       (catch #+clj Throwable #+cljs js/Error t# t#))
                                      ::ref-data   ~(vec (interleave vs (map symbol vs)))}))
        ::from-each-body '~body-expr
        ::from-each-flag true)))
