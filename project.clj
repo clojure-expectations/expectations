@@ -14,7 +14,7 @@
 
   :profiles {:dev {:dependencies      [[joda-time/joda-time "2.7"]
                                        [junit/junit "4.12"]
-                                       [org.clojure/clojurescript "0.0-2740"]]
+                                       [org.clojure/clojurescript "0.0-2760"]]
                    :node-dependencies [[source-map-support "^0.2.9"]]
                    :plugins           [[com.keminglabs/cljx "0.5.1-SNAPSHOT"]
                                        [lein-cljsbuild "1.0.4"]
