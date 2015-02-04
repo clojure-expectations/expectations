@@ -1,27 +1,9 @@
 (ns expectations
-  #+cljs (:require-macros [expectations.cljs :as ecljs])
-  (:refer-clojure :exclude [all-ns ns-interns])
+  (:refer-clojure :exclude [all-ns format ns-interns])
   (:require [clojure.data]
-            #+clj [clojure.pprint :as pprint]
             [clojure.set :refer [difference]]
             [clojure.string]
-            #+cljs [goog.string]
-            #+cljs [goog.string.format]))
-
-(defn- all-ns []
-  #+clj (clojure.core/all-ns)
-  #+cljs (ecljs/all-ns*))
-
-(defn- ns-interns [ns]
-  #+clj (clojure.core/ns-interns ns)
-  #+cljs (ecljs/ns-interns* ns))
-
-#+cljs
-(defn format [fmt & args] (apply goog.string/format fmt args))
-
-(def pprint
-  #+clj pprint/pprint
-  #+cljs println)                                           ;until there's a usable cljs pprint port
+            [expectations.platform :as p :refer [all-ns format ns-interns]]))
 
 (def nothing "no arg given")
 
@@ -127,10 +109,10 @@
   (colorize-filename (str (last (re-seq #"[0-9A-Za-z_\.]+" file)) ":" line)))
 
 (defn raw-str [[e a]]
-  (with-out-str (pprint `(~'expect ~e ~a))))
+  (with-out-str (p/pprint `(~'expect ~e ~a))))
 
 (defn pp-str [e]
-  (clojure.string/trim (with-out-str (pprint e))))
+  (clojure.string/trim (with-out-str (p/pprint e))))
 
 (defn ^{:dynamic true} fail [test-name test-meta msg]
   (println (str "\nfailure in (" (test-file test-meta) ") : " (:ns test-meta))) (println msg))
