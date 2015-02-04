@@ -25,6 +25,11 @@
                         #+clj .getMessage
                         #+cljs .-message))
 
+(defn nano-time []
+  #+clj (System/nanoTime)
+  #+cljs (-> js/process .hrtime js->clj
+           (#(+ (* 1e9 (% 0)) (% 1)))))
+
 (defn ns-interns [ns]
   #+clj (clojure.core/ns-interns ns)
   #+cljs (cljs/ns-interns* ns))

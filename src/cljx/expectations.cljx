@@ -279,7 +279,7 @@
     (add-watch-every-iref-for-updates))
   (binding [*report-counters* (atom initial-report-counters)]
     (let [ns->vars (group-by (comp :ns meta) (sort-by (comp :line meta) vars))
-          start (System/nanoTime)
+          start (p/nano-time)
           in-context-vars (vec (find-expectations-vars :in-context))]
       (doseq [[a-ns the-vars] ns->vars]
         (doseq [v the-vars]
@@ -287,7 +287,7 @@
           (expectation-finished v))
         (ns-finished (ns-name a-ns)))
       (let [result (assoc @*report-counters*
-                     :run-time (int (/ (- (System/nanoTime) start) 1000000))
+                     :run-time (int (/ (- (p/nano-time) start) 1000000))
                      :ignored-expectations ignored-expectations)]
         #+clj
         (when @warn-on-iref-updates-boolean
