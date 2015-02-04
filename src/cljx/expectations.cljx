@@ -33,23 +33,14 @@
 (def ^{:dynamic true} reminder nil)
 
 ;;; UTILITIES FOR REPORTING FUNCTIONS
-(defn getenv [var]
-  #+clj (System/getenv var)
-  #+cljs (aget (.-env js/process) var))
-
-(defn on-windows? []
-  (re-find #"[Ww]in"
-    #+clj (System/getProperty "os.name")
-    #+cljs (.-platform js/process)))
-
 (defn show-raw-choice []
-  (if-let [choice (getenv "EXPECTATIONS_SHOW_RAW")]
+  (if-let [choice (p/getenv "EXPECTATIONS_SHOW_RAW")]
     (= "TRUE" (clojure.string/upper-case choice))
     true))
 
 (defn colorize-choice []
-  (clojure.string/upper-case (or (getenv "EXPECTATIONS_COLORIZE")
-                               (str (not (on-windows?))))))
+  (clojure.string/upper-case (or (p/getenv "EXPECTATIONS_COLORIZE")
+                               (str (not (p/on-windows?))))))
 
 (def ansi-colors {:reset   "[0m"
                   :red     "[31m"
@@ -183,10 +174,6 @@
     (alter-meta! current-test assoc ::run true :status [:fail message (:line *test-meta*)])
     (fail *test-name* *test-meta* message)))
 
-(defn- get-message [e] (-> e
-                         #+clj .getMessage
-                         #+cljs .-message))
-
 (defmethod report :error [{:keys [result raw] :as m}]
   (inc-report-counter :error)
   (let [result (first result)
@@ -197,7 +184,7 @@
                      (when (show-raw-choice) (colorize-raw (raw-str raw))))
                    (when-let [msg (:expected-message m)] (str "  exp-msg: " msg))
                    (when-let [msg (:actual-message m)] (str "  act-msg: " msg))
-                   (str "    threw: " (type result) " - " (get-message result))
+                   (str "    threw: " (type result) " - " (p/get-message result))
                    (pruned-stack-trace result)])]
     (alter-meta! current-test
       assoc ::run true :status [:error message (:line *test-meta*)])
@@ -215,10 +202,6 @@
 (defn disable-run-on-shutdown [] (reset! run-tests-on-shutdown false))
 (defn warn-on-iref-updates [] (reset! warn-on-iref-updates-boolean true))
 
-(def reference-types*
-  #+clj #{clojure.lang.Agent clojure.lang.Atom clojure.lang.Ref}
-  #+cljs #{cljs.core/Atom})
-
 #+clj
 (defn find-every-iref []
   (->> (all-ns)
@@ -226,7 +209,7 @@
     (mapcat (comp vals ns-interns))
     (filter bound?)
     (keep #(when-let [val @%] [% val]))
-    (filter (comp reference-types* type second))))
+    (filter (comp p/reference-types* type second))))
 
 #+clj
 (defn add-watch-every-iref-for-updates []
@@ -261,9 +244,7 @@
           (t)
           (catch #+clj Throwable #+cljs js/Error e
             (println "\nunexpected error in" tn)
-            (-> e
-              #+clj .printStackTrace
-              #+cljs .-stack println))))
+            (p/print-stack-trace e))))
       (finished tn tm))))
 
 (defn find-expectations-vars [option-type]
@@ -385,7 +366,7 @@
     (catch Exception ex
       {:type             :fail :raw [str-e str-a]
        :expected-message (str "also attempted: (" str-e " " str-a ")")
-       :actual-message   (str "       and got: " (get-message ex))
+       :actual-message   (str "       and got: " (p/get-message ex))
        :result           ["expected:" str-e
                           "\n                was:" (pr-str a)]})))
 
@@ -599,7 +580,7 @@
 (defn binding-&-localized-val [var]
   (when (bound? var)
     (when-let [vv @var]
-      (when (reference-types* (type vv))
+      (when (p/reference-types* (type vv))
         [(var->symbol var) (list 'localize (var->symbol var))]))))
 
 (defn default-local-vals [namespaces]

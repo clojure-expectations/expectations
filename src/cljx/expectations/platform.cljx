@@ -17,10 +17,32 @@
   #+clj clojure.core/format
   #+cljs goog.string/format)
 
+(defn getenv [var]
+  #+clj (System/getenv var)
+  #+cljs (aget (.-env js/process) var))
+
+(defn get-message [e] (-> e
+                        #+clj .getMessage
+                        #+cljs .-message))
+
 (defn ns-interns [ns]
   #+clj (clojure.core/ns-interns ns)
   #+cljs (cljs/ns-interns* ns))
 
+(defn on-windows? []
+  (re-find #"[Ww]in"
+    #+clj (System/getProperty "os.name")
+    #+cljs (.-platform js/process)))
+
 (def pprint
   #+clj pprint/pprint
   #+cljs println)                                           ;until there's a usable cljs pprint port
+
+(defn print-stack-trace [e]
+  (-> e
+    #+clj .printStackTrace
+    #+cljs .-stack println))
+
+(def reference-types*
+  #+clj #{clojure.lang.Agent clojure.lang.Atom clojure.lang.Ref}
+  #+cljs #{cljs.core/Atom})
