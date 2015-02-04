@@ -1,9 +1,9 @@
 (ns expectations
-  (:refer-clojure :exclude [all-ns bound? format ns-interns])
+  (:refer-clojure :exclude [all-ns bound? format ns-interns ns-name])
   (:require [clojure.data]
             [clojure.set :refer [difference]]
             [clojure.string]
-            [expectations.platform :as p :refer [all-ns bound? format ns-interns]]))
+            [expectations.platform :as p :refer [all-ns bound? format ns-interns ns-name]]))
 
 (def nothing "no arg given")
 

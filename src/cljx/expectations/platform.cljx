@@ -1,5 +1,5 @@
 (ns expectations.platform
-  (:refer-clojure :exclude [all-ns bound? format ns-interns])
+  (:refer-clojure :exclude [all-ns bound? format ns-interns ns-name])
   #+cljs (:require-macros [expectations.platform.cljs :as cljs])
   (:require #+clj [clojure.pprint :as pprint]
             #+cljs [goog.string]
@@ -33,6 +33,10 @@
 (defn ns-interns [ns]
   #+clj (clojure.core/ns-interns ns)
   #+cljs (cljs/ns-interns* ns))
+
+(defn ns-name [ns]
+  #+clj (clojure.core/ns-name ns)
+  #+cljs ns)
 
 (defn on-windows? []
   (re-find #"[Ww]in"
