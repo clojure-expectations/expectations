@@ -363,7 +363,7 @@
     (if (e a)
       {:type :pass}
       {:type :fail :raw [str-e str-a] :result [(pr-str a) "is not" str-e]})
-    (catch Exception ex
+    (catch #+clj Exception #+cljs js/Error ex
       {:type             :fail :raw [str-e str-a]
        :expected-message (str "also attempted: (" str-e " " str-a ")")
        :actual-message   (str "       and got: " (p/get-message ex))
@@ -572,9 +572,10 @@
   (symbol (str (.ns v) "/" (.sym v))))                      ;FIXME
 
 (defmulti localize type)
-(defmethod localize clojure.lang.Atom [a] (atom @a))
-(defmethod localize clojure.lang.Agent [a] (agent @a))
-(defmethod localize clojure.lang.Ref [a] (ref @a))
+#+cljs (defmethod localize cljs.core/Atom [a] (atom @a))
+#+clj (defmethod localize clojure.lang.Atom [a] (atom @a))
+#+clj (defmethod localize clojure.lang.Agent [a] (agent @a))
+#+clj (defmethod localize clojure.lang.Ref [a] (ref @a))
 (defmethod localize :default [v] v)
 
 (defn binding-&-localized-val [var]
