@@ -287,10 +287,10 @@
       (work))))
 
 (defn test-vars [vars ignored-expectations]
-  (remove-ns 'expectations-options)
-  (try
-    (require 'expectations-options :reload)
-    (catch java.io.FileNotFoundException e))
+  #+clj (remove-ns 'expectations-options)
+  #+clj (try
+          (require 'expectations-options :reload)
+          (catch java.io.FileNotFoundException e))
 
   (-> (find-expectations-vars :before-run) (execute-vars))
   #+clj
