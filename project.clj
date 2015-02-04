@@ -3,7 +3,7 @@
   :jar-name "expectations.jar"
   :jar-exclusions [#"\.cljx|\.swp|\.swo|\.DS_Store"]
   :java-source-paths ["src/java"]
-  :source-paths ["src/cljx" "src/clojure"]
+  :source-paths ["src/cljx" "src/clojure" "src/cljs"]
   :test-paths ["target/test-classes"]
   :dependencies [[org.clojure/clojure "1.6.0"]]
 
@@ -39,14 +39,14 @@
                    :output-path  "target/test-classes"
                    :rules        :cljs}]}
 
-  :cljsbuild {:builds        [{:source-paths ["target/classes" "target/test-classes"]
-                               :notify-command ["node" "./scripts/run-tests.js"]
-                               :compiler     {:target :nodejs
-                                              :output-to      "target/out/test.js"
-                                              :output-dir     "target/out"
-                                              :optimizations  :none
-                                              :cache-analysis true
-                                              :source-map     true
-                                              :pretty-print   true}}]}
+  :cljsbuild {:builds [{:source-paths   ["target/classes" "src/cljs" "target/test-classes"]
+                        :notify-command ["node" "./scripts/run-tests.js"]
+                        :compiler       {:target         :nodejs
+                                         :output-to      "target/out/test.js"
+                                         :output-dir     "target/out"
+                                         :optimizations  :none
+                                         :cache-analysis true
+                                         :source-map     true
+                                         :pretty-print   true}}]}
 
   :min-lein-version "2.5.0")

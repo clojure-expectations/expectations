@@ -1,10 +1,20 @@
 (ns expectations
+  #+cljs (:require-macros [expectations.cljs :as ecljs])
+  (:refer-clojure :exclude [all-ns ns-interns])
   (:require [clojure.data]
             #+clj [clojure.pprint :as pprint]
             [clojure.set :refer [difference]]
             [clojure.string]
             #+cljs [goog.string]
             #+cljs [goog.string.format]))
+
+(defn- all-ns []
+  #+clj (clojure.core/all-ns)
+  #+cljs (ecljs/all-ns*))
+
+(defn- ns-interns [ns]
+  #+clj (clojure.core/ns-interns ns)
+  #+cljs (ecljs/ns-interns* ns))
 
 #+cljs
 (defn format [fmt & args] (apply goog.string/format fmt args))
@@ -588,6 +598,7 @@
 #+clj
 (defmacro expanding [n] (list 'quote (macroexpand-1 n)))
 
+#+clj                                                       ;TODO impl for cljs
 (->
   (Runtime/getRuntime)
   (.addShutdownHook
