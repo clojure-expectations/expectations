@@ -335,9 +335,13 @@
                            (and (map? a) (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
                            (and (map? a) (not (sorted? a)) (contains? a ::in-flag)) ::in
                            (and (map? e) (not (sorted? e)) (contains? e ::more)) ::more
+                           (and (map? e) (map? a)) ::maps
+                           (and (set? e) (set? a)) ::sets
+                           (and (sequential? e) (sequential? a)) ::sequentials
                            (and (isa? e #+clj Throwable #+cljs js/Error) (not= e a)) ::expect-exception
                            (instance? #+clj Throwable #+cljs js/Error e) ::expected-exception
                            (instance? #+clj Throwable #+cljs js/Error a) ::actual-exception
+                           (instance? e a) ::instance
                            (and (fn? e) (not= e a)) ::fn
                            (instance? expectations.CustomPred e) :custom-pred
                            :default [(type e) (type a)])))
@@ -427,6 +431,10 @@
               :result  ["You supplied:" (pr-str (::in a))]
               :message "You must supply a list, set, or map when using (in)"}))
 
+(defmethod compare-expr ::instance [e a str-e str-a]
+  {:type :pass})
+
+#+clj
 (defmethod compare-expr [Class Object] [e a str-e str-a]
   (if (instance? e a)
     {:type :pass}
@@ -434,7 +442,8 @@
      :expected-message (str "expected: " a " to be an instance of " e)
      :actual-message   (str "     was: " a " is an instance of " (type a))}))
 
-(defmethod compare-expr [Class Class] [e a str-e str-a]
+(defmethod compare-expr #+clj [Class Class] #+cljs [js/Function js/Function]
+  [e a str-e str-a]
   (if (isa? a e)
     {:type :pass}
     {:type             :fail :raw [str-e str-a]
@@ -452,17 +461,20 @@
    :expected-message (str "exception in expected: " str-e)
    :result           [e]})
 
-(defmethod compare-expr [java.util.regex.Pattern java.util.regex.Pattern] [e a str-e str-a]
+(defmethod compare-expr #+clj [java.util.regex.Pattern java.util.regex.Pattern] #+cljs [js/RegExp js/RegExp]
+  [e a str-e str-a]
   (compare-expr (.pattern e) (.pattern a) str-e str-a))
 
-(defmethod compare-expr [java.util.regex.Pattern Object] [e a str-e str-a]
+(defmethod compare-expr #+clj [java.util.regex.Pattern Object] #+cljs [js/RegExp js/Object]
+  [e a str-e str-a]
   (if (re-seq e a)
     {:type :pass}
     {:type   :fail,
      :raw    [str-e str-a]
      :result ["regex" (pr-str e) "not found in" (pr-str a)]}))
 
-(defmethod compare-expr [String String] [e a str-e str-a]
+(defmethod compare-expr #+clj [String String] #+cljs [js/String js/String]
+  [e a str-e str-a]
   (if (= e a)
     {:type :pass}
     (let [matches (->> (map vector e a) (take-while (partial apply =)) (map first) (apply str))
@@ -482,7 +494,7 @@
     {:type   :fail :raw [str-e str-a]
      :result [str-a "did not throw" str-e]}))
 
-(defmethod compare-expr [java.util.Map java.util.Map] [e a str-e str-a]
+(defmethod compare-expr ::maps [e a str-e str-a]
   (let [[in-e in-a] (clojure.data/diff e a)]
     (if (and (nil? in-e) (nil? in-a))
       {:type :pass}
@@ -492,7 +504,7 @@
        :raw              [str-e str-a]
        :result           ["expected:" (pr-str e) "\n                was:" (pr-str a)]})))
 
-(defmethod compare-expr [java.util.Set java.util.Set] [e a str-e str-a]
+(defmethod compare-expr ::sets [e a str-e str-a]
   (if (= e a)
     {:type :pass}
     {:type             :fail
@@ -501,7 +513,7 @@
      :raw              [str-e str-a]
      :result           ["expected:" e "\n                was:" (pr-str a)]}))
 
-(defmethod compare-expr [java.util.List java.util.List] [e a str-e str-a]
+(defmethod compare-expr ::sequentials [e a str-e str-a]
   (if (= e a)
     {:type :pass}
     (let [diff-fn (fn [e a] (seq (difference (set e) (set a))))]
