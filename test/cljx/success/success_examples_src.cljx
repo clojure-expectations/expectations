@@ -1,5 +1,5 @@
 (ns success.success-examples-src
-  (:require [expectations]))
+  (:require [expectations :refer :all]))
 
 (def an-atom (atom "atom"))
 #+clj (def a-ref (ref "ref"))
