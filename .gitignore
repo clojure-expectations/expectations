@@ -13,5 +13,6 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 /node_modules
+/*-init.clj
 /.idea
 *.iml
