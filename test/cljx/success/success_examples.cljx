@@ -12,8 +12,17 @@
                           side-effects]]
     [success.success-examples-src :refer [a-macro]])
   (:require [expectations :refer :all]
+            [expectations.platform :as p]
             [success.success-examples-src :refer [a-macro]])
   #+clj (:import (org.joda.time DateTime)))
+
+;; expect to be on the right platform
+#+clj
+(defmacro mcljs? [] (p/cljs?))
+
+(expect
+  #+clj (not (mcljs?))
+  #+cljs (mcljs?))
 
 ;; expect a truthy value
 (expect true)

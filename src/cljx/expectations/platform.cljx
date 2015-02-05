@@ -13,6 +13,10 @@
   #+clj clojure.core/bound?
   #+cljs (fn [& vars] (every? #(deref %) vars)))
 
+(defn cljs? []
+  #+clj (boolean (find-ns 'cljs.core))
+  #+cljs true)
+
 (def format
   #+clj clojure.core/format
   #+cljs goog.string/format)
