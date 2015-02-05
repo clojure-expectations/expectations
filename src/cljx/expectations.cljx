@@ -5,7 +5,10 @@
             [clojure.string]
             [expectations.platform :as p :refer [all-ns bound? format ns-interns ns-name]])
   #+clj
-  (:import (java.util.regex Pattern)))
+  (:import (clojure.lang Agent Atom Ref)
+           (java.io FileNotFoundException)
+           (java.util.regex Pattern)
+           (org.joda.time DateTimeUtils)))
 
 (def nothing "no arg given")
 
@@ -272,7 +275,7 @@
   #+clj (remove-ns 'expectations-options)
   #+clj (try
           (require 'expectations-options :reload)
-          (catch java.io.FileNotFoundException e))
+          (catch FileNotFoundException e))
 
   (-> (find-expectations-vars :before-run) (execute-vars))
   (when @warn-on-iref-updates-boolean
@@ -579,9 +582,9 @@
 
 (defmulti localize type)
 #+cljs (defmethod localize cljs.core/Atom [a] (atom @a))
-#+clj (defmethod localize clojure.lang.Atom [a] (atom @a))
-#+clj (defmethod localize clojure.lang.Agent [a] (agent @a))
-#+clj (defmethod localize clojure.lang.Ref [a] (ref @a))
+#+clj (defmethod localize Atom [a] (atom @a))
+#+clj (defmethod localize Agent [a] (agent @a))
+#+clj (defmethod localize Ref [a] (ref @a))
 (defmethod localize :default [v] v)
 
 (defn binding-&-localized-val [var]
@@ -605,10 +608,10 @@
 #+clj
 (defmacro freeze-time [time & forms]
   `(try
-     (org.joda.time.DateTimeUtils/setCurrentMillisFixed (.getMillis ~time))
+     (DateTimeUtils/setCurrentMillisFixed (.getMillis ~time))
      ~@forms
      (finally
-       (org.joda.time.DateTimeUtils/setCurrentMillisSystem))))
+       (DateTimeUtils/setCurrentMillisSystem))))
 
 #+clj
 (defmacro ^{:private true} assert-args [fnname & pairs]
