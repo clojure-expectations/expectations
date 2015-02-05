@@ -213,7 +213,7 @@
     (mapcat (comp vals ns-interns))
     (filter bound?)
     (keep #(when-let [val @%] [% val]))
-    (filter (comp p/reference-types* type second))))
+    (filter (comp p/reference-types type second))))
 
 (defn add-watch-every-iref-for-updates []
   (doseq [[var iref] (find-every-iref)]
@@ -590,7 +590,7 @@
 (defn binding-&-localized-val [var]
   (when (bound? var)
     (when-let [vv @var]
-      (when (p/reference-types* (type vv))
+      (when (p/reference-types (type vv))
         [(var->symbol var) (list 'localize (var->symbol var))]))))
 
 (defn default-local-vals [namespaces]

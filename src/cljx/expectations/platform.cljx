@@ -3,7 +3,12 @@
   #+cljs (:require-macros [expectations.platform.cljs :as cljs])
   (:require #+clj [clojure.pprint :as pprint]
             #+cljs [goog.string]
-            #+cljs [goog.string.format]))
+            #+cljs [goog.string.format])
+  #+clj (:import (clojure.lang Agent Atom Ref)))
+
+(defn cljs? []
+  #+clj (boolean (find-ns 'cljs.core))
+  #+cljs true)
 
 (defn all-ns []
   #+clj (clojure.core/all-ns)
@@ -12,10 +17,6 @@
 (def bound?
   #+clj clojure.core/bound?
   #+cljs (fn [& vars] (every? #(deref %) vars)))
-
-(defn cljs? []
-  #+clj (boolean (find-ns 'cljs.core))
-  #+cljs true)
 
 (def format
   #+clj clojure.core/format
@@ -40,7 +41,7 @@
 
 (defn ns-name [ns]
   #+clj (clojure.core/ns-name ns)
-  #+cljs ns)
+  #+cljs (if (symbol? ns) ns))
 
 (defn on-windows? []
   (re-find #"[Ww]in"
@@ -56,6 +57,6 @@
     #+clj .printStackTrace
     #+cljs .-stack println))
 
-(def reference-types*
-  #+clj #{clojure.lang.Agent clojure.lang.Atom clojure.lang.Ref}
+(def reference-types
+  #+clj #{Agent Atom Ref}
   #+cljs #{cljs.core/Atom})
