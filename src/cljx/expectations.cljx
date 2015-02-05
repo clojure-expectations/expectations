@@ -202,7 +202,6 @@
 (defn disable-run-on-shutdown [] (reset! run-tests-on-shutdown false))
 (defn warn-on-iref-updates [] (reset! warn-on-iref-updates-boolean true))
 
-#+clj
 (defn find-every-iref []
   (->> (all-ns)
     (remove #(re-seq #"(clojure\.|expectations)" (str (.name %))))
@@ -211,7 +210,6 @@
     (keep #(when-let [val @%] [% val]))
     (filter (comp p/reference-types* type second))))
 
-#+clj
 (defn add-watch-every-iref-for-updates []
   (doseq [[var iref] (find-every-iref)]
     (add-watch iref ::expectations-watching-state-modifications
@@ -224,9 +222,10 @@
                       "from" (pr-str old-state)
                       "to" (pr-str new-state)])))
         (when-not *test-name*
-          (.printStackTrace (RuntimeException. "stacktrace for var modification") System/out))))))
+          (p/print-stack-trace (-> "stacktrace for var modification"
+                                 #+clj RuntimeException.
+                                 #+cljs js/Error.)))))))
 
-#+clj
 (defn remove-watch-every-iref-for-updates []
   (doseq [[var iref] (find-every-iref)]
     (remove-watch iref ::expectations-watching-state-modifications)))
@@ -274,7 +273,6 @@
           (catch java.io.FileNotFoundException e))
 
   (-> (find-expectations-vars :before-run) (execute-vars))
-  #+clj
   (when @warn-on-iref-updates-boolean
     (add-watch-every-iref-for-updates))
   (binding [*report-counters* (atom initial-report-counters)]
@@ -289,7 +287,6 @@
       (let [result (assoc @*report-counters*
                      :run-time (int (/ (- (p/nano-time) start) 1000000))
                      :ignored-expectations ignored-expectations)]
-        #+clj
         (when @warn-on-iref-updates-boolean
           (remove-watch-every-iref-for-updates))
         (-> (find-expectations-vars :after-run) (execute-vars))
