@@ -3,7 +3,9 @@
   (:require [clojure.data]
             [clojure.set :refer [difference]]
             [clojure.string]
-            [expectations.platform :as p :refer [all-ns bound? format ns-interns ns-name]]))
+            [expectations.platform :as p :refer [all-ns bound? format ns-interns ns-name]])
+  #+clj
+  (:import (java.util.regex Pattern)))
 
 (def nothing "no arg given")
 
@@ -332,25 +334,34 @@
                            (and (map? a) (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
                            (and (map? a) (not (sorted? a)) (contains? a ::in-flag)) ::in
                            (and (map? e) (not (sorted? e)) (contains? e ::more)) ::more
+                           (= e a) ::equals
+                           (and (string? e) (string? a)) ::strings
                            (and (map? e) (map? a)) ::maps
                            (and (set? e) (set? a)) ::sets
                            (and (sequential? e) (sequential? a)) ::sequentials
-                           (and (isa? e #+clj Throwable #+cljs js/Error) (not= e a)) ::expect-exception
+                           (and (instance? #+clj Pattern #+cljs js/RegExp e)
+                                (instance? #+clj Pattern #+cljs js/RegExp a)) ::regexps
+                           (instance? #+clj Pattern #+cljs js/RegExp e) ::re-seq
+                           (isa? e #+clj Throwable #+cljs js/Error) ::expect-exception
                            (instance? #+clj Throwable #+cljs js/Error e) ::expected-exception
                            (instance? #+clj Throwable #+cljs js/Error a) ::actual-exception
-                           (instance? e a) ::instance
-                           (and (fn? e) (not= e a)) ::fn
-                           (instance? expectations.CustomPred e) :custom-pred
-                           :default [(type e) (type a)])))
+                           (and (instance? #+clj Class #+cljs js/Function e)
+                                (instance? #+clj Class #+cljs js/Function a)) ::types
+                           (and (instance? #+clj Class #+cljs js/Function e)
+                                (not (and (fn? e) (e a)))) ::expect-instance
+                           (fn? e) ::fn
+                           (instance? expectations.CustomPred e) ::custom-pred
+                           :default ::default)))
 
-(defmethod compare-expr :default [e a str-e str-a]
-  (if (= e a)
-    {:type :pass}
-    {:type   :fail :raw [str-e str-a]
-     :result ["expected:" (pr-str e)
-              "\n                was:" (pr-str a)]}))
+(defmethod compare-expr ::equals [e a str-e str-a]
+  {:type :pass})
 
-(defmethod compare-expr :custom-pred [e a str-e str-a]
+(defmethod compare-expr ::default [e a str-e str-a]
+  {:type   :fail :raw [str-e str-a]
+   :result ["expected:" (pr-str e)
+            "\n                was:" (pr-str a)]})
+
+(defmethod compare-expr ::custom-pred [e a str-e str-a]
   (if (expect-fn e a)
     {:type :pass}
     {:type             :fail
@@ -428,19 +439,14 @@
               :result  ["You supplied:" (pr-str (::in a))]
               :message "You must supply a list, set, or map when using (in)"}))
 
-(defmethod compare-expr ::instance [e a str-e str-a]
-  {:type :pass})
-
-#+clj
-(defmethod compare-expr [Class Object] [e a str-e str-a]
+(defmethod compare-expr ::expect-instance [e a str-e str-a]
   (if (instance? e a)
     {:type :pass}
     {:type             :fail :raw [str-e str-a]
      :expected-message (str "expected: " a " to be an instance of " e)
      :actual-message   (str "     was: " a " is an instance of " (type a))}))
 
-(defmethod compare-expr #+clj [Class Class] #+cljs [js/Function js/Function]
-  [e a str-e str-a]
+(defmethod compare-expr ::types [e a str-e str-a]
   (if (isa? a e)
     {:type :pass}
     {:type             :fail :raw [str-e str-a]
@@ -458,32 +464,27 @@
    :expected-message (str "exception in expected: " str-e)
    :result           [e]})
 
-(defmethod compare-expr #+clj [java.util.regex.Pattern java.util.regex.Pattern] #+cljs [js/RegExp js/RegExp]
-  [e a str-e str-a]
-  (compare-expr (.pattern e) (.pattern a) str-e str-a))
+(defmethod compare-expr ::regexps [e a str-e str-a]
+  (compare-expr (str e) (str a) str-e str-a))
 
-(defmethod compare-expr #+clj [java.util.regex.Pattern Object] #+cljs [js/RegExp js/Object]
-  [e a str-e str-a]
+(defmethod compare-expr ::re-seq [e a str-e str-a]
   (if (re-seq e a)
     {:type :pass}
     {:type   :fail,
      :raw    [str-e str-a]
      :result ["regex" (pr-str e) "not found in" (pr-str a)]}))
 
-(defmethod compare-expr #+clj [String String] #+cljs [js/String js/String]
-  [e a str-e str-a]
-  (if (= e a)
-    {:type :pass}
-    (let [matches (->> (map vector e a) (take-while (partial apply =)) (map first) (apply str))
-          e-diverges (clojure.string/replace e matches "")
-          a-diverges (clojure.string/replace a matches "")]
-      {:type    :fail :raw [str-e str-a]
-       :result  ["expected:" (pr-str e)
-                 "\n                was:" (pr-str a)]
-       :message (str
-                  "matches: " (pr-str matches)
-                  "\n           diverges: " (pr-str e-diverges)
-                  "\n                  &: " (pr-str a-diverges))})))
+(defmethod compare-expr ::strings [e a str-e str-a]
+  (let [matches (->> (map vector e a) (take-while (partial apply =)) (map first) (apply str))
+        e-diverges (clojure.string/replace e matches "")
+        a-diverges (clojure.string/replace a matches "")]
+    {:type    :fail :raw [str-e str-a]
+     :result  ["expected:" (pr-str e)
+               "\n                was:" (pr-str a)]
+     :message (str
+                "matches: " (pr-str matches)
+                "\n           diverges: " (pr-str e-diverges)
+                "\n                  &: " (pr-str a-diverges))}))
 
 (defmethod compare-expr ::expect-exception [e a str-e str-a]
   (if (instance? e a)
@@ -502,37 +503,33 @@
        :result           ["expected:" (pr-str e) "\n                was:" (pr-str a)]})))
 
 (defmethod compare-expr ::sets [e a str-e str-a]
-  (if (= e a)
-    {:type :pass}
+  {:type             :fail
+   :actual-message   (format "in actual, not expected: %s" (first (clojure.data/diff a e)))
+   :expected-message (format "in expected, not actual: %s" (first (clojure.data/diff e a)))
+   :raw              [str-e str-a]
+   :result           ["expected:" e "\n                was:" (pr-str a)]})
+
+(defmethod compare-expr ::sequentials [e a str-e str-a]
+  (let [diff-fn (fn [e a] (seq (difference (set e) (set a))))]
     {:type             :fail
      :actual-message   (format "in actual, not expected: %s" (first (clojure.data/diff a e)))
      :expected-message (format "in expected, not actual: %s" (first (clojure.data/diff e a)))
      :raw              [str-e str-a]
-     :result           ["expected:" e "\n                was:" (pr-str a)]}))
-
-(defmethod compare-expr ::sequentials [e a str-e str-a]
-  (if (= e a)
-    {:type :pass}
-    (let [diff-fn (fn [e a] (seq (difference (set e) (set a))))]
-      {:type             :fail
-       :actual-message   (format "in actual, not expected: %s" (first (clojure.data/diff a e)))
-       :expected-message (format "in expected, not actual: %s" (first (clojure.data/diff e a)))
-       :raw              [str-e str-a]
-       :result           ["expected:" e "\n                was:" (pr-str a)]
-       :message          (cond
-                           (and
-                             (= (set e) (set a))
-                             (= (count e) (count a))
-                             (= (count e) (count (set a))))
-                           "lists appear to contain the same items with different ordering"
-                           (and (= (set e) (set a)) (< (count e) (count a)))
-                           "some duplicate items in actual are not expected"
-                           (and (= (set e) (set a)) (> (count e) (count a)))
-                           "some duplicate items in expected are not actual"
-                           (< (count e) (count a))
-                           "actual is larger than expected"
-                           (> (count e) (count a))
-                           "expected is larger than actual")})))
+     :result           ["expected:" e "\n                was:" (pr-str a)]
+     :message          (cond
+                         (and
+                           (= (set e) (set a))
+                           (= (count e) (count a))
+                           (= (count e) (count (set a))))
+                         "lists appear to contain the same items with different ordering"
+                         (and (= (set e) (set a)) (< (count e) (count a)))
+                         "some duplicate items in actual are not expected"
+                         (and (= (set e) (set a)) (> (count e) (count a)))
+                         "some duplicate items in expected are not actual"
+                         (< (count e) (count a))
+                         "actual is larger than expected"
+                         (> (count e) (count a))
+                         "expected is larger than actual")}))
 
 #+clj
 (defmacro doexpect [e a]
