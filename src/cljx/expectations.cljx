@@ -86,10 +86,6 @@
 (defn string-join [s coll]
   (clojure.string/join s (remove nil? coll)))
 
-(defn stack->file&line [ex index]
-  (let [s (nth (.getStackTrace ex) index)]
-    (str (.getFileName s) ":" (.getLineNumber s))))
-
 (defn- inc-counter! [counters name]
   (assoc counters name (inc (or (counters name) 0))))
 
@@ -140,7 +136,7 @@
   #+clj (string-join "\n"
           (distinct (map stackline->str
                       (remove ignored-fns (map bean (.getStackTrace t))))))
-  #+cljs (.-stack t))
+  #+cljs (.-stack t))                                       ;TODO: proper impl for cljs
 
 (defn ->failure-message [{:keys [raw ref-data result expected-message actual-message message list show-raw]}]
   (string-join "\n"
@@ -209,7 +205,7 @@
 
 (defn find-every-iref []
   (->> (all-ns)
-    (remove #(re-seq #"(clojure\.|expectations)" (str (.name %))))
+    (remove #(re-seq #"(clojure\.|expectations)" (name (ns-name %))))
     (mapcat (comp vals ns-interns))
     (filter bound?)
     (keep #(when-let [val @%] [% val]))
@@ -353,7 +349,7 @@
                            (and (instance? #+clj Class #+cljs js/Function e)
                                 (not (and (fn? e) (e a)))) ::expect-instance
                            (fn? e) ::fn
-                           (instance? expectations.CustomPred e) ::custom-pred
+                           (satisfies? CustomPred e) ::custom-pred
                            :default ::default)))
 
 (defmethod compare-expr ::equals [e a str-e str-a]
@@ -416,7 +412,7 @@
 
 (defmethod compare-expr ::in [e a str-e str-a]
   (cond
-    (or (instance? java.util.List (::in a)) (instance? java.util.Set (::in a)))
+    (or (sequential? (::in a)) (set? (::in a)))
     (if (find-successes (for [a (::in a)]
                           (compare-expr e a str-e str-a)))
       {:type :pass}
@@ -426,10 +422,10 @@
                                                 (for [a (::in a)]
                                                   (compare-expr e a str-e a))))
        :result [(if (::more e) str-e (format "val %s" (pr-str e))) "not found in" (::in a)]})
-    (and (instance? java.util.Map (::in a)) (::more e))
+    (and (map? (::in a)) (::more e))
     {:type    :fail :raw [str-e str-a]
      :message "Using both 'in with a map and 'more is not supported."}
-    (instance? java.util.Map (::in a))
+    (map? (::in a))
     (let [a (::in a)]
       (if (= e (select-keys a (keys e)))
         {:type :pass}
@@ -577,8 +573,9 @@
     (proxy [Thread] []
       (run [] (when @run-tests-on-shutdown (run-all-tests))))))
 
-(defn var->symbol [v]
-  (symbol (str (.ns v) "/" (.sym v))))                      ;FIXME
+#+clj
+(defn- var->symbol [v]
+  (symbol (str (.ns v) "/" (.sym v))))
 
 (defmulti localize type)
 #+cljs (defmethod localize cljs.core/Atom [a] (atom @a))
@@ -587,13 +584,15 @@
 #+clj (defmethod localize Ref [a] (ref @a))
 (defmethod localize :default [v] v)
 
-(defn binding-&-localized-val [var]
+#+clj
+(defn- binding-&-localized-val [var]
   (when (bound? var)
     (when-let [vv @var]
       (when (p/reference-types (type vv))
         [(var->symbol var) (list 'localize (var->symbol var))]))))
 
-(defn default-local-vals [namespaces]
+#+clj
+(defn- default-local-vals [namespaces]
   (->>
     namespaces
     (mapcat (comp vals ns-interns))
