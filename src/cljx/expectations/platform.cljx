@@ -14,8 +14,19 @@
   #+clj (clojure.core/all-ns)
   #+cljs (cljs/all-ns*))
 
-#+cljs
-(defn ns-vars [] (cljs/ns-vars*))
+(defn ns-interns [ns]                                       ;TODO find usages and impl properly
+  #+clj (clojure.core/ns-interns ns)
+  #+cljs (cljs/ns-interns* ns))
+
+(defn ns-name [ns]
+  #+clj (clojure.core/ns-name ns)
+  #+cljs (if (symbol? ns) ns))
+
+(defn ns-vars []
+  #+clj (->> (all-ns)
+          (map (fn [ns] [(ns-name ns) ((comp (partial into []) vals ns-interns) ns)]))
+          (into {}))
+  #+cljs (cljs/ns-vars*))
 
 (def bound?
   #+clj clojure.core/bound?
@@ -37,14 +48,6 @@
   #+clj (System/nanoTime)
   #+cljs (-> js/process .hrtime js->clj
            (#(+ (* 1e9 (% 0)) (% 1)))))
-
-(defn ns-interns [ns]                                       ;TODO find usages and impl properly
-  #+clj (clojure.core/ns-interns ns)
-  #+cljs (cljs/ns-interns* ns))
-
-(defn ns-name [ns]
-  #+clj (clojure.core/ns-name ns)
-  #+cljs (if (symbol? ns) ns))
 
 (defn on-windows? []
   (re-find #"[Ww]in"
