@@ -35,7 +35,7 @@
   #+cljs (-> js/process .hrtime js->clj
            (#(+ (* 1e9 (% 0)) (% 1)))))
 
-(defn ns-interns [ns]
+(defn ns-interns [ns]                                       ;TODO find usages and impl properly
   #+clj (clojure.core/ns-interns ns)
   #+cljs (cljs/ns-interns* ns))
 
