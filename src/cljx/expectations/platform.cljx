@@ -1,5 +1,5 @@
 (ns expectations.platform
-  (:refer-clojure :exclude [all-ns bound? format ns-interns ns-name])
+  (:refer-clojure :exclude [all-ns bound? format ns-name])
   #+cljs (:require-macros [expectations.platform.cljs :as cljs])
   (:require #+clj [clojure.pprint :as pprint]
             #+cljs [goog.string]
@@ -13,10 +13,6 @@
 (defn all-ns []
   #+clj (clojure.core/all-ns)
   #+cljs (cljs/all-ns*))
-
-(defn ns-interns [ns]                                       ;TODO find usages and impl properly
-  #+clj (clojure.core/ns-interns ns)
-  #+cljs (cljs/ns-interns* ns))
 
 (defn ns-name [ns]
   #+clj (clojure.core/ns-name ns)

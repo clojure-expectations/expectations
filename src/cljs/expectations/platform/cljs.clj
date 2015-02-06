@@ -11,6 +11,3 @@
                    keys
                    (map (fn [k] `(var ~(symbol (name ns) (name k)))))
                    (into []))])))
-
-(defmacro ns-interns* [ns]
-  `'~(cljs.analyzer.api/ns-interns ns))

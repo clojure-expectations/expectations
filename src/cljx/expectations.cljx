@@ -1,9 +1,9 @@
 (ns expectations
-  (:refer-clojure :exclude [all-ns bound? format ns-interns ns-name])
+  (:refer-clojure :exclude [all-ns bound? format ns-name])
   (:require [clojure.data]
             [clojure.set :refer [difference]]
             [clojure.string]
-            [expectations.platform :as p :refer [all-ns bound? format ns-interns ns-name]])
+            [expectations.platform :as p :refer [all-ns bound? format ns-name]])
   #+clj
   (:import (clojure.lang Agent Atom Ref)
            (java.io FileNotFoundException)
@@ -206,7 +206,7 @@
 (defn find-every-iref []
   (->> (all-ns)
     (remove #(re-seq #"(clojure\.|expectations)" (name (ns-name %))))
-    (mapcat (comp vals ns-interns))
+    (mapcat (comp (p/ns-vars) ns-name))
     (filter bound?)
     (keep #(when-let [val @%] [% val]))
     (filter (comp p/reference-types type second))))
@@ -250,7 +250,7 @@
 (defn find-expectations-vars [option-type]
   (->>
     (all-ns)
-    (mapcat (comp vals ns-interns))
+    (mapcat (comp (p/ns-vars) ns-name))
     (filter (comp #{option-type} :expectations-options meta))))
 
 (defn execute-vars [vars]
@@ -302,8 +302,8 @@
 
 (defn ->expectation [ns]
   (->> ns
-    ns-interns
-    vals
+    ns-name
+    ((p/ns-vars))
     (sort-by str)
     (filter (comp unrun-expectation meta))))
 
@@ -595,7 +595,7 @@
 (defn- default-local-vals [namespaces]
   (->>
     namespaces
-    (mapcat (comp vals ns-interns))
+    (mapcat (comp (p/ns-vars) ns-name))
     (mapcat binding-&-localized-val)
     (remove nil?)
     vec))
