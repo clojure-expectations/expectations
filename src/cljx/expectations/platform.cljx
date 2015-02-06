@@ -14,6 +14,9 @@
   #+clj (clojure.core/all-ns)
   #+cljs (cljs/all-ns*))
 
+#+cljs
+(defn ns-vars [] (cljs/ns-vars*))
+
 (def bound?
   #+clj clojure.core/bound?
   #+cljs (fn [& vars] (every? #(deref %) vars)))
