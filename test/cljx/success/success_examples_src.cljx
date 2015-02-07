@@ -1,5 +1,19 @@
 (ns success.success-examples-src
-  (:require [expectations :refer :all]))
+  (:refer-clojure :exclude [format])
+  #+cljs
+  (:require-macros
+    [expectations :refer [expanding
+                          expect
+                          expect-let
+                          from-each
+                          more
+                          more->
+                          more-of
+                          redef-state
+                          side-effects]])
+  (:require #+clj [expectations :refer :all]
+            #+cljs [expectations :refer [CustomPred]]
+            [expectations.platform :as p :refer [format]]))
 
 (def an-atom (atom "atom"))
 #+clj (def a-ref (ref "ref"))
@@ -20,3 +34,7 @@
   `(println ~@args))
 
 (defrecord ARecord [data])
+
+#+clj
+(defmacro cljs? []
+  (p/cljs?))

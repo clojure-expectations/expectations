@@ -10,19 +10,16 @@
                           more-of
                           redef-state
                           side-effects]]
-    [success.success-examples-src :refer [a-macro]])
-  (:require [expectations :refer :all]
+    [success.success-examples-src :refer [a-macro cljs?]])
+  (:require #+clj [expectations :refer :all]
             [expectations.platform :as p]
-            [success.success-examples-src :refer [a-macro]])
+            #+clj [success.success-examples-src :refer [a-macro cljs?]])
   #+clj (:import (org.joda.time DateTime)))
 
 ;; expect to be on the right platform
-#+clj
-(defmacro mcljs? [] (p/cljs?))
-
 (expect
-  #+clj (not (mcljs?))
-  #+cljs (mcljs?))
+  #+clj (not (cljs?))
+  #+cljs (cljs?))
 
 ;; expect a truthy value
 (expect true)

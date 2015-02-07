@@ -1,4 +1,16 @@
 (ns success.nested.success-examples
+  #+cljs
+  (:require-macros
+    [expectations :refer [expanding
+                          expect
+                          expect-let
+                          from-each
+                          more
+                          more->
+                          more-of
+                          redef-state
+                          side-effects]])
+  #+clj
   (:require [expectations :refer :all]))
 
 ;; number equality
