@@ -16,8 +16,6 @@
             [expectations.platform :as p :refer [format]]))
 
 (def an-atom (atom "atom"))
-#+clj (def a-ref (ref "ref"))
-#+clj (def an-agent (agent "agent"))
 
 (defn a-fn-to-be-rebound [])
 

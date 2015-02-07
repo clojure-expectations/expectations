@@ -12,9 +12,10 @@
                           side-effects]]
     [success.success-examples-src :refer [a-macro cljs?]])
   (:require #+clj [expectations :refer :all]
-            [expectations.platform :as p]
+            #+cljs [expectations :refer [in localize no-op]]
             #+clj [success.success-examples-src :refer [a-macro cljs?]])
-  #+clj (:import (org.joda.time DateTime)))
+  #+clj (:import (java.util AbstractMap ArrayList HashMap)
+                 (org.joda.time DateTime)))
 
 ;; expect to be on the right platform
 (expect
@@ -53,10 +54,12 @@
 (expect #"foo" (str "boo" "foo" "ar"))
 
 ;; does the form throw an expeted exception
-(expect ArithmeticException (/ 12 0))
+#+clj (expect ArithmeticException (/ 12 0))
 
 ;; verify the type of the result
-(expect String "foo")
+#+clj (expect String "foo")
+#+cljs (expect js/String "foo")
+(expect string? "foo")
 
 ;; k/v pair in map. matches subset
 (expect {:foo 1} (in {:foo 1 :cat 4}))
@@ -76,14 +79,16 @@
 ;; sorted map equality
 (expect (sorted-map-by > 1 :a 2 :b) (sorted-map-by > 1 :a 2 :b))
 
+#+clj                                                       ;TODO the same in cljs
 (expect '(clojure.core/println 1 2 (println 100) 3)
   (expanding (a-macro 1 2 (println 100) 3)))
 
 (expect (more vector? not-empty) [1 2 3])
 
+#+clj
 (expect (more-> 0 .size
           true .isEmpty)
-  (java.util.ArrayList.))
+  (ArrayList.))
 
 (expect (more-> 2 (-> first (+ 1))
           3 last)
@@ -118,7 +123,7 @@
         (spit "/tmp/hello-world" "some data" :append true))))
 
 (expect (more-of [path data action {:keys [a c]}]
-          String path
+          string? path
           #"some da" data
           keyword? action
           :b a
@@ -146,7 +151,8 @@
   (in (side-effects [spit]
         (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
 
-(expect (more-> String (nth 0)
+(expect (more->
+          string? (nth 0)
           #"some da" (nth 1)
           keyword? (nth 2)
           {:a :b :c :d} (-> (nth 3) (select-keys [:a :c])))
@@ -154,7 +160,7 @@
         (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
 
 (expect (more-of [path data action {:keys [a c]}]
-          String path
+          string? path
           #"some da" data
           keyword? action
           :b a
@@ -186,17 +192,20 @@
   (* x x) (+ x x))
 
 ;; use freeze-time to set the current time while a test is running
+#+clj                                                       ;TODO the same in cljs
 (expect-let [now (DateTime.)]
   (freeze-time now (DateTime.))
   (freeze-time now (DateTime.)))
 
 ;; freeze-time only affects wrapped forms
+#+clj                                                       ;TODO the same in cljs
 (expect (not= (DateTime. 1)
           (do
             (freeze-time (DateTime. 1))
             (DateTime.))))
 
 ;; freeze-time resets the frozen time even when an exception occurs
+#+clj                                                       ;TODO the same in cljs
 (expect (not= (DateTime. 1)
           (do
             (try
@@ -206,6 +215,7 @@
             (DateTime.))))
 
 ;; use context to limit the number of indentions while using redef-state, with-redefs or freeze-time
+#+clj                                                       ;TODO the same in cljs
 (expect-let [now (DateTime.)]
   [now now]
   (context [:redef-state [success.success-examples-src]
@@ -216,13 +226,17 @@
 
 ;; ensure equality matching where possible
 (expect no-op no-op)
-(expect java.util.AbstractMap java.util.HashMap)
+#+clj
+(expect AbstractMap HashMap)
 (expect #"a" #"a")
+#+clj
 (expect RuntimeException RuntimeException)
+#+cljs
+(expect js/Error js/Error)
 
 (expect :a-rebound-val (success.success-examples-src/a-fn-to-be-rebound))
 
-(expect String
+(expect string?
   (from-each [letter ["a" "b" "c"]] letter))
 
 (expect even? (from-each [num [1 2 3]
@@ -232,8 +246,10 @@
 
 (expect (success.success-examples-src/->ConstantlyTrue) [1 2 3 4])
 
+#+clj                                                       ;TODO cross platform
 (expect (more-> false identity
           AssertionError assert)
   false)
 
+#+clj                                                       ;TODO cross platform
 (expect AssertionError (from-each [a [1 2]] (assert (string? a))))
