@@ -1,6 +1,5 @@
 (ns expectations.platform.cljs
-  (:require [cljs.analyzer]
-            [cljs.analyzer.api]))
+  (:require [cljs.analyzer.api]))
 
 (defmacro all-ns* []
   `'~(cljs.analyzer.api/all-ns))
