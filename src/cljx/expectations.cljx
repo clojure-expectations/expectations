@@ -564,7 +564,7 @@
      (fn [] (let ~bindings (doexpect ~e ~a)))))
 
 #+clj
-(defmacro expanding [n] (list 'quote (macroexpand-1 n)))
+(defmacro expanding [n] (list 'quote (p/macroexpand-1 n)))
 
 #+clj                                                       ;TODO impl for cljs
 (->
@@ -667,7 +667,7 @@
     (even? (count expect-pairs)) "an even number of forms.")
   `(hash-map ::more ~(vec (map (fn [[e a-form]]
                                  {:e         e :str-e `(quote ~e)
-                                  :gen-str-a `(fn [x#] (macroexpand-1 (list '-> x# '~a-form)))
+                                  :gen-str-a `(fn [x#] (p/macroexpand-1 (list '-> x# '~a-form)))
                                   :a-fn      `(fn [x#] (-> x# ~a-form))})
                             (partition 2 expect-pairs)))))
 

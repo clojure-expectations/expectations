@@ -1,10 +1,14 @@
 (ns expectations.platform
-  (:refer-clojure :exclude [all-ns bound? format ns-name])
+  (:refer-clojure :exclude [all-ns bound? format ns-name macroexpand-1])
   #+cljs (:require-macros [expectations.platform.cljs :as cljs])
   (:require #+clj [clojure.pprint :as pprint]
             #+cljs [goog.string]
             #+cljs [goog.string.format])
   #+clj (:import (clojure.lang Agent Atom Ref)))
+
+#+clj
+(defmacro macroexpand-1 [form]
+  `(clojure.core/macroexpand-1 ~form))
 
 (defn cljs? []
   #+clj (boolean (find-ns 'cljs.core))
