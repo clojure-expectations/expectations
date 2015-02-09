@@ -17,6 +17,9 @@
   #+clj (:import (java.util AbstractMap ArrayList HashMap)
                  (org.joda.time DateTime)))
 
+#+cljs
+(defn spit [f content & options] (.log js/console content))
+
 ;; expect to be on the right platform
 (expect
   #+clj (not (cljs?))
