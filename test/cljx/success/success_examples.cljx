@@ -1,8 +1,7 @@
 (ns success.success-examples
   #+cljs
   (:require-macros
-    [expectations :refer [expanding
-                          expect
+    [expectations :refer [expect
                           expect-let
                           from-each
                           more

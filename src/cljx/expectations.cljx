@@ -564,7 +564,7 @@
      (fn [] (let ~bindings (doexpect ~e ~a)))))
 
 #+clj
-(defmacro expanding [n] (list 'quote (p/macroexpand-1 n)))
+(defmacro expanding [n] (list 'quote (macroexpand-1 n)))
 
 #+clj                                                       ;TODO impl for cljs
 (->
