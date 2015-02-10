@@ -89,15 +89,15 @@
 
 #+clj
 (expect (more-> 0 .size
-          true .isEmpty)
+                true .isEmpty)
   (ArrayList.))
 
 (expect (more-> 2 (-> first (+ 1))
-          3 last)
+                3 last)
   [1 2 3])
 
 (expect (more-> 2 :a
-          4 :b)
+                4 :b)
   {:a 2 :b 4})
 
 (expect (more-of x
@@ -250,7 +250,7 @@
 
 #+clj                                                       ;TODO cross platform
 (expect (more-> false identity
-          AssertionError assert)
+                AssertionError assert)
   false)
 
 #+clj                                                       ;TODO cross platform
