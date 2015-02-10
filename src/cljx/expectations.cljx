@@ -656,7 +656,8 @@
 
 #+clj
 (defmacro more [& expects]
-  `{::more [~@(map (fn [e] {:e         e :str-e `'~e
+  `{::more [~@(map (fn [e] {:e         e
+                            :str-e     `'~e
                             :gen-str-a identity
                             :a-fn      identity})
                 expects)]})
@@ -666,8 +667,10 @@
   (assert-args more->
     (even? (count expect-pairs)) "an even number of forms.")
   `{::more [~@(map (fn [[e a-form]]
-                     {:e         e :str-e `'~e
-                      :gen-str-a `(fn [x#] (macroexpand-1 (list '-> x# '~a-form)))
+                     {:e         e
+                      :str-e     `'~e
+                      :gen-str-a `(fn [x#] (->> (expanding (-> x# ~a-form))
+                                             (replace {'x# x#})))
                       :a-fn      `(fn [x#] (-> x# ~a-form))})
                 (partition 2 expect-pairs))]})
 
@@ -676,7 +679,8 @@
   (assert-args more-of
     (even? (count expect-pairs)) "an even number of expect-pairs")
   `{::more [~@(map (fn [[e a-form]]
-                     {:e         e :str-e `'~e
+                     {:e         e
+                      :str-e     `'~e
                       :gen-str-a `(fn [x#] (list '~'let ['~let-sexp x#]
                                              '~a-form))
                       :a-fn      `(fn [~let-sexp] ~a-form)})
