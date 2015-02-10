@@ -6,7 +6,7 @@
   :source-paths ["src/cljx" "src/clojure" "src/cljs"]
   :test-paths ["target/test-classes"]
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/clojurescript "0.0-2760"]]
+                 [org.clojure/clojurescript "0.0-2814"]]
 
   :plugins [[lein-expectations "0.0.8"]
             [lein-publishers "1.0.13"]]
