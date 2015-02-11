@@ -1,19 +1,8 @@
 (ns success.success-examples-src
   (:refer-clojure :exclude [format])
-  #+cljs
-  (:require-macros
-    [expectations :refer [expanding
-                          expect
-                          expect-let
-                          from-each
-                          more
-                          more->
-                          more-of
-                          redef-state
-                          side-effects]])
-  (:require #+clj [expectations :refer :all]
-            #+cljs [expectations :refer [CustomPred]]
-            [expectations.platform :as p :refer [format]]))
+  (:require [expectations :refer [CustomPred]]
+            [expectations.platform :as p :refer [format]]
+            #+clj [expectations.platform.macros :as m]))
 
 (def an-atom (atom "atom"))
 
@@ -35,4 +24,4 @@
 
 #+clj
 (defmacro cljs? []
-  (p/cljs?))
+  (m/cljs?))

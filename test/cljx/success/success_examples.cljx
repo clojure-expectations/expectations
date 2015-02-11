@@ -1,18 +1,15 @@
 (ns success.success-examples
-  #+cljs
-  (:require-macros
-    [expectations :refer [expect
-                          expect-let
-                          from-each
-                          more
-                          more->
-                          more-of
-                          redef-state
-                          side-effects]]
-    [success.success-examples-src :refer [a-macro cljs?]])
   (:require #+clj [expectations :refer :all]
-            #+cljs [expectations :refer [in localize no-op]]
-            #+clj [success.success-examples-src :refer [a-macro cljs?]])
+            #+cljs [expectations :refer [in localize no-op] :refer-macros [expect
+                                                                           expect-let
+                                                                           from-each
+                                                                           more
+                                                                           more->
+                                                                           more-of
+                                                                           redef-state
+                                                                           side-effects]]
+            #+clj [success.success-examples-src :refer [a-macro cljs?]]
+            #+cljs [success.success-examples-src :refer-macros [a-macro cljs?]])
   #+clj (:import (java.util AbstractMap ArrayList HashMap)
                  (org.joda.time DateTime)))
 

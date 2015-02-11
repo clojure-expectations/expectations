@@ -1,9 +1,9 @@
 (ns expectations
-  (:refer-clojure :exclude [all-ns bound? format ns-name])
+  (:refer-clojure :exclude [format ns-name])
   (:require [clojure.data]
             [clojure.set :refer [difference]]
             [clojure.string]
-            [expectations.platform :as p :refer [all-ns bound? format ns-name]])
+            [expectations.platform :as p :refer [format ns-name]])
   #+clj
   (:import (clojure.lang Agent Atom Ref)
            (java.io FileNotFoundException)
@@ -204,10 +204,10 @@
 (defn warn-on-iref-updates [] (reset! warn-on-iref-updates-boolean true))
 
 (defn find-every-iref []
-  (->> (all-ns)
+  (->> (p/all-ns)
     (remove #(re-seq #"(clojure\.|expectations)" (name (ns-name %))))
     (mapcat (comp (p/ns-vars) ns-name))
-    (filter bound?)
+    (filter p/bound?)
     (keep #(when-let [val @%] [% val]))
     (filter (comp p/reference-types type second))))
 
@@ -249,13 +249,13 @@
 
 (defn find-expectations-vars [option-type]
   (->>
-    (all-ns)
+    (p/all-ns)
     (mapcat (comp (p/ns-vars) ns-name))
     (filter (comp #{option-type} :expectations-options meta))))
 
 (defn execute-vars [vars]
   (doseq [var vars]
-    (when (bound? var)
+    (when (p/bound? var)
       (when-let [vv @var]
         (vv)))))
 
@@ -319,8 +319,8 @@
         (report)))))
 
 (defn run-all-tests
-  ([] (run-tests (all-ns)))
-  ([re] (run-tests (filter #(re-matches re (name (ns-name %))) (all-ns)))))
+  ([] (run-tests (p/all-ns)))
+  ([re] (run-tests (filter #(re-matches re (name (ns-name %))) (p/all-ns)))))
 
 (defprotocol CustomPred
   (expect-fn [e a])
@@ -586,7 +586,7 @@
 
 #+clj
 (defn- binding-&-localized-val [var]
-  (when (bound? var)
+  (when (p/bound? var)
     (when-let [vv @var]
       (when (p/reference-types (type vv))
         [(var->symbol var) (list 'localize (var->symbol var))]))))

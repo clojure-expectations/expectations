@@ -1,29 +1,25 @@
 (ns expectations.platform
   (:refer-clojure :exclude [all-ns bound? format ns-name])
-  #+cljs (:require-macros [expectations.platform.cljs :as cljs])
+  #+cljs (:require-macros [expectations.platform.macros :as m])
   (:require #+clj [clojure.pprint :as pprint]
-            #+clj [cljs.analyzer]
             #+cljs [goog.string]
-            #+cljs [goog.string.format])
+            #+cljs [goog.string.format]
+            #+clj [expectations.platform.macros :as m])
   #+clj (:import (clojure.lang Agent Atom Ref)))
-
-(defn cljs? []
-  #+clj (boolean (find-ns 'cljs.core))
-  #+cljs true)
 
 (defn all-ns []
   #+clj (clojure.core/all-ns)
-  #+cljs (cljs/all-ns*))
+  #+cljs (m/all-ns*))
 
 (defn ns-name [ns]
-  #+clj (clojure.core/ns-name ns)
+  #+clj (if (symbol? ns) ns (clojure.core/ns-name ns))
   #+cljs (if (symbol? ns) ns))
 
 (defn ns-vars []
   #+clj (->> (all-ns)
           (map (fn [ns] [(ns-name ns) ((comp (partial into []) vals ns-interns) ns)]))
           (into {}))
-  #+cljs (cljs/ns-vars*))
+  #+cljs (m/ns-vars*))
 
 (def bound?
   #+clj clojure.core/bound?
