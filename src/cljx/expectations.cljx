@@ -658,8 +658,8 @@
 (defmacro more [& expects]
   `{::more [~@(map (fn [e] {:e         e
                             :str-e     `'~e
-                            :gen-str-a identity
-                            :a-fn      identity})
+                            :gen-str-a `(fn [x#] x#)
+                            :a-fn      `(fn [x#] x#)})
                 expects)]})
 
 #+clj
