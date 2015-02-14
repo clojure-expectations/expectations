@@ -566,12 +566,13 @@
 #+clj
 (defmacro expanding [n] `'~(macroexpand-1 n))
 
-#+clj                                                       ;TODO impl for cljs
-(->
-  (Runtime/getRuntime)
-  (.addShutdownHook
-    (proxy [Thread] []
-      (run [] (when @run-tests-on-shutdown (run-all-tests))))))
+#+clj
+(when-not (::hook-set (meta run-tests-on-shutdown))
+  (-> (Runtime/getRuntime)
+    (.addShutdownHook
+      (proxy [Thread] []
+        (run [] (when @run-tests-on-shutdown (run-all-tests))))))
+  (alter-meta! run-tests-on-shutdown assoc ::hook-set true))
 
 #+clj
 (defn- var->symbol [v]
