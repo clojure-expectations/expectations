@@ -40,8 +40,9 @@
                    :rules        :cljs}]}
 
   :cljsbuild {:builds [{:source-paths   ["target/classes" "src/cljs" "target/test-classes"]
-                        :notify-command ["node" "./scripts/run-tests.js"]
+                        :notify-command ["node" "./target/out/test.js"]
                         :compiler       {:target         :nodejs
+                                         :main           expectations.test
                                          :output-to      "target/out/test.js"
                                          :output-dir     "target/out"
                                          :optimizations  :none
