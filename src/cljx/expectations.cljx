@@ -203,14 +203,17 @@
 (defn disable-run-on-shutdown [] (reset! run-tests-on-shutdown false))
 (defn warn-on-iref-updates [] (reset! warn-on-iref-updates-boolean true))
 
+#+clj
 (defn find-every-iref []
-  (->> (p/all-ns)
-    (remove #(re-seq #"(clojure\.|expectations)" (name (ns-name %))))
-    (mapcat (comp (p/ns-vars) ns-name))
+  (->> (all-ns)
+    (map ns-name)
+    (remove #(re-seq #"(clojure\.|cljs\.|expectations)" (name %)))
+    (mapcat (comp vals ns-interns))
     (filter p/bound?)
     (keep #(when-let [val @%] [% val]))
-    (filter (comp p/reference-types type second))))
+    (filter (comp p/iref-types type second))))
 
+#+clj
 (defn add-watch-every-iref-for-updates []
   (doseq [[var iref] (find-every-iref)]
     (add-watch iref ::expectations-watching-state-modifications
@@ -227,6 +230,7 @@
                                  #+clj RuntimeException.
                                  #+cljs js/Error.)))))))
 
+#+clj
 (defn remove-watch-every-iref-for-updates []
   (doseq [[var iref] (find-every-iref)]
     (remove-watch iref ::expectations-watching-state-modifications)))
@@ -247,10 +251,10 @@
             (p/print-stack-trace e))))
       (finished tn tm))))
 
+#+clj
 (defn find-expectations-vars [option-type]
-  (->>
-    (p/all-ns)
-    (mapcat (comp (p/ns-vars) ns-name))
+  (->> (all-ns)
+    (mapcat (comp vals ns-interns))
     (filter (comp #{option-type} :expectations-options meta))))
 
 (defn execute-vars [vars]
@@ -272,14 +276,16 @@
   #+clj (try
           (require 'expectations-options :reload)
           (catch FileNotFoundException e))
-
-  (-> (find-expectations-vars :before-run) (execute-vars))
+  #+clj
+  (-> (find-expectations-vars :before-run) (execute-vars))  ;FIXME shouldn't it take vars?
+  #+clj
   (when @warn-on-iref-updates-boolean
     (add-watch-every-iref-for-updates))
+  #+clj                                                     ;FIXME remove
   (binding [*report-counters* (atom initial-report-counters)]
     (let [ns->vars (group-by (comp :ns meta) (sort-by (comp :line meta) vars))
           start (p/nano-time)
-          in-context-vars (vec (find-expectations-vars :in-context))]
+          in-context-vars (vec (find-expectations-vars :in-context))] ;FIXME shouldn't it take vars?
       (doseq [[a-ns the-vars] ns->vars]
         (doseq [v the-vars]
           (create-context in-context-vars ^{:the-var v} #(test-var v))
@@ -288,9 +294,11 @@
       (let [result (assoc @*report-counters*
                      :run-time (int (/ (- (p/nano-time) start) 1000000))
                      :ignored-expectations ignored-expectations)]
+        #+clj
         (when @warn-on-iref-updates-boolean
           (remove-watch-every-iref-for-updates))
-        (-> (find-expectations-vars :after-run) (execute-vars))
+        #+clj
+        (-> (find-expectations-vars :after-run) (execute-vars)) ;FIXME shouldn't it take vars?
         result))))
 
 (defn run-tests-in-vars [vars]
@@ -300,16 +308,20 @@
 (defn unrun-expectation [{:keys [expectation] run? ::run}]
   (and expectation (not run?)))
 
+#+clj
 (defn ->expectation [ns]
   (->> ns
     ns-name
-    ((p/ns-vars))
+    ns-interns
+    vals
     (sort-by str)
     (filter (comp unrun-expectation meta))))
 
+#+clj
 (defn ->focused-expectations [expectations]
   (->> expectations (filter (comp :focused meta)) seq))
 
+#+clj
 (defn run-tests [namespaces]
   (let [expectations (mapcat ->expectation namespaces)]
     (if-let [focused (->focused-expectations expectations)]
@@ -318,9 +330,10 @@
       (doto (assoc (test-vars expectations 0) :type :summary)
         (report)))))
 
+#+clj
 (defn run-all-tests
-  ([] (run-tests (p/all-ns)))
-  ([re] (run-tests (filter #(re-matches re (name (ns-name %))) (p/all-ns)))))
+  ([] (run-tests (all-ns)))
+  ([re] (run-tests (filter #(re-matches re (name (ns-name %))) (all-ns)))))
 
 (defprotocol CustomPred
   (expect-fn [e a])
@@ -589,14 +602,14 @@
 (defn- binding-&-localized-val [var]
   (when (p/bound? var)
     (when-let [vv @var]
-      (when (p/reference-types (type vv))
+      (when (p/iref-types (type vv))
         [(var->symbol var) (list 'localize (var->symbol var))]))))
 
 #+clj
 (defn- default-local-vals [namespaces]
   (->>
     namespaces
-    (mapcat (comp (p/ns-vars) ns-name))
+    (mapcat (comp vals ns-interns))
     (mapcat binding-&-localized-val)
     (remove nil?)
     vec))
