@@ -213,10 +213,9 @@
     (keep #(when-let [val @%] [% val]))
     (filter (comp p/iref-types type second))))
 
-#+clj
-(defn add-watch-every-iref-for-updates []
-  (doseq [[var iref] (find-every-iref)]
-    (add-watch iref ::expectations-watching-state-modifications
+(defn add-watch-every-iref-for-updates [iref-vars]
+  (doseq [var iref-vars]
+    (add-watch @var ::expectations-watching-state-modifications
       (fn [_ reference old-state new-state]
         (println (colorize-warn
                    (clojure.string/join " "
@@ -230,10 +229,9 @@
                                  #+clj RuntimeException.
                                  #+cljs js/Error.)))))))
 
-#+clj
-(defn remove-watch-every-iref-for-updates []
-  (doseq [[var iref] (find-every-iref)]
-    (remove-watch iref ::expectations-watching-state-modifications)))
+(defn remove-watch-every-iref-for-updates [iref-vars]
+  (doseq [var iref-vars]
+    (remove-watch @var ::expectations-watching-state-modifications)))
 
 (defn test-var [v]
   (when-let [t @v]
@@ -271,21 +269,18 @@
       (println "expectations only supports 0 or 1 :in-context fns. Ignoring:" in-context-vars)
       (work))))
 
-(defn test-vars [vars ignored-expectations]
+(defn test-vars [vars-by-kind ignored-expectations]
   #+clj (remove-ns 'expectations-options)
   #+clj (try
           (require 'expectations-options :reload)
           (catch FileNotFoundException e))
-  #+clj
-  (-> (find-expectations-vars :before-run) (execute-vars))  ;FIXME shouldn't it take vars?
-  #+clj
+  (execute-vars (:before-run vars-by-kind))
   (when @warn-on-iref-updates-boolean
-    (add-watch-every-iref-for-updates))
-  #+clj                                                     ;FIXME remove
+    (add-watch-every-iref-for-updates (:iref vars-by-kind)))
   (binding [*report-counters* (atom initial-report-counters)]
-    (let [ns->vars (group-by (comp :ns meta) (sort-by (comp :line meta) vars))
+    (let [ns->vars (group-by (comp :ns meta) (sort-by (comp :line meta) (:expectation vars-by-kind)))
           start (p/nano-time)
-          in-context-vars (vec (find-expectations-vars :in-context))] ;FIXME shouldn't it take vars?
+          in-context-vars (vec (:in-context vars-by-kind))]
       (doseq [[a-ns the-vars] ns->vars]
         (doseq [v the-vars]
           (create-context in-context-vars ^{:the-var v} #(test-var v))
@@ -294,40 +289,48 @@
       (let [result (assoc @*report-counters*
                      :run-time (int (/ (- (p/nano-time) start) 1000000))
                      :ignored-expectations ignored-expectations)]
-        #+clj
         (when @warn-on-iref-updates-boolean
-          (remove-watch-every-iref-for-updates))
-        #+clj
-        (-> (find-expectations-vars :after-run) (execute-vars)) ;FIXME shouldn't it take vars?
+          (remove-watch-every-iref-for-updates (:iref vars-by-kind)))
+        (execute-vars (:after-run vars-by-kind))
         result))))
 
-(defn run-tests-in-vars [vars]
-  (doto (assoc (test-vars vars 0) :type :summary)
+(defn run-tests-in-vars [vars-by-kind]
+  (doto (assoc (test-vars vars-by-kind 0) :type :summary)
     (report)))
 
-(defn unrun-expectation [{:keys [expectation] run? ::run}]
-  (and expectation (not run?)))
-
 #+clj
-(defn ->expectation [ns]
+(defn ->vars [ns]
   (->> ns
     ns-name
     ns-interns
     vals
-    (sort-by str)
-    (filter (comp unrun-expectation meta))))
+    (sort-by str)))
 
-#+clj
+(defn var-kind [v]
+  (let [m (meta v)]
+    (cond (:expectation m) :expectation
+          (:expectations-options m) (:expectations-options m)
+          (p/iref-types (type @v)) :iref)))
+
+(defn by-kind [vars]
+  (->> vars
+    (filter (comp not ::run meta))
+    (filter (comp not nil? var-kind))
+    (group-by var-kind)))
+
 (defn ->focused-expectations [expectations]
   (->> expectations (filter (comp :focused meta)) seq))
 
 #+clj
 (defn run-tests [namespaces]
-  (let [expectations (mapcat ->expectation namespaces)]
+  (let [vars-by-kind (by-kind (mapcat ->vars namespaces))
+        expectations (:expectation vars-by-kind)]
     (if-let [focused (->focused-expectations expectations)]
-      (doto (assoc (test-vars focused (- (count expectations) (count focused))) :type :summary)
+      (doto (assoc (test-vars (assoc vars-by-kind :expectation focused) (- (count expectations) (count focused)))
+              :type :summary)
         (report))
-      (doto (assoc (test-vars expectations 0) :type :summary)
+      (doto (assoc (test-vars vars-by-kind 0)
+              :type :summary)
         (report)))))
 
 #+clj
