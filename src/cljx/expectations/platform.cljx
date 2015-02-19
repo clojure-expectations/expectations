@@ -1,9 +1,13 @@
 (ns expectations.platform
   (:refer-clojure :exclude [bound? format ns-name])
   (:require #+clj [clojure.pprint :as pprint]
-            #+cljs [goog.string]
-            #+cljs [goog.string.format])
+    #+cljs [goog.string]
+    #+cljs [goog.string.format])
   #+clj (:import (clojure.lang Agent Atom Ref)))
+
+#+clj
+(defn cljs? []
+  (boolean (find-ns 'cljs.core)))
 
 (defn ns-name [ns]
   #+clj (if (symbol? ns) ns (clojure.core/ns-name ns))

@@ -3,7 +3,8 @@
   (:require [clojure.data]
             [clojure.set :refer [difference]]
             [clojure.string]
-            [expectations.platform :as p :refer [format ns-name]])
+            [expectations.platform :as p :refer [format ns-name]]
+            #+clj [cljs.analyzer])
   #+clj
   (:import (clojure.lang Agent Atom Ref)
            (java.io FileNotFoundException)
@@ -308,24 +309,30 @@
 
 (defn var-kind [v]
   (let [m (meta v)]
-    (cond (:expectation m) :expectation
+    (cond (and (:focused m)
+               (:expectation m)) :focused
+          (:expectation m) :expectation
+          (and (some-> m :test meta :focused)
+               (some-> m :test meta :expectation)) :focused
+          (some-> m :test meta :expectation) :expectation
           (:expectations-options m) (:expectations-options m)
+          (some-> m :test meta :expectations-options) (-> m :test meta :expectations-options)
           (p/iref-types (type @v)) :iref)))
 
 (defn by-kind [vars]
   (->> vars
-    (filter (comp not ::run meta))
+    ;(filter (comp not ::run meta))
     (filter (comp not nil? var-kind))
     (group-by var-kind)))
 
 (defn ->focused-expectations [expectations]
-  (->> expectations (filter (comp :focused meta)) seq))
+  (->> expectations (filter (comp :focused meta :test meta)) seq))
 
 #+clj
 (defn run-tests [namespaces]
   (let [vars-by-kind (by-kind (mapcat ->vars namespaces))
         expectations (:expectation vars-by-kind)]
-    (if-let [focused (->focused-expectations expectations)]
+    (if-let [focused (:focused vars-by-kind)]
       (doto (assoc (test-vars (assoc vars-by-kind :expectation focused) (- (count expectations) (count focused)))
               :type :summary)
         (report))
@@ -556,31 +563,42 @@
               (compare-expr e2# a# '~e '~a))))))
 
 #+clj
+(defn- hashname [name & args]
+  (symbol (str name (hash (apply str name args)))))
+
+#+clj
 (defmacro expect
   ([a] `(expect true (if ~a true false)))
   ([e a]
-    `(def ~(vary-meta (gensym) assoc :expectation true)
-       (fn [] (doexpect ~e ~a)))))
+   `(def ~(vary-meta (hashname 'expect e a) assoc :expectation true
+            :test `(with-meta (fn []) {:expectation true}))
+      (fn [] (doexpect ~e ~a)))))
 
 #+clj
 (defmacro expect-let [bindings e a]
-  `(def ~(vary-meta (gensym) assoc :expectation true)
+  `(def ~(vary-meta (hashname 'expect-let bindings e a) assoc :expectation true
+           :test `(with-meta (fn []) {:expectation true}))
      (fn [] (let ~bindings (doexpect ~e ~a)))))
 
 #+clj
 (defmacro expect-focused
   ([a] `(expect-focused true (if ~a true false)))
   ([e a]
-    `(def ~(vary-meta (gensym) assoc :expectation true :focused true)
-       (fn [] (doexpect ~e ~a)))))
+   `(def ~(vary-meta (hashname 'expect-focused e a) assoc :expectation true :focused true
+            :test `(with-meta (fn []) {:expectation true :focused true}))
+      (fn [] (doexpect ~e ~a)))))
 
 #+clj
 (defmacro expect-let-focused [bindings e a]
-  `(def ~(vary-meta (gensym) assoc :expectation true :focused true)
+  `(def ~(vary-meta (hashname 'expect-let-focused bindings e a) assoc :expectation true :focused true
+           :test `(with-meta (fn []) {:expectation true :focused true}))
      (fn [] (let ~bindings (doexpect ~e ~a)))))
 
 #+clj
-(defmacro expanding [n] `'~(macroexpand-1 n))
+(defmacro expanding [n]
+  (if (p/cljs?)
+    `'~(cljs.analyzer/macroexpand-1 {} n)
+    `'~(macroexpand-1 n)))
 
 #+clj
 (when-not (::hook-set (meta run-tests-on-shutdown))
