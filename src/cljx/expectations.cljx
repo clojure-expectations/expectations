@@ -312,11 +312,7 @@
     (cond (and (:focused m)
                (:expectation m)) :focused
           (:expectation m) :expectation
-          (and (some-> m :test meta :focused)
-               (some-> m :test meta :expectation)) :focused
-          (some-> m :test meta :expectation) :expectation
           (:expectations-options m) (:expectations-options m)
-          (some-> m :test meta :expectations-options) (-> m :test meta :expectations-options)
           (p/iref-types (type @v)) :iref)))
 
 (defn by-kind [vars]
