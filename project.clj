@@ -16,8 +16,8 @@
   :profiles {:dev {:dependencies      [[joda-time/joda-time "2.7"]
                                        [junit/junit "4.12"]]
                    :node-dependencies [[source-map-support "^0.2.9"]]
-                   :plugins           [[com.keminglabs/cljx "0.5.1-SNAPSHOT"]
-                                       [lein-cljsbuild "1.0.4"]
+                   :plugins           [[com.keminglabs/cljx "0.6.0"]
+                                       [lein-cljsbuild "1.0.5"]
                                        [lein-npm "0.5.0"]]}}
 
   ;:prep-tasks ["clean" "cljx" "javac"]
