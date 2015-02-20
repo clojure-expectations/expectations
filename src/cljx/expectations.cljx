@@ -563,31 +563,31 @@
               (compare-expr e2# a# '~e '~a))))))
 
 #+clj
-(defn- hashname [name & args]
-  (symbol (str name (hash (apply str name args)))))
+(defn- hashname [[s & _ :as form]]
+  (symbol (str (name s) (hash (str form)))))
 
 #+clj
 (defmacro expect
   ([a] `(expect true (if ~a true false)))
   ([e a]
-   `(def ~(vary-meta (hashname 'expect e a) assoc :expectation true)
+   `(def ~(vary-meta (hashname &form) assoc :expectation true)
       (fn [] (doexpect ~e ~a)))))
 
 #+clj
 (defmacro expect-let [bindings e a]
-  `(def ~(vary-meta (hashname 'expect-let bindings e a) assoc :expectation true)
+  `(def ~(vary-meta (hashname &form) assoc :expectation true)
      (fn [] (let ~bindings (doexpect ~e ~a)))))
 
 #+clj
 (defmacro expect-focused
   ([a] `(expect-focused true (if ~a true false)))
   ([e a]
-   `(def ~(vary-meta (hashname 'expect-focused e a) assoc :expectation true :focused true)
+   `(def ~(vary-meta (hashname &form) assoc :expectation true :focused true)
       (fn [] (doexpect ~e ~a)))))
 
 #+clj
 (defmacro expect-let-focused [bindings e a]
-  `(def ~(vary-meta (hashname 'expect-let-focused bindings e a) assoc :expectation true :focused true)
+  `(def ~(vary-meta (hashname &form) assoc :expectation true :focused true)
      (fn [] (let ~bindings (doexpect ~e ~a)))))
 
 #+clj
