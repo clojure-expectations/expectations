@@ -272,9 +272,9 @@ Here are a few [examples](https://gist.github.com/jaycfields/9050825)
 
 ## metadata added to 'work argument used in in-context
 
-Since version 1.4.36 expectations has allowed you 
-to alter the context in which 
-your tests run by creating a function that takes the "run the tests" 
+Since version 1.4.36 expectations has allowed you
+to alter the context in which
+your tests run by creating a function that takes the "run the tests"
 function as an arg, and do you as wish. [more info](http://jayfields.com/expectations/in-context.html)
 
 In version 2.0.10 of expecatations, the "run the tests" function
@@ -289,7 +289,7 @@ test being run.
   [work]
     (println (meta (:the-var (meta work))))
     (work))
-```    
+```
 
 # Changes in version 2.0.11 and 2.0.12
 
@@ -298,3 +298,8 @@ None. Both versions were released as the result of automating deployment.
 # Changes in version 2.0.13
 
 Tests within a namespace are run in order.
+
+# Changes from version 2.0.14 - 2.0.16
+
+Small change allowing filenames that start with integers. The number of releases
+was due to tweaking automated deployment (again).
