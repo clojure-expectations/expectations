@@ -98,7 +98,7 @@
   (str ns ":" line))
 
 (defn test-file [{:keys [file line]}]
-  (colorize-filename (str (last (re-seq #"[A-Za-z_\.]+" file)) ":" line)))
+  (colorize-filename (str (last (re-seq #"[0-9A-Za-z_\.]+" file)) ":" line)))
 
 (defn raw-str [[e a]]
   (with-out-str (clojure.pprint/pprint `(~'expect ~e ~a))))
