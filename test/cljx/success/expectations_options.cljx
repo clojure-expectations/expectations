@@ -1,4 +1,4 @@
-(ns expectations-options
+(ns success.expectations-options
   (:require [expectations]
             [success.success-examples-src]))
 

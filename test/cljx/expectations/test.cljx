@@ -1,7 +1,7 @@
 (ns expectations.test
   #+cljs (:require-macros [expectations.cljs :as ecljs])
   (:require [expectations]
-            [expectations-options]
+            [success.expectations-options]
             [success.success-examples]
             [success.nested.success-examples]))
 

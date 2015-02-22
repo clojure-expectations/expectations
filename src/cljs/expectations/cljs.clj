@@ -4,12 +4,14 @@
 
 (defn ->cljs-vars [namespace]
   (assert (symbol? namespace) (str namespace))
+  (assert (aapi/find-ns namespace) (str namespace))
   (->> (aapi/ns-interns namespace)
     (map (fn [[k _]] `(var ~(symbol (name namespace) (name k)))))
     (into [])))
 
-(defmacro run-tests [namespaces]
-  (assert (and (vector? namespaces) (every? symbol? namespaces)) (str namespaces))
+(defmacro run-tests [& namespaces]
+  (assert (every? symbol? namespaces) (str namespaces))
+  (assert (every? aapi/find-ns namespaces) (str "Some namespaces were not properly require'd: " namespaces))
   `(let [all-vars# [~@(mapcat ->cljs-vars namespaces)]
          all-vars# (sort-by (fn [v#] [(-> v# meta :ns) (-> v# meta :line)]) all-vars#)
          vars-by-kind# (e/by-kind all-vars#)
@@ -25,7 +27,7 @@
 (defmacro run-all-tests
   ([] `(run-all-tests nil))
   ([re] `(run-tests
-           [~@(cond->> (filter
-                         (comp not #(re-matches #"cljs\..+|clojure\..+|expectations|expectations\..+" %) name)
-                         (aapi/all-ns))
-                re (filter #(re-matches re (name %))))])))
+           ~@(cond->> (->> (aapi/all-ns)
+                        (filter (comp not #(re-matches #"cljs\..+|clojure\..+|expectations|expectations\..+" %) name))
+                        (filter aapi/find-ns))
+               re (filter #(re-matches re (name %)))))))
