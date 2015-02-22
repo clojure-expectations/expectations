@@ -317,7 +317,7 @@
 
 (defn by-kind [vars]
   (->> vars
-    ;(filter (comp not ::run meta))
+    (filter (comp not ::run meta))
     (filter (comp not nil? var-kind))
     (group-by var-kind)))
 
