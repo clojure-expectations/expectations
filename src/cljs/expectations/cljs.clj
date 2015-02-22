@@ -14,12 +14,6 @@
          all-vars# (sort-by (fn [v#] [(-> v# meta :ns) (-> v# meta :line)]) all-vars#)
          vars-by-kind# (e/by-kind all-vars#)
          expectations# (:expectation vars-by-kind#)]
-
-     ;(println "namespaces: " '~namespaces)
-     ;(println "1st var: " (first all-vars#))
-     ;(println "1st var meta: " (-> (first all-vars#) meta))
-     ;(println "vars-by-kind: " vars-by-kind#)
-
      (if-let [focused# (:focused vars-by-kind#)]
        (doto (assoc (e/test-vars (assoc vars-by-kind# :expectation focused#) (- (count expectations#) (count focused#)))
                :type :summary)

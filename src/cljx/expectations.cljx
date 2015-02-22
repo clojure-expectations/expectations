@@ -321,9 +321,6 @@
     (filter (comp not nil? var-kind))
     (group-by var-kind)))
 
-(defn ->focused-expectations [expectations]
-  (->> expectations (filter (comp :focused meta :test meta)) seq))
-
 #+clj
 (defn run-tests [namespaces]
   (let [vars-by-kind (by-kind (mapcat ->vars namespaces))
