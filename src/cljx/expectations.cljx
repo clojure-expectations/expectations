@@ -3,8 +3,7 @@
   (:require [clojure.data]
             [clojure.set :refer [difference]]
             [clojure.string]
-            [expectations.platform :as p :refer [format ns-name]]
-            #+clj [cljs.analyzer])
+            [expectations.platform :as p :refer [format ns-name]])
   #+clj
   (:import (clojure.lang Agent Atom Ref)
            (java.io FileNotFoundException)
@@ -46,7 +45,7 @@
 
 (defn colorize-choice []
   (clojure.string/upper-case (or (p/getenv "EXPECTATIONS_COLORIZE")
-                               (str (not (p/on-windows?))))))
+                                 (str (not (p/on-windows?))))))
 
 (def ansi-colors {:reset   "[0m"
                   :red     "[31m"
@@ -119,14 +118,14 @@
 (defn ^{:dynamic true} ignored-fns [{:keys [className fileName]}]
   (when *prune-stacktrace*
     (or (= fileName "expectations.clj")
-      (= fileName "expectations_options.clj")
-      (= fileName "NO_SOURCE_FILE")
-      (= fileName "interruptible_eval.clj")
-      (re-seq #"clojure\.lang" className)
-      (re-seq #"clojure\.core" className)
-      (re-seq #"clojure\.main" className)
-      (re-seq #"java\.lang" className)
-      (re-seq #"java\.util\.concurrent\.ThreadPoolExecutor\$Worker" className))))
+        (= fileName "expectations_options.clj")
+        (= fileName "NO_SOURCE_FILE")
+        (= fileName "interruptible_eval.clj")
+        (re-seq #"clojure\.lang" className)
+        (re-seq #"clojure\.core" className)
+        (re-seq #"clojure\.main" className)
+        (re-seq #"java\.lang" className)
+        (re-seq #"java\.util\.concurrent\.ThreadPoolExecutor\$Worker" className))))
 
 (defn- stackline->str [{:keys [className methodName fileName lineNumber]}]
   (if (= methodName "invoke")
@@ -548,11 +547,11 @@
 
 #+clj
 (defmacro doexpect [e a]
-  `(let [e# (try ~e (catch #+clj Throwable #+cljs js/Error t# t#))
-         a# (try ~a (catch #+clj Throwable #+cljs js/Error t# t#))]
+  `(let [e# (try ~e (catch ~(p/err-type) t# t#))
+         a# (try ~a (catch ~(p/err-type) t# t#))]
      (report
        (try (compare-expr e# a# '~e '~a)
-            (catch #+clj Throwable #+cljs js/Error e2#
+            (catch ~(p/err-type) e2#
               (compare-expr e2# a# '~e '~a))))))
 
 #+clj
@@ -585,9 +584,7 @@
 
 #+clj
 (defmacro expanding [n]
-  (if (p/cljs?)
-    `'~(cljs.analyzer/macroexpand-1 {} n)
-    `'~(macroexpand-1 n)))
+  (p/expanding n))
 
 #+clj
 (when-not (::hook-set (meta run-tests-on-shutdown))
@@ -673,7 +670,7 @@
              v)]
     `(hash-map ::from-each (doall (for ~seq-exprs
                                     {::the-result (try ~body-expr
-                                                       (catch #+clj Throwable #+cljs js/Error t# t#))
+                                                       (catch ~(p/err-type) t# t#))
                                      ::ref-data   ~(vec (interleave vs (map symbol vs)))}))
        ::from-each-body '~body-expr
        ::from-each-flag true)))

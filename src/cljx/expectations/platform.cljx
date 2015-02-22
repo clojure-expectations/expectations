@@ -1,6 +1,7 @@
 (ns expectations.platform
   (:refer-clojure :exclude [bound? format ns-name])
   (:require #+clj [clojure.pprint :as pprint]
+            #+clj [cljs.analyzer]
     #+cljs [goog.string]
     #+cljs [goog.string.format])
   #+clj (:import (clojure.lang Agent Atom Ref)))
@@ -8,6 +9,16 @@
 #+clj
 (defn cljs? []
   (boolean (find-ns 'cljs.core)))
+
+#+clj
+(defn expanding [n]
+  (if (cljs?)
+    `'~(cljs.analyzer/macroexpand-1 {} n)
+    `'~(macroexpand-1 n)))
+
+#+clj
+(defn err-type []
+  (if (cljs?) `~'js/Error `Throwable))
 
 (defn ns-name [ns]
   #+clj (if (symbol? ns) ns (clojure.core/ns-name ns))
