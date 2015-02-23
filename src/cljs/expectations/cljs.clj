@@ -28,6 +28,6 @@
   ([] `(run-all-tests nil))
   ([re] `(run-tests
            ~@(cond->> (->> (aapi/all-ns)
-                        (filter (comp not #(re-matches #"cljs\..+|clojure\..+|expectations|expectations\..+" %) name))
+                        (filter (comp not #(re-matches #"cljs\..+|clojure\..+|expectations(?:\.platform)?" %) name))
                         (filter aapi/find-ns))
                re (filter #(re-matches re (name %)))))))
