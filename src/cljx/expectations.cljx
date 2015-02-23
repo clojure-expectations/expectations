@@ -10,12 +10,6 @@
            (java.util.regex Pattern)
            (org.joda.time DateTimeUtils)))
 
-(def nothing "no arg given")
-
-(defn a-fn1 [& _])
-(defn a-fn2 [& _])
-(defn a-fn3 [& _])
-
 (defn no-op [& _])
 
 (defn in [n] {::in n ::in-flag true})
@@ -23,7 +17,6 @@
 ;;; GLOBALS
 (def run-tests-on-shutdown (atom true))
 (def warn-on-iref-updates-boolean (atom false))
-;(def lib-namespaces (set (all-ns)))
 
 (def ^{:dynamic true} *test-name* nil)
 (def ^{:dynamic true} *test-meta* {})
@@ -203,16 +196,6 @@
 (defn disable-run-on-shutdown [] (reset! run-tests-on-shutdown false))
 (defn warn-on-iref-updates [] (reset! warn-on-iref-updates-boolean true))
 
-#+clj
-(defn find-every-iref []
-  (->> (all-ns)
-    (map ns-name)
-    (remove #(re-seq #"(clojure\.|cljs\.|expectations)" (name %)))
-    (mapcat (comp vals ns-interns))
-    (filter p/bound?)
-    (keep #(when-let [val @%] [% val]))
-    (filter (comp p/iref-types type second))))
-
 (defn add-watch-every-iref-for-updates [iref-vars]
   (doseq [var iref-vars]
     (add-watch @var ::expectations-watching-state-modifications
@@ -248,12 +231,6 @@
             (println "\nunexpected error in" tn)
             (p/print-stack-trace e))))
       (finished tn tm))))
-
-#+clj
-(defn find-expectations-vars [option-type]
-  (->> (all-ns)
-    (mapcat (comp vals ns-interns))
-    (filter (comp #{option-type} :expectations-options meta))))
 
 (defn execute-vars [vars]
   (doseq [var vars]
