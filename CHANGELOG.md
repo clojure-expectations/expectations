@@ -46,7 +46,8 @@ Your tests main namespace should require `expectations.cljs` to be able to run y
 ```clojure
 (ns my-lib.test
   (:require-macros [expectations.cljs :as ecljs])
-  (:require [my-lib.expectations-options]
+  (:require [expectations]
+            [my-lib.expectations-options]
             [my-lib.core-test]
             [my-lib.util-test]))
 
