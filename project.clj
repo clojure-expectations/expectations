@@ -7,6 +7,7 @@
   :test-paths ["target/test-classes"]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/clojurescript "0.0-2913"]
+                 [joda-time/joda-time "2.7"]
                  [junit/junit "4.12"]]
 
   :plugins [[lein-expectations "0.0.8"]
@@ -14,8 +15,7 @@
 
   :deploy-repositories [["releases" :clojars]]
 
-  :profiles {:dev {:dependencies      [[joda-time/joda-time "2.7"]]
-                   :node-dependencies [[source-map-support "^0.2.9"]]
+  :profiles {:dev {:node-dependencies [[source-map-support "^0.2.9"]]
                    :plugins           [[com.keminglabs/cljx "0.6.0"]
                                        [lein-cljsbuild "1.0.5"]
                                        [lein-npm "0.5.0"]]}}
