@@ -2,7 +2,98 @@
 
 ## ClojureScript support
 
-TODO: write more!
+This release adds support for ClojureScript. You can write your tests the same
+as in Clojure, except for the usual ClojureScript quirks.
+
+### Running your tests
+
+Your tests written in ClojureScript should be compiled to JS and run by a JavaScript
+runtime (such as Node.js, Phantom.js, your browser or whatnot). `lein-cljsbuild` is
+the Leiningen plugin that does that for you.
+
+Here's a sample `project.clj` excerpt:
+
+```clojure
+  :profiles {:dev {:node-dependencies [[source-map-support "^0.2.9"]]
+                   :plugins           [[lein-cljsbuild "1.0.5"]
+                                       [lein-npm "0.5.0"]]}}
+  :cljsbuild {:builds [{:id             "test"                                ;; your build config name
+                        :source-paths   ["src/cljs" "test/cljs"]              ;; your source and test dirs
+                        :notify-command ["node" "./out/tests/test.js"]        ;; `node ./out/tests/test.js` to be
+                                                                              ;; run automatically after compile
+                        :compiler       {:target         :nodejs              ;; use this if you want to run on Node.js
+                                         :main           my-lib.test          ;; your tests main namespace
+                                         :output-to      "out/tests/test.js"  ;; compiled JS main file
+                                         :output-dir     "out/tests"          ;; compiled JS dir
+                                         :optimizations  :none                ;; maybe just leave as it is ;)
+                                         :cache-analysis true
+                                         :source-map     true
+                                         :pretty-print   true}}]}
+```
+
+To compile and run your tests just once, run
+
+    lein cljsbuild once test
+
+To run automatic incremental compilation and testing your changes, run
+
+    lein cljsbuild auto test
+
+#### Tests main namespace (entry point)
+
+Your tests main namespace should require `expectations.cljs` to be able to run your tests:
+
+```clojure
+(ns my-lib.test
+  (:require-macros [expectations.cljs :as ecljs])
+  (:require [my-lib.expectations-options]
+            [my-lib.core-test]
+            [my-lib.util-test]))
+
+(defn -main []
+  (ecljs/run-all-tests))
+
+(enable-console-print!)
+(set! *main-cli-fn* -main)
+```
+
+You should use `run-all-tests` macro:
+
+    (expectations.cljs/run-all-tests)
+
+or `run-tests`, like this:
+
+    (expectations.cljs/run-tests my-lib.core-test my-lib.util-test my-other.namespaces)
+
+
+#### Requiring the `expectations` namespace
+
+A usual tiny difference from Clojure.
+
+Clojure:
+
+```
+(ns success.nested.success-examples
+  (:require [expectations :refer :all]))
+```
+
+ClojureScript:
+
+```
+(ns success.nested.success-examples
+  (:require-macros [expectations :refer [expect
+                                         expect-focused
+                                         ;; etc.
+                                         ]]))
+```
+
+### Implementation notes
+
+`pprint` is not supported in ClojureScript yet, so datastructures will not get pretty printed in failed test reports.
+
+`freeze-time` macro is not yet implemented for ClojureScript.
+
+JavaScript error stack traces will look a bit verbose as we're not eliding system and `expectations` files just yet.
 
 ### Maintainer notes
 
