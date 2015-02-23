@@ -1,7 +1,28 @@
 (ns success.success-examples
-  (:use expectations)
-  (:require success.success-examples-src)
-  (:import [org.joda.time DateTime]))
+  (:require #+clj [expectations :refer :all]
+    #+cljs [expectations :refer [in localize no-op] :refer-macros [expanding
+                                                                   expect
+                                                                   expect-focused
+                                                                   expect-let
+                                                                   expect-let-focused
+                                                                   from-each
+                                                                   more
+                                                                   more->
+                                                                   more-of
+                                                                   redef-state
+                                                                   side-effects]]
+            #+clj [success.success-examples-src :refer [a-macro cljs?]]
+    #+cljs [success.success-examples-src :refer-macros [a-macro cljs?]])
+  #+clj (:import (java.util AbstractMap ArrayList HashMap)
+                 (org.joda.time DateTime)))
+
+#+cljs
+(defn spit [f content & options] (.log js/console content))
+
+;; expect to be on the right platform
+(expect
+  #+clj (not (cljs?))
+  #+cljs (cljs?))
 
 ;; expect a truthy value
 (expect true)
@@ -35,10 +56,12 @@
 (expect #"foo" (str "boo" "foo" "ar"))
 
 ;; does the form throw an expeted exception
-(expect ArithmeticException (/ 12 0))
+#+clj (expect ArithmeticException (/ 12 0))
 
 ;; verify the type of the result
-(expect String "foo")
+#+clj (expect String "foo")
+#+cljs (expect js/String "foo")
+(expect string? "foo")
 
 ;; k/v pair in map. matches subset
 (expect {:foo 1} (in {:foo 1 :cat 4}))
@@ -63,9 +86,10 @@
 
 (expect (more vector? not-empty) [1 2 3])
 
+#+clj
 (expect (more-> 0 .size
                 true .isEmpty)
-  (java.util.ArrayList.))
+  (ArrayList.))
 
 (expect (more-> 2 (-> first (+ 1))
                 3 last)
@@ -76,14 +100,14 @@
   {:a 2 :b 4})
 
 (expect (more-of x
-                 vector? x
-                 1 (first x))
+          vector? x
+          1 (first x))
   [1 2 3])
 
 (expect ["/tmp/hello-world" "some data" :append true]
   (second (side-effects [spit]
-                        (spit "some other stuff" "xy")
-                        (spit "/tmp/hello-world" "some data" :append true))))
+            (spit "some other stuff" "xy")
+            (spit "/tmp/hello-world" "some data" :append true))))
 
 (expect empty?
   (side-effects [spit] "spit never called"))
@@ -91,20 +115,20 @@
 (expect [["/tmp/hello-world" "some data" :append true]
          ["/tmp/hello-world" "some data" :append true]]
   (side-effects [spit]
-                (spit "/tmp/hello-world" "some data" :append true)
-                (spit "/tmp/hello-world" "some data" :append true)))
+    (spit "/tmp/hello-world" "some data" :append true)
+    (spit "/tmp/hello-world" "some data" :append true)))
 
 (expect ["/tmp/hello-world" "some data" :append true]
   (in (side-effects [spit]
-                    (spit "some other stuff" "xy")
-                    (spit "/tmp/hello-world" "some data" :append true))))
+        (spit "some other stuff" "xy")
+        (spit "/tmp/hello-world" "some data" :append true))))
 
 (expect (more-of [path data action {:keys [a c]}]
-                 String path
-                 #"some da" data
-                 keyword? action
-                 :b a
-                 :d c)
+          string? path
+          #"some da" data
+          keyword? action
+          :b a
+          :d c)
   (in (side-effects [spit]
         (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
 
@@ -126,27 +150,28 @@
 
 (expect (more identity not-empty)
   (in (side-effects [spit]
-                    (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
+        (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
 
-(expect (more-> String (nth 0)
-                #"some da" (nth 1)
-                keyword? (nth 2)
-                {:a :b :c :d} (-> (nth 3) (select-keys [:a :c])))
+(expect (more->
+          string? (nth 0)
+          #"some da" (nth 1)
+          keyword? (nth 2)
+          {:a :b :c :d} (-> (nth 3) (select-keys [:a :c])))
   (in (side-effects [spit]
-                    (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
+        (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
 
 (expect (more-of [path data action {:keys [a c]}]
-                 String path
-                 #"some da" data
-                 keyword? action
-                 :b a
-                 :d c)
+          string? path
+          #"some da" data
+          keyword? action
+          :b a
+          :d c)
   (in (side-effects [spit]
-                    (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
+        (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
 
 (expect not-empty
   (side-effects [spit]
-                (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f})))
+    (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f})))
 
 ;; redef state within the context of a test
 (expect :atom
@@ -168,26 +193,30 @@
   (* x x) (+ x x))
 
 ;; use freeze-time to set the current time while a test is running
+#+clj                                                       ;TODO the same in cljs
 (expect-let [now (DateTime.)]
   (freeze-time now (DateTime.))
   (freeze-time now (DateTime.)))
 
 ;; freeze-time only affects wrapped forms
+#+clj                                                       ;TODO the same in cljs
 (expect (not= (DateTime. 1)
-              (do
-                (freeze-time (DateTime. 1))
-                (DateTime.))))
+          (do
+            (freeze-time (DateTime. 1))
+            (DateTime.))))
 
 ;; freeze-time resets the frozen time even when an exception occurs
+#+clj                                                       ;TODO the same in cljs
 (expect (not= (DateTime. 1)
-              (do
-                (try
-                  (freeze-time (DateTime. 1)
-                    (throw (RuntimeException. "test finally")))
-                  (catch Exception e))
-                (DateTime.))))
+          (do
+            (try
+              (freeze-time (DateTime. 1)
+                (throw (RuntimeException. "test finally")))
+              (catch Exception e))
+            (DateTime.))))
 
 ;; use context to limit the number of indentions while using redef-state, with-redefs or freeze-time
+#+clj                                                       ;TODO the same in cljs
 (expect-let [now (DateTime.)]
   [now now]
   (context [:redef-state [success.success-examples-src]
@@ -198,13 +227,17 @@
 
 ;; ensure equality matching where possible
 (expect no-op no-op)
-(expect java.util.AbstractMap java.util.HashMap)
+#+clj
+(expect AbstractMap HashMap)
 (expect #"a" #"a")
+#+clj
 (expect RuntimeException RuntimeException)
+#+cljs
+(expect js/Error js/Error)
 
 (expect :a-rebound-val (success.success-examples-src/a-fn-to-be-rebound))
 
-(expect String
+(expect string?
   (from-each [letter ["a" "b" "c"]] letter))
 
 (expect even? (from-each [num [1 2 3]
@@ -215,7 +248,7 @@
 (expect (success.success-examples-src/->ConstantlyTrue) [1 2 3 4])
 
 (expect (more-> false identity
-                AssertionError assert)
+                #+clj AssertionError #+cljs js/Error assert)
   false)
 
-(expect AssertionError (from-each [a [1 2]] (assert (string? a))))
+(expect #+clj AssertionError #+cljs js/Error (from-each [a [1 2]] (assert (string? a))))

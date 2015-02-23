@@ -49,7 +49,8 @@
         _ (doseq [{:keys [absolutePath]} files] (load-file absolutePath))
         file-names (set (map :absolutePath files))
         suite-description (Description/createSuiteDescription (-> source class .getName) empty-ann-arr)
-        filtered-vars (->> (all-ns) (mapcat expectations/->expectation) (filter (partial in-loaded-file? file-names)))
+        vars-by-kind (->> (all-ns) (mapcat expectations/->vars) (expectations/by-kind))
+        filtered-vars (->> (:expectation vars-by-kind) (filter (partial in-loaded-file? file-names)))
         descs (reduce create-desc {} filtered-vars)]
     (doseq [desc (vals descs)] (.addChild suite-description desc))
     (proxy [Runner] []
@@ -61,7 +62,7 @@
                                 expectations/fail (partial failure notifier descs)
                                 expectations/ignored-fns ignored-fns
                                 expectations/summary (fn [_])]
-          (expectations/run-tests-in-vars filtered-vars))]
+          (expectations/run-tests-in-vars (assoc vars-by-kind :expectation filtered-vars)))]
           (.fireTestStarted notifier suite-description)
           (when (or (< 0 (:error results)) (< 0 (:fail results)))
             (.fireTestFailure notifier (expectations.junit.ExpectationsFailure. suite-description "")))

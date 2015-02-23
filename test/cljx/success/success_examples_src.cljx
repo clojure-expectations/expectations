@@ -1,9 +1,9 @@
 (ns success.success-examples-src
-  (:use expectations))
+  (:refer-clojure :exclude [format])
+  (:require [expectations :refer [CustomPred]]
+            [expectations.platform :as p :refer [format]]))
 
 (def an-atom (atom "atom"))
-(def a-ref (ref "ref"))
-(def an-agent (agent "agent"))
 
 (defn a-fn-to-be-rebound [])
 
@@ -15,7 +15,12 @@
   (message [e a str-e str-a] (format "%s & %s" str-e str-a)))
 
 ;; macro expansion
+#+clj
 (defmacro a-macro [& args]
   `(println ~@args))
 
 (defrecord ARecord [data])
+
+#+clj
+(defmacro cljs? []
+  (p/cljs?))
