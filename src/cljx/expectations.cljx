@@ -626,7 +626,7 @@
   `(with-redefs ~(default-local-vals namespaces) ~@forms))
 
 #+clj
-(defmacro freeze-time [time & forms]                        ;TODO impl macros for cljs
+(defmacro freeze-time [time & forms]                        ;TODO impl for cljs
   `(try
      (DateTimeUtils/setCurrentMillisFixed (.getMillis ~time))
      ~@forms

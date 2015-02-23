@@ -1,6 +1,7 @@
 (ns success.success-examples
   (:require #+clj [expectations :refer :all]
-    #+cljs [expectations :refer [in localize no-op] :refer-macros [expect
+    #+cljs [expectations :refer [in localize no-op] :refer-macros [expanding
+                                                                   expect
                                                                    expect-focused
                                                                    expect-let
                                                                    expect-let-focused
@@ -80,9 +81,8 @@
 ;; sorted map equality
 (expect (sorted-map-by > 1 :a 2 :b) (sorted-map-by > 1 :a 2 :b))
 
-#+clj                                                       ;TODO the same in cljs
 (expect '(clojure.core/println 1 2 (println 100) 3)
-  (expanding (a-macro 1 2 (println 100) 3)))
+  (expanding (success.success-examples-src/a-macro 1 2 (println 100) 3)))
 
 (expect (more vector? not-empty) [1 2 3])
 
@@ -247,10 +247,8 @@
 
 (expect (success.success-examples-src/->ConstantlyTrue) [1 2 3 4])
 
-#+clj                                                       ;TODO cross platform
 (expect (more-> false identity
-                AssertionError assert)
+                #+clj AssertionError #+cljs js/Error assert)
   false)
 
-#+clj                                                       ;TODO cross platform
-(expect AssertionError (from-each [a [1 2]] (assert (string? a))))
+(expect #+clj AssertionError #+cljs js/Error (from-each [a [1 2]] (assert (string? a))))
