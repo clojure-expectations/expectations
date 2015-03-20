@@ -6,7 +6,7 @@
   :source-paths ["src/cljx" "src/clojure" "src/cljs"]
   :test-paths ["target/test-classes"]
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/clojurescript "0.0-2913"]
+                 [org.clojure/clojurescript "0.0-2985"]
                  [joda-time/joda-time "2.7"]
                  [junit/junit "4.12"]]
 
