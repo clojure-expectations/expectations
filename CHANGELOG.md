@@ -1,3 +1,13 @@
+# Changes in version 2.1.1
+
+## ClojureScript support
+
+Make Expectations work with recent ClojureScript versions (> 0.0-2985). 
+
+Since [r2985](https://github.com/clojure/clojurescript/releases/tag/r2985) ClojureScript introduced macro symbols 
+in its analysis map, and Expectations tried to use them to construct vars, hence the failure described in 
+[a comment to #51](https://github.com/jaycfields/expectations/pull/51#issuecomment-83922145). This is now fixed.
+
 # Changes in version 2.1.0
 
 ## ClojureScript support
