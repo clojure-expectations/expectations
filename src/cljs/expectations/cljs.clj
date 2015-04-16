@@ -6,6 +6,7 @@
   (assert (symbol? namespace) (str namespace))
   (assert (aapi/find-ns namespace) (str namespace))
   (->> (aapi/ns-interns namespace)
+    (filter (fn [[_ v]] (not (:macro v))))
     (map (fn [[k _]] `(var ~(symbol (name namespace) (name k)))))
     (into [])))
 
