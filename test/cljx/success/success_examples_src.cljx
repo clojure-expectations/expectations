@@ -5,6 +5,8 @@
 
 (def an-atom (atom "atom"))
 
+(def ^:private an-private-atom (atom "private-atom"))
+
 (defn a-fn-to-be-rebound [])
 
 (defrecord ConstantlyTrue []
