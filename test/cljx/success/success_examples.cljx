@@ -181,12 +181,26 @@
       (reset! success.success-examples-src/an-atom :atom)
       @success.success-examples-src/an-atom)))
 
+(expect :private-atom
+  (do
+    (reset! @#'success.success-examples-src/an-private-atom "private-atom")
+    (redef-state [success.success-examples-src]
+      (reset! @#'success.success-examples-src/an-private-atom :private-atom)
+      @@#'success.success-examples-src/an-private-atom)))
+
 (expect "atom"
   (do
     (reset! success.success-examples-src/an-atom "atom")
     (redef-state [success.success-examples-src]
       (reset! success.success-examples-src/an-atom :atom))
     @success.success-examples-src/an-atom))
+
+(expect "private-atom"
+  (do
+    (reset! @#'success.success-examples-src/an-private-atom "private-atom")
+    (redef-state [success.success-examples-src]
+      (reset! @#'success.success-examples-src/an-private-atom :private-atom))
+     @@#'success.success-examples-src/an-private-atom))
 
 ;; use expect-let to share a value between the actual and expected forms
 (expect-let [x 2]

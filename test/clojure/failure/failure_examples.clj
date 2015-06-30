@@ -82,12 +82,25 @@
                        (reset! success.success-examples-src/an-atom :something-else)
                        @success.success-examples-src/an-atom)))
 
+(expect :original
+        (with-redefs [success.success-examples-src/an-private-atom (atom :original)]
+          (redef-state [success.success-examples-src]
+            (reset! @#'success.success-examples-src/an-private-atom :something-else)
+            @@#'success.success-examples-src/an-private-atom)))
+
 (expect :atom
         (with-redefs [success.success-examples-src/an-atom (atom :original)]
           (do
             (redef-state [success.success-examples-src]
                          (reset! success.success-examples-src/an-atom :atom))
             @success.success-examples-src/an-atom)))
+
+(expect :atom
+        (with-redefs [success.success-examples-src/an-private-atom (atom :original)]
+          (do
+            (redef-state [success.success-examples-src]
+              (reset! @#'success.success-examples-src/an-private-atom :atom))
+            @@#'success.success-examples-src/an-private-atom)))
 
 (expect-let [x 2]
             4 x)
