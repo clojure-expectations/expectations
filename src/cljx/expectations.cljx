@@ -322,6 +322,7 @@
 
 (defmulti compare-expr (fn [e a _ _]
                          (cond
+                           (satisfies? CustomPred e) ::custom-pred
                            (and (map? a) (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
                            (and (map? a) (not (sorted? a)) (contains? a ::in-flag)) ::in
                            (and (map? e) (not (sorted? e)) (contains? e ::more)) ::more
@@ -341,7 +342,6 @@
                            (and (instance? #+clj Class #+cljs js/Function e)
                                 (not (and (fn? e) (e a)))) ::expect-instance
                            (fn? e) ::fn
-                           (satisfies? CustomPred e) ::custom-pred
                            :default ::default)))
 
 (defmethod compare-expr ::equals [e a str-e str-a]
