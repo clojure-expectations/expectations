@@ -1,3 +1,11 @@
+# Changes in version 2.1.3
+
+Minor update to move CustomPred checks in front of all other checking.
+
+# Changes in version 2.1.2
+
+Minor update to allow redef-state to work with private vars.
+
 # Changes in version 2.1.1
 
 ## ClojureScript support
