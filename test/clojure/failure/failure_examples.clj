@@ -102,9 +102,6 @@
               (reset! @#'success.success-examples-src/an-private-atom :atom))
             @@#'success.success-examples-src/an-private-atom)))
 
-(expect-let [x 2]
-            4 x)
-
 (expect nil)
 (expect false)
 

@@ -3,8 +3,6 @@
     #+cljs [expectations :refer [in localize no-op] :refer-macros [expanding
                                                                    expect
                                                                    expect-focused
-                                                                   expect-let
-                                                                   expect-let-focused
                                                                    from-each
                                                                    more
                                                                    more->
@@ -202,13 +200,9 @@
       (reset! @#'success.success-examples-src/an-private-atom :private-atom))
      @@#'success.success-examples-src/an-private-atom))
 
-;; use expect-let to share a value between the actual and expected forms
-(expect-let [x 2]
-  (* x x) (+ x x))
-
 ;; use freeze-time to set the current time while a test is running
 #+clj                                                       ;TODO the same in cljs
-(expect-let [now (DateTime.)]
+(let [now (DateTime.)]
   (freeze-time now (DateTime.))
   (freeze-time now (DateTime.)))
 
@@ -231,7 +225,7 @@
 
 ;; use context to limit the number of indentions while using redef-state, with-redefs or freeze-time
 #+clj                                                       ;TODO the same in cljs
-(expect-let [now (DateTime.)]
+(let [now (DateTime.)]
   [now now]
   (context [:redef-state [success.success-examples-src]
             :with-redefs [spit no-op]
