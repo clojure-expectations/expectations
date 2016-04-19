@@ -1,10 +1,10 @@
 (defproject expectations "2.1.5-SNAPSHOT"
   :description "testing framework"
   :jar-name "expectations.jar"
-  :jar-exclusions [#"\.cljx|\.swp|\.swo|\.DS_Store"]
+  :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
   :java-source-paths ["src/java"]
-  :source-paths ["src/cljx" "src/clojure" "src/cljs"]
-  :test-paths ["target/test-classes"]
+  :source-paths ["src/cljc" "src/clojure" "src/cljs"]
+  :test-paths ["test/cljc" "test/clj"]
 
   :dependencies [[joda-time/joda-time "2.9.3"]
                  [junit/junit "4.12"]]
@@ -17,30 +17,14 @@
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
                                   [org.clojure/clojurescript "1.8.34" :scope "provided"]]
                    :node-dependencies [[source-map-support "^0.2.9"]]
-                   :plugins           [[com.keminglabs/cljx "0.6.0"]
-                                       [lein-cljsbuild "1.0.5"]
+                   :plugins           [[lein-cljsbuild "1.0.5"]
                                        [lein-npm "0.5.0"]]}}
 
-  :prep-tasks ["cljx" "javac"]
+  :prep-tasks ["javac"]
   :auto-clean false
 
-  :cljx {:builds [{:source-paths ["src/cljx"]
-                   :output-path  "target/classes"
-                   :rules        :clj}
 
-                  {:source-paths ["src/cljx"]
-                   :output-path  "target/classes"
-                   :rules        :cljs}
-
-                  {:source-paths ["test/cljx"]
-                   :output-path  "target/test-classes"
-                   :rules        :clj}
-
-                  {:source-paths ["test/cljx"]
-                   :output-path  "target/test-classes"
-                   :rules        :cljs}]}
-
-  :cljsbuild {:builds [{:source-paths   ["target/classes" "src/cljs" "target/test-classes"]
+  :cljsbuild {:builds [{:source-paths   ["src/cljs" "src/cljc" "test/cljs" "test/cljc"]
                         :notify-command ["node" "./target/out/test.js"]
                         :compiler       {:target         :nodejs
                                          :main           expectations.test

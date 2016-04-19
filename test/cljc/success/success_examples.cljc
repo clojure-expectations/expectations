@@ -1,26 +1,26 @@
 (ns success.success-examples
-  (:require #+clj [expectations :refer :all]
-    #+cljs [expectations :refer [in localize no-op] :refer-macros [expanding
-                                                                   expect
-                                                                   expect-focused
-                                                                   from-each
-                                                                   more
-                                                                   more->
-                                                                   more-of
-                                                                   redef-state
-                                                                   side-effects]]
-            #+clj [success.success-examples-src :refer [a-macro cljs?]]
-    #+cljs [success.success-examples-src :refer-macros [a-macro cljs?]])
-  #+clj (:import (java.util AbstractMap ArrayList HashMap)
-                 (org.joda.time DateTime)))
+  (:require #?(:clj [expectations :refer :all]
+               :cljs [expectations :refer [in localize no-op] :refer-macros [expanding
+                                                                             expect
+                                                                             expect-focused
+                                                                             from-each
+                                                                             more
+                                                                             more->
+                                                                             more-of
+                                                                             redef-state
+                                                                             side-effects]])
+            #?(:clj [success.success-examples-src :refer [a-macro cljs?]]
+               :cljs [success.success-examples-src :refer-macros [a-macro cljs?]]))
+  #?(:clj (:import (java.util AbstractMap ArrayList HashMap)
+                   (org.joda.time DateTime))))
 
-#+cljs
-(defn spit [f content & options] (.log js/console content))
+#?(:cljs
+   (defn spit [f content & options] (.log js/console content)))
 
 ;; expect to be on the right platform
 (expect
-  #+clj (not (cljs?))
-  #+cljs (cljs?))
+ #?(:clj (not (cljs?))
+    :cljs (cljs?)))
 
 ;; expect a truthy value
 (expect true)
@@ -54,11 +54,11 @@
 (expect #"foo" (str "boo" "foo" "ar"))
 
 ;; does the form throw an expeted exception
-#+clj (expect ArithmeticException (/ 12 0))
+#?(:clj (expect ArithmeticException (/ 12 0)))
 
 ;; verify the type of the result
-#+clj (expect String "foo")
-#+cljs (expect js/String "foo")
+#?(:clj (expect String "foo")
+   :cljs (expect js/String "foo"))
 (expect string? "foo")
 
 ;; k/v pair in map. matches subset
@@ -84,10 +84,10 @@
 
 (expect (more vector? not-empty) [1 2 3])
 
-#+clj
-(expect (more-> 0 .size
-                true .isEmpty)
-  (ArrayList.))
+#?(:clj
+   (expect (more-> 0 .size
+                   true .isEmpty)
+           (ArrayList.)))
 
 (expect (more-> 2 (-> first (+ 1))
                 3 last)
@@ -201,47 +201,45 @@
      @@#'success.success-examples-src/an-private-atom))
 
 ;; use freeze-time to set the current time while a test is running
-#+clj                                                       ;TODO the same in cljs
-(let [now (DateTime.)]
-  (freeze-time now (DateTime.))
-  (freeze-time now (DateTime.)))
+#?(:clj                                                       ;TODO the same in cljs
+   (let [now (DateTime.)]
+     (freeze-time now (DateTime.))
+     (freeze-time now (DateTime.))))
 
 ;; freeze-time only affects wrapped forms
-#+clj                                                       ;TODO the same in cljs
-(expect (not= (DateTime. 1)
-          (do
-            (freeze-time (DateTime. 1))
-            (DateTime.))))
+#?(:clj                                                       ;TODO the same in cljs
+   (expect (not= (DateTime. 1)
+                 (do
+                   (freeze-time (DateTime. 1))
+                   (DateTime.)))))
 
 ;; freeze-time resets the frozen time even when an exception occurs
-#+clj                                                       ;TODO the same in cljs
-(expect (not= (DateTime. 1)
-          (do
-            (try
-              (freeze-time (DateTime. 1)
-                (throw (RuntimeException. "test finally")))
-              (catch Exception e))
-            (DateTime.))))
+#?(:clj                                                       ;TODO the same in cljs
+   (expect (not= (DateTime. 1)
+                 (do
+                   (try
+                     (freeze-time (DateTime. 1)
+                                  (throw (RuntimeException. "test finally")))
+                     (catch Exception e))
+                   (DateTime.)))))
 
 ;; use context to limit the number of indentions while using redef-state, with-redefs or freeze-time
-#+clj                                                       ;TODO the same in cljs
-(let [now (DateTime.)]
-  [now now]
-  (context [:redef-state [success.success-examples-src]
-            :with-redefs [spit no-op]
-            :freeze-time now]
-    (spit now)
-    (vector now (DateTime.))))
+#?(:clj                                                       ;TODO the same in cljs
+   (let [now (DateTime.)]
+     [now now]
+     (context [:redef-state [success.success-examples-src]
+               :with-redefs [spit no-op]
+               :freeze-time now]
+              (spit now)
+              (vector now (DateTime.)))))
 
 ;; ensure equality matching where possible
 (expect no-op no-op)
-#+clj
-(expect AbstractMap HashMap)
+#?(:clj
+   (expect AbstractMap HashMap))
 (expect #"a" #"a")
-#+clj
-(expect RuntimeException RuntimeException)
-#+cljs
-(expect js/Error js/Error)
+#?(:clj (expect RuntimeException RuntimeException)
+   :cljs (expect js/Error js/Error))
 
 (expect :a-rebound-val (success.success-examples-src/a-fn-to-be-rebound))
 
@@ -256,7 +254,7 @@
 (expect (success.success-examples-src/->ConstantlyTrue) [1 2 3 4])
 
 (expect (more-> false identity
-                #+clj AssertionError #+cljs js/Error assert)
+                #?(:clj AssertionError :cljs js/Error) assert)
   false)
 
-(expect #+clj AssertionError #+cljs js/Error (from-each [a [1 2]] (assert (string? a))))
+(expect #?(:clj AssertionError :cljs js/Error) (from-each [a [1 2]] (assert (string? a))))
