@@ -24,7 +24,7 @@
   :auto-clean false
 
   :aliases {"test" ["expectations" "expectations.*" "success.*"]
-            "test-fail" ["expectations" "failures.*"]}
+            "test-fail" ["expectations" "failure.*"]}
 
   :cljsbuild {:builds [{:source-paths   ["src/cljs" "src/cljc" "test/cljs" "test/cljc"]
                         :notify-command ["node" "./target/out/test.js"]
