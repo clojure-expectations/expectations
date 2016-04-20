@@ -4,7 +4,7 @@
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
   :java-source-paths ["src/java"]
   :source-paths ["src/cljc" "src/clojure" "src/cljs"]
-  :test-paths ["test/cljc" "test/clj"]
+  :test-paths ["test/cljc" "test/clojure"]
 
   :dependencies [[joda-time/joda-time "2.9.3"]
                  [junit/junit "4.12"]]
