@@ -17,12 +17,12 @@
   (message [e a str-e str-a] (format "%s & %s" str-e str-a)))
 
 ;; macro expansion
-#+clj
-(defmacro a-macro [& args]
-  `(println ~@args))
+#?(:clj
+   (defmacro a-macro [& args]
+     `(println ~@args)))
 
 (defrecord ARecord [data])
 
-#+clj
-(defmacro cljs? []
-  (p/cljs?))
+#?(:clj
+   (defmacro cljs? []
+     (p/cljs?)))

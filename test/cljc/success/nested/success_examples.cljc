@@ -1,7 +1,7 @@
 (ns success.nested.success-examples
-  #+cljs (:require-macros [expectations :refer [expect]])
-  (:require #+clj [expectations :refer :all]
-            #+cljs [expectations :refer [in]]))
+  #?(:cljs (:require-macros [expectations :refer [expect]]))
+  (:require #?(:clj [expectations :refer :all]
+               :cljs [expectations :refer [in]])))
 
 ;; number equality
 (expect 1 (do 1))
@@ -16,15 +16,15 @@
 (expect #"foo" (str "boo" "foo" "ar"))
 
 ;; does the form throw an expeted exception
-#+clj
-(expect ArithmeticException (/ 12 0))
+#?(:clj
+   (expect ArithmeticException (/ 12 0)))
 
 ;; verify the type of the result
 (expect string? "foo")
-#+clj
-(expect String "foo")
-#+cljs
-(expect js/String "foo")
+#?(:clj
+   (expect String "foo"))
+#?(:cljs
+   (expect js/String "foo"))
 
 ;; k/v pair in map. matches subset
 (expect {:foo 1} (in {:foo 1 :cat 4}))
