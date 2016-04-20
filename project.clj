@@ -4,7 +4,7 @@
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
   :java-source-paths ["src/java"]
   :source-paths ["src/cljc" "src/clojure" "src/cljs"]
-  :test-paths ["test/cljc" "test/clojure"]
+  :test-paths ["test/cljc" "test/clojure" "test"]
 
   :dependencies [[joda-time/joda-time "2.9.3"]
                  [junit/junit "4.12"]]
@@ -23,6 +23,8 @@
   :prep-tasks ["javac"]
   :auto-clean false
 
+  :aliases {"test" ["expectations" "expectations.*" "success.*"]
+            "test-fail" ["expectations" "failures.*"]}
 
   :cljsbuild {:builds [{:source-paths   ["src/cljs" "src/cljc" "test/cljs" "test/cljc"]
                         :notify-command ["node" "./target/out/test.js"]
