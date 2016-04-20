@@ -7,8 +7,8 @@
   #?(:clj (:import (clojure.lang Agent Atom Ref))))
 
 #?(:clj
-   (defn cljs? []
-     (boolean (find-ns 'cljs.core))))
+   (defmacro cljs? []
+     (boolean (:ns &env))))
 
 #?(:clj
    (defn expanding [n]
@@ -32,9 +32,13 @@
   #?(:clj clojure.core/format
      :cljs goog.string/format))
 
+(defn nodejs? []
+  #?(:clj false
+     :cljs (= (js* "typeof(process)") "object")))
+
 (defn getenv [var]
   #?(:clj (System/getenv var)
-     :cljs (aget (.-env js/process) var)))
+     :cljs (aget (if (nodejs?) js/process.env js/window) var)))
 
 (defn get-message [e] (-> e
                           #?(:clj .getMessage
@@ -42,13 +46,16 @@
 
 (defn nano-time []
   #?(:clj (System/nanoTime)
-     :cljs (-> js/process .hrtime js->clj
-                (#(+ (* 1e9 (% 0)) (% 1))))))
+     :cljs (if (nodejs?)
+             (-> js/process .hrtime js->clj
+                 (#(+ (* 1e9 (% 0)) (% 1))))
+             (js/performance.now))))
+
 
 (defn on-windows? []
   (re-find #"[Ww]in"
            #?(:clj (System/getProperty "os.name")
-              :cljs (.-platform js/process))))
+              :cljs (if (nodejs?) (.-platform js/process) ""))))
 
 (def pprint
   #?(:clj pprint/pprint

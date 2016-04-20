@@ -17,8 +17,8 @@
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
                                   [org.clojure/clojurescript "1.8.34" :scope "provided"]]
                    :node-dependencies [[source-map-support "^0.2.9"]]
-                   :plugins           [[lein-cljsbuild "1.0.5"]
-                                       [lein-npm "0.5.0"]]}}
+                   :plugins           [[lein-cljsbuild "1.1.3"]
+                                       [lein-npm "0.6.2"]]}}
 
   :prep-tasks ["javac"]
   :auto-clean false
