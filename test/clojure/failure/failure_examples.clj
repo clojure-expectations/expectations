@@ -105,8 +105,6 @@
 (expect nil)
 (expect false)
 
-(expect filter map)
-
 (expect even? (from-each [i [1 2 3]]
                          i))
 
