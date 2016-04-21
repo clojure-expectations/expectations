@@ -1,4 +1,4 @@
-(defproject expectations "2.1.7"
+(defproject expectations "2.1.8-SNAPSHOT"
   :description "testing framework"
   :jar-name "expectations.jar"
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
@@ -12,8 +12,7 @@
   :plugins [[lein-expectations "0.0.8"]
             [lein-publishers "1.0.13"]]
 
-  :deploy-repositories [["releases" :clojars
-                         "snapshots" :clojars]]
+  :deploy-repositories [["releases" :clojars]]
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
                                   [org.clojure/clojurescript "1.8.34" :scope "provided"]]
