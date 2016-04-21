@@ -12,7 +12,8 @@
   :plugins [[lein-expectations "0.0.8"]
             [lein-publishers "1.0.13"]]
 
-  :deploy-repositories [["releases" :clojars]]
+  :deploy-repositories [["releases" :clojars
+                         "snapshots" :clojars]]
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
                                   [org.clojure/clojurescript "1.8.34" :scope "provided"]]
