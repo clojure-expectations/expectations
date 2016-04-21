@@ -10,9 +10,11 @@
    (defmacro cljs? []
      (boolean (:ns &env))))
 
-(defn expanding [n]
-  #?(:clj (macroexpand-1 n)
-     :cljs (cljs.analyzer/macroexpand-1 {} n)))
+#?(:clj
+   (defn expanding [n]
+     (if (cljs?)
+       `(cljs.analyzer/macroexpand-1 {} '~n)
+       `(macroexpand-1 '~n))))
 
 #?(:clj
    (defn err-type []
