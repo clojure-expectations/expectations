@@ -1,7 +1,7 @@
 (ns expectations.platform
   (:refer-clojure :exclude [bound? format ns-name])
   (:require #?(:clj [clojure.pprint :as pprint])
-            #?(:clj [cljs.analyzer])
+            #?(:cljs [cljs.analyzer])
             #?(:cljs [goog.string])
             #?(:cljs [goog.string.format]))
   #?(:clj (:import (clojure.lang Agent Atom Ref))))
