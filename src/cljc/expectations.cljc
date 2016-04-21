@@ -460,7 +460,7 @@
   (compare-expr (str e) (str a) str-e str-a))
 
 (defmethod compare-expr ::re-seq [e a str-e str-a]
-  (if (re-seq e a)
+  (if (and a (re-seq e a))
     {:type :pass}
     {:type   :fail,
      :raw    [str-e str-a]
