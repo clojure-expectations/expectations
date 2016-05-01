@@ -54,24 +54,28 @@
 <a name="installing" class="anchor" href="#installing"><span class="octicon octicon-link"></span></a>Installing</h2>
 
 <p>The easiest way to use expectations in your own projects is via
-<a href="http://github.com/technomancy/leiningen">Leiningen</a>. Add the
-following dependency to your project.clj file:</p>
+  <a href="http://leiningen.org">Leiningen</a> or
+  <a href="http://boot-clj.com">Boot</a>. Add the
+following dependency to your <code>project.clj</code> or <code>build.boot</code> file:</p>
 
-<div class="highlight"><pre><span class="p">[</span><span class="nv">expectations</span> <span class="s">"2.0.9"</span><span class="p">]</span>
+<div class="highlight"><pre><span class="p">[</span><span class="nv">expectations</span> <span class="s">"2.1.8"</span><span class="p">]</span>
 </pre></div>
 
-<p>note: expectations can go in a dev profile in project.clj to avoid pushing the dependency downstream.</p>
+        <p>note: expectations can go in a <code class="highlight k">:dev</code> profile in <code>project.clj</code>,
+          or have <code class="highlight"><span class="ss">:scope</span> <span class="s">"test"</span></code> in <code>build.boot</code>,
+          to avoid pushing the dependency downstream.</p>
 
-<p>To build expectations from source, run the following commands:</p>
+<p>To build expectations from source, use <a href="http://leiningen.org">Leiningen</a> and run the following commands:</p>
 
-<div class="highlight"><pre><span class="nv">$ </span>lein deps
+<div class="highlight"><pre><span class="nv">$ </span>lein clean
+<span class="nv">$ </span>lein javac
 <span class="nv">$ </span>lein jar
 </pre></div>
 
 <h2>
 <a name="getting-started-with-leiningen" class="anchor" href="#getting-started-with-leiningen"><span class="octicon octicon-link"></span></a>Getting Started With Leiningen</h2>
 
-<p>Add simple_test.clj to your test directory</p>
+<p>Add <code>simple_test.clj</code> to your test directory</p>
 
 <div class="highlight"><pre><span class="p">(</span><span class="kd">ns </span><span class="nv">simple-test</span>
   <span class="p">(</span><span class="ss">:use</span> <span class="nv">expectations</span><span class="p">))</span>
@@ -95,6 +99,36 @@ following dependency to your project.clj file:</p>
 </pre></div>
 
 <p>You can also use <a href="https://github.com/jakemcc/lein-autoexpect">lein-autoexpect</a> to automatically run expectations when your Clojure source changes.</p>
+
+<h2>
+<a name="getting-started-with-boot" class="anchor" href="#getting-started-with-boot"><span class="octicon octicon-link"></span></a>Getting Started With Boot</h2>
+
+<p>Add <code>simple_test.clj</code> to your test directory</p>
+
+<div class="highlight"><pre><span class="p">(</span><span class="kd">ns </span><span class="nv">simple-test</span>
+  <span class="p">(</span><span class="ss">:use</span> <span class="nv">expectations</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nf">expect</span> <span class="nb">nil? </span><span class="nv">nil</span><span class="p">)</span>
+</pre></div>
+
+<p>expectations integrates with Boot via <a href="https://github.com/seancorfield/boot-expectations">boot-expectations</a>.</p>
+
+<h3>
+<a name="usage-for-boot-expectations" class="anchor" href="#usage-for-boot-expectations"><span class="octicon octicon-link"></span></a>Usage for boot-expectations:</h3>
+
+<p>Declare <code>boot-expectations</code> in <code>build.boot</code>:</p>
+
+<div class="highlight"><pre><span class="p">(</span><span class="nf">merge-env!</span> <span class="ss">:dependencies</span>
+    <span class="p">'[[</span><span class="nv">seancorfield/boot-expectations</span> <span class="s">"1.0.8"</span> <span class="ss">:scope</span> <span class="s">"test"</span><span class="p">]])</span>
+<span class="p">(</span><span class="kd">require</span> <span class="p">'[</span><span class="nv">seancorfield.boot-expectations</span> <span class="ss">:refer</span> <span class="p">[</span><span class="nv">expectations</span><span class="p">]])</span>
+</pre></div>
+
+<p>To run all your tests:</p>
+
+<div class="highlight"><pre><span class="nv">$ </span>boot expectations
+</pre></div>
+
+<p>You can also use <code>boot watch expectations</code> to automatically run expectations when your Clojure source changes.</p>
 
 <h2>
 <a name="getting-started-with-emacs" class="anchor" href="#getting-started-with-emacs"><span class="octicon octicon-link"></span></a>Getting Started With Emacs</h2>
