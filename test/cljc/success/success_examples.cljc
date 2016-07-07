@@ -56,6 +56,12 @@
 ;; does the form throw an expeted exception
 #?(:clj (expect ArithmeticException (/ 12 0)))
 
+;; can we process an exception with predicates?
+#?(:clj (expect (more ArithmeticException
+                      (comp (partial re-find #"Divide by zero")
+                            (memfn getMessage)))
+                (/ 12 0)))
+
 ;; verify the type of the result
 #?(:clj (expect String "foo")
    :cljs (expect js/String "foo"))
