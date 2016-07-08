@@ -445,10 +445,20 @@
      :expected-message (str "expected: " a " to be a " e)}))
 
 (defmethod compare-expr ::actual-exception [e a str-e str-a]
-  {:type           :error
-   :raw            [str-e str-a]
-   :actual-message (str "exception in actual: " str-a)
-   :result         [a]})
+  (let [error {:type           :error
+               :raw            [str-e str-a]
+               :actual-message (str "exception in actual: " str-a)
+               :result         [a]}]
+    (if (fn? e)
+      (try
+        (if (e a)
+          {:type :pass}
+          {:type :fail
+           :raw [str-e str-a]
+           :result ["exception thrown by" str-a "is not" str-e]})
+        (catch #?(:clj Throwable :cljs js/Error) _
+          error))
+      error)))
 
 (defmethod compare-expr ::expected-exception [e a str-e str-a]
   {:type             :error
