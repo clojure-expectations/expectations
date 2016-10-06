@@ -2,7 +2,7 @@
 
 visit the expectations website for all of the expectation docs.
 
-<a href="http://jayfields.com/expectations/">http://jayfields.com/expectations/</a>
+<a href="https://clojure-expectations.github.io">https://clojure-expectations.github.io</a>
 
 ## donate
 
