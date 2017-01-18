@@ -222,7 +222,6 @@
                  (do
                    (freeze-time (DateTime. 1))
                    (DateTime.)))))
-
 ;; freeze-time resets the frozen time even when an exception occurs
 #?(:clj                                                       ;TODO the same in cljs
    (expect (not= (DateTime. 1)

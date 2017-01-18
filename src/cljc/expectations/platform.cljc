@@ -4,6 +4,7 @@
             #?(:cljs [cljs.analyzer])
             #?(:cljs [goog.string])
             #?(:cljs [goog.string.format]))
+  #?(:cljs (:require-macros expectations.platform))
   #?(:clj (:import (clojure.lang Agent Atom Ref))))
 
 #?(:clj
@@ -17,8 +18,10 @@
        `(macroexpand-1 '~n))))
 
 #?(:clj
-   (defn err-type []
-     (if (cljs?) `~'js/Error `Throwable)))
+   (defmacro try [& body]
+     (let [[_ & catch-body] (last body)]
+       `(try ~@(butlast body)
+          (catch ~(if (:ns &env) `js/Error `Throwable) ~@catch-body)))))
 
 (defn ns-name [ns]
   #?(:clj (if (symbol? ns) ns (clojure.core/ns-name ns))

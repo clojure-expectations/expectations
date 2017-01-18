@@ -26,7 +26,7 @@
   :aliases {"test" ["expectations" "expectations.*" "success.*"]
             "test-fail" ["expectations" "failure.*"]}
 
-  :cljsbuild {:builds [{:source-paths   ["src/cljs" "src/cljc" "test/cljs" "test/cljc"]
+  :cljsbuild {:builds [{:source-paths   ["src/cljs" "src/cljc" "test/cljc"]
                         :notify-command ["node" "./target/out/test.js"]
                         :compiler       {:target         :nodejs
                                          :main           expectations.test
