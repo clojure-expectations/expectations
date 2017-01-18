@@ -168,15 +168,6 @@
   (in (side-effects [spit]
         (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
 
-(expect (more-of [path data action {:keys [a c]}]
-          string? path
-          #"some da" data
-          keyword? action
-          :b a
-          :d c)
-  (in (side-effects [spit]
-        (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f}))))
-
 (expect not-empty
   (side-effects [spit]
     (spit "/tmp/hello-world" "some data" :append {:a :b :c :d :e :f})))
@@ -208,7 +199,7 @@
     (reset! @#'success.success-examples-src/an-private-atom "private-atom")
     (redef-state [success.success-examples-src]
       (reset! @#'success.success-examples-src/an-private-atom :private-atom))
-     @@#'success.success-examples-src/an-private-atom))
+    @@#'success.success-examples-src/an-private-atom))
 
 ;; use freeze-time to set the current time while a test is running
 #?(:clj                                                       ;TODO the same in cljs
