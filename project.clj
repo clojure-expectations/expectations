@@ -15,9 +15,9 @@
   :deploy-repositories [["releases" :clojars]]
 
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]
-                                  [org.clojure/clojurescript "1.8.34" :scope "provided"]]
+                                  [org.clojure/clojurescript "1.8.51" :scope "provided"]]
                    :node-dependencies [[source-map-support "^0.2.9"]]
-                   :plugins           [[lein-cljsbuild "1.1.3"]
+                   :plugins           [[lein-cljsbuild "1.1.5"]
                                        [lein-npm "0.6.2"]]}}
 
   :prep-tasks ["javac"]
