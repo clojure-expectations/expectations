@@ -450,13 +450,13 @@
                :actual-message (str "exception in actual: " str-a)
                :result         [a]}]
     (if (fn? e)
-      (try
+      (p/try
         (if (e a)
           {:type :pass}
           {:type :fail
            :raw [str-e str-a]
            :result ["exception thrown by" str-a "is not" str-e]})
-        (catch #?(:clj Throwable :cljs js/Error) _
+        (catch _
           error))
       error)))
 
@@ -535,11 +535,11 @@
 
 #?(:clj
    (defmacro doexpect [e a]
-     `(let [e# (try ~e (catch ~(p/err-type) t# t#))
-            a# (try ~a (catch ~(p/err-type) t# t#))]
+     `(let [e# (p/try ~e (catch t# t#))
+            a# (p/try ~a (catch t# t#))]
         (report
-         (try (compare-expr e# a# '~e '~a)
-              (catch ~(p/err-type) e2#
+         (p/try (compare-expr e# a# '~e '~a)
+              (catch e2#
                 (compare-expr e2# a# '~e '~a)))))))
 
 #?(:clj
@@ -588,7 +588,8 @@
      (when (p/bound? var)
        (when-let [vv @var]
          (when (p/iref-types (type vv))
-           [(var->symbol var) (list 'localize `(deref ~var))])))))
+           (let [sym (var->symbol var)]
+             [sym (list 'localize `(deref (var ~sym)))]))))))
 
 #?(:clj
    (defn- default-local-vals [namespaces]
@@ -647,8 +648,8 @@
                     v vars]
                 v)]
        `(hash-map ::from-each (doall (for ~seq-exprs
-                                       {::the-result (try ~body-expr
-                                                          (catch ~(p/err-type) t# t#))
+                                       {::the-result (p/try ~body-expr
+                                                          (catch t# t#))
                                         ::ref-data   ~(vec (interleave vs (map symbol vs)))}))
                   ::from-each-body '~body-expr
                   ::from-each-flag true))))

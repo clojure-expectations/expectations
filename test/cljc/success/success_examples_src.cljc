@@ -25,4 +25,4 @@
 
 #?(:clj
    (defmacro cljs? []
-     (p/cljs?)))
+     `(p/cljs?)))
