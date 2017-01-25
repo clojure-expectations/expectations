@@ -12,8 +12,7 @@
             :result ["result"]
             :expected-message "expected-message"
             :actual-message "actual-message"
-            :message "message"
-            })))
+            :message "message"})))
 
 (expect "[36m(expect raw-e raw-a)\n[0m
            result
@@ -59,9 +58,7 @@
                     :result ["result2"]
                     :expected-message "expected-message2"
                     :actual-message "actual-message2"
-                    :message "message2"}]}))
-
-)
+                    :message "message2"}]})))
 
 (expect "           result
 \n           expected-message\n           actual-message\n           message"
