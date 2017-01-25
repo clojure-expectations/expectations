@@ -6,20 +6,12 @@ Visit the expectations website for all of the expectation docs:
 
 Running the tests:
 
-    lein do clean, test, cljsbuild test
+    lein do clean, test-success, test-clojure
 
-This will run the (successful) expectations for Clojure and ClojureScript (currently 78 and 64 assertions respectively).
+This will run the (successful) expectations for Clojure and the (unsuccessful) `clojure.test`-compatible tests for Clojure (currently 78/78 and 11/20 tests/assertions respectively, the latter should show 16 failures and 4 errors).
 
 You can also run the ClojureScript tests interactively:
 
-    ./scripts/repl
-    cljs.user=> (require 'expectations.test)
-    ...
-    cljs.user=> (expectations.test/-main)
-
-Note: the former "hangs" after completing the ClojureScript tests and, sixty seconds later (agents!), runs a subset of the Clojure tests and fails, so it is currently recommended to do:
-
-    lein do clean, test
     ./scripts/repl
     cljs.user=> (require 'expectations.test)
     ...

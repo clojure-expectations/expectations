@@ -1,4 +1,4 @@
-(defproject expectations "2.1.10-SNAPSHOT"
+(defproject expectations "2.2.0-SNAPSHOT"
   :description "testing framework"
   :jar-name "expectations.jar"
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
@@ -23,7 +23,8 @@
   :prep-tasks ["javac"]
   :auto-clean false
 
-  :aliases {"test" ["expectations" "expectations.*" "success.*"]
+  :aliases {"test-success" ["expectations" "expectations.*" "success.*"]
+            "test-clojure" ["test" "clojure-test.clojure-test"]
             "test-fail" ["expectations" "failure.*"]}
 
   :cljsbuild {:builds [{:source-paths   ["src/cljs" "src/cljc" "test/cljc"]
