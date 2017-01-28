@@ -697,3 +697,10 @@
           (with-redefs ~(vec (interleave fn-vec (repeat `(fn [& args#] (swap! ~side-effects-sym conj args#)))))
             ~@forms)
           @~side-effects-sym))))
+
+(defn approximately
+  "Given a value and an optional delta (default 0.001), return a predicate
+  that expects its argument to be within that delta of the given value."
+  ([^double v] (approximately v 0.001))
+  ([^double v ^double d]
+   (fn [x] (<= (- v (Math/abs d)) x (+ v (Math/abs d))))))
