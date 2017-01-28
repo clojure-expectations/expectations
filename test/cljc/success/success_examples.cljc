@@ -1,14 +1,16 @@
 (ns success.success-examples
   (:require #?(:clj [expectations :refer :all]
-               :cljs [expectations :refer [in localize no-op] :refer-macros [expanding
-                                                                             expect
-                                                                             expect-focused
-                                                                             from-each
-                                                                             more
-                                                                             more->
-                                                                             more-of
-                                                                             redef-state
-                                                                             side-effects]])
+               :cljs [expectations
+                      :refer [approximately in localize no-op]
+                      :refer-macros [expanding
+                                     expect
+                                     expect-focused
+                                     from-each
+                                     more
+                                     more->
+                                     more-of
+                                     redef-state
+                                                         side-effects]])
             #?(:clj [success.success-examples-src :refer [a-macro cljs?]]
                :cljs [success.success-examples-src :refer-macros [a-macro cljs?]]))
   #?(:clj (:import (java.util AbstractMap ArrayList HashMap)
@@ -258,3 +260,11 @@
   false)
 
 (expect #?(:clj AssertionError :cljs js/Error) (from-each [a [1 2]] (assert (string? a))))
+
+(expect (approximately 0.33 0.1) (/ 1 3))
+
+(expect (approximately 1000 10) 999)
+
+(expect (approximately 1000 10) 1009)
+
+(expect (approximately 0.333) 0.333)
