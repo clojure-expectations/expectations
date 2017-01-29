@@ -44,3 +44,7 @@
   (expect Throwable (/ 1 1))
   (expect (/ 1 0) 1)
   (expect 0 (/ 1 0)))
+
+;; (expect "x") -- expect truthy
+(defexpect truthy
+  (expect "x"))

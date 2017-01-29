@@ -35,12 +35,20 @@
 
 (defn- expand-expects
   [forms]
-  (mapcat (fn [e]
-            (if (and (coll? e)
-                     (= 'expect (first e)))
-              (let [[_ e a] e]
-                [e a])
-              [e])) forms))
+  (let [expanded
+        (mapcat (fn [e]
+                  (if (and (coll? e)
+                           (= 'expect (first e)))
+                    (condp = (count e)
+                           3 (let [[_ e a] e]
+                               [e a])
+                           2 (let [[_ a] e]
+                               [true `(if ~a true false)])
+                           (throw (ex-info "Illegal 'expect' form" {:form e})))
+                    [e])) forms)]
+    (when-not (even? (count expanded))
+      (throw (ex-info "defexpect requires an even number of forms" {})))
+    expanded))
 
 (defn- inflate-expects
   [l forms]
