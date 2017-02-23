@@ -1,3 +1,23 @@
+# Changes in version 2.2.0
+
+Add support for `clojure.test` via the new `expectations.clojure.test` namespace and the `defexpect` macro #82.
+
+Add `approximately` predicate, to test if two floating point values are "equal" (within a given tolerance) #84.
+
+Add `functionally` predicate, to test if two functions are "functionally equivalent" #88.
+
+Numerous cljc platform bug fixes; documented testing process; updated change log (was stuck at 2.1.4).
+
+# Changes in version 2.1.9
+
+Allow `more-of` to expect an exception type #80.
+
+# Changes in version 2.1.5-2.1.8
+
+Switched from cljx to cljc (and fix various bugs that caused).
+
+Improve handling of null values with regex expectations #75.
+
 # Changes in version 2.1.4
 
 Remove expect-let and expect-let focused.

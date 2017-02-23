@@ -1,7 +1,8 @@
 (ns success.success-examples
   (:require #?(:clj [expectations :refer :all]
                :cljs [expectations
-                      :refer [approximately in localize no-op]
+                      :refer [approximately functionally in localize no-op
+                              strings-difference]
                       :refer-macros [expanding
                                      expect
                                      expect-focused
@@ -268,3 +269,6 @@
 (expect (approximately 1000 10) 1009)
 
 (expect (approximately 0.333) 0.333)
+
+(expect (functionally str name strings-difference)
+        (from-each [s ['a "b"]] s))

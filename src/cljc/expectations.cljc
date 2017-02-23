@@ -323,9 +323,9 @@
 
 (defmulti compare-expr (fn [e a _ _]
                          (cond
-                           (satisfies? CustomPred e) ::custom-pred
                            (and (map? a) (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
                            (and (map? a) (not (sorted? a)) (contains? a ::in-flag)) ::in
+                           (satisfies? CustomPred e) ::custom-pred
                            (and (map? e) (not (sorted? e)) (contains? e ::more)) ::more
                            (= e a) ::equals
                            (and (string? e) (string? a)) ::strings
@@ -476,17 +476,19 @@
      :raw    [str-e str-a]
      :result ["regex" (pr-str e) "not found in" (pr-str a)]}))
 
-(defmethod compare-expr ::strings [e a str-e str-a]
+(defn strings-difference [e a]
   (let [matches (->> (map vector e a) (take-while (partial apply =)) (map first) (apply str))
         e-diverges (clojure.string/replace e matches "")
         a-diverges (clojure.string/replace a matches "")]
-    {:type    :fail :raw [str-e str-a]
-     :result  ["expected:" (pr-str e)
-               "\n                was:" (pr-str a)]
-     :message (str
-                "matches: " (pr-str matches)
-                "\n           diverges: " (pr-str e-diverges)
-                "\n                  &: " (pr-str a-diverges))}))
+    (str " matches: " (pr-str matches)
+         "\n           diverges: " (pr-str e-diverges)
+         "\n                  &: " (pr-str a-diverges))))
+
+(defmethod compare-expr ::strings [e a str-e str-a]
+  {:type    :fail :raw [str-e str-a]
+   :result  ["expected:" (pr-str e)
+             "\n                was:" (pr-str a)]
+   :message (strings-difference e a)})
 
 (defmethod compare-expr ::expect-exception [e a str-e str-a]
   (if (instance? e a)
@@ -704,3 +706,23 @@
   ([^double v] (approximately v 0.001))
   ([^double v ^double d]
    (fn [x] (<= (- v (Math/abs d)) x (+ v (Math/abs d))))))
+
+(defrecord Functionally [e-fn a-fn differ]
+  CustomPred
+  (expect-fn [e a] (= (e-fn a) (a-fn a)))
+  (expected-message [e a str-e str-a] (format "expected: %s" (e-fn a)))
+  (actual-message   [e a str-e str-a] (format "  actual: %s" (a-fn a)))
+  (message [e a str-e str-a]
+           (if differ
+             (differ (e-fn a) (a-fn a))
+             "not functionally equivalent")))
+
+(defn functionally
+  "Given a pair of functions, return a custom predicate that checks that they
+  return the same result when applied to a value. May optionally accept a
+  'difference' function that should accept the result of each function and
+  return a string explaininhg how they actually differ.
+  For explaining strings, you could use expectations/strings-difference."
+  ([expected-fn actual-fn] (->Functionally expected-fn actual-fn nil))
+  ([expected-fn actual-fn difference-fn]
+   (->Functionally expected-fn actual-fn difference-fn)))
