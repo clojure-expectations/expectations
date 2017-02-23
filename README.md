@@ -8,7 +8,7 @@ Running the tests:
 
     lein do clean, test-success, test-clojure
 
-This will run the (successful) expectations for Clojure and the (unsuccessful) `clojure.test`-compatible tests for Clojure (currently 82/82 and 12/21 tests/assertions respectively, the latter should show 16 failures and 4 errors).
+This will run the (successful) expectations for Clojure and the (unsuccessful) `clojure.test`-compatible tests for Clojure (currently 83/83 and 12/21 tests/assertions respectively, the latter should show 16 failures and 4 errors).
 
 You can also run the ClojureScript tests interactively:
 
@@ -17,13 +17,13 @@ You can also run the ClojureScript tests interactively:
     ...
     cljs.user=> (expectations.test/-main)
 
-This will run the (successful) expectations that are compatible with ClojureScript (currently 68/68).
+This will run the (successful) expectations that are compatible with ClojureScript (currently 69/69).
 
 You can run _all_ expectations via:
 
     lein do clean, expectations
 
-This includes the deliberately failing expectations (used to visually confirm behavior for failing tests) and should run 127 assertions in total, of which 43 will fail and 2 will error.
+This includes the deliberately failing expectations (used to visually confirm behavior for failing tests) and should run 128 assertions in total, of which 43 will fail and 2 will error.
 
 ## Donate to Jay C Fields, the creator of Expectations
 
