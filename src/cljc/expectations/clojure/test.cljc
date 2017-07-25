@@ -33,33 +33,34 @@
             (assoc r# :line l# :file f#
                    :actual (->test '~a a#)))))))
 
-(defn- expand-expects
-  [forms]
-  (let [expanded
-        (mapcat (fn [e]
-                  (if (and (coll? e)
-                           (= 'expect (first e)))
-                    (condp = (count e)
-                           3 (let [[_ e a] e]
-                               [e a])
-                           2 (let [[_ a] e]
-                               [true `(if ~a true false)])
-                           (throw (ex-info "Illegal 'expect' form" {:form e})))
-                    [e])) forms)]
-    (when-not (even? (count expanded))
-      (throw (ex-info "defexpect requires an even number of forms" {})))
-    expanded))
+(defn- contains-expect?
+  [e]
+  (when (and (coll? e) (not (vector? e)))
+    (or (= 'expect (first e))
+        (some contains-expect? e))))
 
-(defn- inflate-expects
-  [l forms]
-  (map (fn [[e a]]
-         `(expect-test ~l ~e ~a)) forms))
+(defn- translate-expect
+  [l form]
+  (if (and (coll? form) (not (vector? form)))
+    (if (= 'expect (first form))
+      (condp = (count form)
+             3 (let [[_ e a] form]
+                 `(expect-test ~l ~e ~a))
+             2 (let [[_ a] form]
+                 `(expect-test ~l true (if ~a true false)))
+             (map (partial translate-expect l) form))
+      (map (partial translate-expect l) form))
+    form))
 
 #?(:clj
     (defmacro defexpect [n & body]
-      (let [forms# (->> (expand-expects body)
-                        (partition 2)
-                        (inflate-expects (:line (meta &form))))]
+      (let [body# (if (and (= 2 (count body))
+                           (not (some contains-expect? body)))
+                    `((~'expect ~@body))
+                    body)
+            forms# (map (partial translate-expect (:line (meta &form))) body#)]
+        (assert (some contains-expect? body#)
+                "defexpect contains no 'expect' forms")
         `(clojure.test/deftest ~n ~@forms#))))
 
 #?(:clj

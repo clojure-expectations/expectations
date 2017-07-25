@@ -8,7 +8,7 @@ Running the tests:
 
     lein do clean, test-success, test-clojure
 
-This will run the (successful) expectations for Clojure and the (unsuccessful) `clojure.test`-compatible tests for Clojure (currently 83/83 and 12/21 tests/assertions respectively, the latter should show 16 failures and 4 errors).
+This will run the (successful) expectations for Clojure and the (unsuccessful) `clojure.test`-compatible tests for Clojure (currently 83/83 and 13/23 tests/assertions respectively, the latter should show 18 failures and 4 errors).
 
 You can also run the ClojureScript tests interactively:
 

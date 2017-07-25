@@ -48,3 +48,11 @@
 ;; (expect "x") -- expect truthy
 (defexpect truthy
   (expect "x"))
+
+;; check nested expect forms
+(defexpect nested
+  (let [numbers [41 42 43]]
+    (expect 42 (from-each [n numbers] n)))
+  (println "\nIn between expectations.")
+  (expect 41 (inc 41))
+  (println "\nAfter expectations."))

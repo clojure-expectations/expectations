@@ -1,4 +1,4 @@
-(defproject expectations "2.2.0-beta1"
+(defproject expectations "2.2.0-beta2"
   :description "testing framework"
   :jar-name "expectations.jar"
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
