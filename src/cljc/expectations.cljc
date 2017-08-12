@@ -779,20 +779,26 @@
 
 #?(:clj
    (defn readme
-     "Based on environment variables and system properties, parse a specified
-      file (normally a readme) and generate a test file based on the Clojure
-      code fragments found inside it."
-     []
-     (let [readme-path (or (System/getenv "EXPECTATIONS_README")
-                           (System/getProperty "expectations.readme"))
-           test-path   (or (System/getenv "EXPECTATIONS_TEST_PATH")
-                           (System/getProperty "expectations.test.path")
-                           "test")]
-       (when readme-path
-         (let [^File input (io/file readme-path)]
-           (if (.exists input)
-             (generate-readme input test-path)
-             (println (format "\nExpected to find %s to parse!\n"
-                              (.getCanonicalPath input)))))))))
+     "If invoked with no arguments, as happens when this namespace is loaded,
+     then based on environment variables and system properties, parse the
+     specified file (normally a readme) and generate a test file based on the
+     Clojure code fragments found inside it.
+     Can also be invoked with the path of the readme source file and the output
+     path for the generated readme.clj test file. This arity is intended for
+     use by tooling that wants to directly control this operation."
+     ([readme-path test-path]
+      (when readme-path
+        (let [^File input (io/file readme-path)]
+          (if (.exists input)
+            (generate-readme input test-path)
+            (println (format "\nExpected to find %s to parse!\n"
+                             (.getCanonicalPath input)))))))
+     ([]
+      (let [readme-path (or (System/getenv "EXPECTATIONS_README")
+                            (System/getProperty "expectations.readme"))
+            test-path   (or (System/getenv "EXPECTATIONS_TEST_PATH")
+                            (System/getProperty "expectations.test.path")
+                            "test")]
+        (readme readme-path test-path)))))
 
 #?(:clj (readme))
