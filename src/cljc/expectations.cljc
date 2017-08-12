@@ -1,12 +1,14 @@
 (ns expectations
   (:refer-clojure :exclude [format ns-name])
   (:require [clojure.data]
+            #?(:clj
+               [clojure.java.io :as io])
             [clojure.set :refer [difference]]
             [clojure.string]
             [expectations.platform :as p :refer [format ns-name]])
   #?(:clj
      (:import (clojure.lang Agent Atom Ref)
-              (java.io FileNotFoundException)
+              (java.io File FileNotFoundException)
               (java.util.regex Pattern)
               (org.joda.time DateTimeUtils))))
 
@@ -726,3 +728,71 @@
   ([expected-fn actual-fn] (->Functionally expected-fn actual-fn nil))
   ([expected-fn actual-fn difference-fn]
    (->Functionally expected-fn actual-fn difference-fn)))
+
+#?(:clj
+   (defn- generate-prelude
+     "Return the ns form for the readme test."
+     []
+     "(ns readme (:require expectations))"))
+
+#?(:clj
+   (def ^:private code-fragment
+     "Identifies a code fragment in markup."
+     #"(^|\n)(```\s*(clojure|clj)\s*\n([\s\S]*?)\n(=>\s*([\s\S]*?)\s*\n)?```|```([\s\S]*?)\n```|(.*?)(?=\n))"))
+
+#?(:clj
+   (defn- expectation-formatter
+     "Given the regex match output, generate blank lines or expectations."
+     [[whole prefix match language actual repl expected non-clojure non-code :as args]]
+     (if actual
+       (if expected
+         (format "%s(expectations/expect %s\n\t%s)\n"
+                 prefix expected actual)
+         (format "%s%s\n" prefix actual))
+       (clojure.string/replace match #"[^\n]" ""))))
+
+#?(:clj
+   (defn- generate-readme
+     "Given a File representing the input and an output folder, parse the input
+      and write expectations to the output."
+     [^File input ^String output-folder]
+     (let [output-path (str output-folder "/readme.clj")
+           output (io/file output-path)]
+       (if (or (not (.exists output))
+               (< (.lastModified output)
+                  (.lastModified input)))
+         (do
+           (->> (slurp input)
+                (re-seq code-fragment)
+                (map expectation-formatter)
+                (clojure.string/join "\n")
+                (str (generate-prelude))
+                (spit output))
+           (try
+             (require 'readme)
+             (println (format "\nGenerated %s from %s."
+                              (.getPath output)
+                              (.getPath input)))
+             (catch Exception _
+               (println (format "\nFailed to (require 'readme) after generation of %s.\n"
+                                (.getPath output))))))))))
+
+#?(:clj
+   (defn readme
+     "Based on environment variables and system properties, parse a specified
+      file (normally a readme) and generate a test file based on the Clojure
+      code fragments found inside it."
+     []
+     (let [readme-path (or (System/getenv "EXPECTATIONS_README")
+                           (System/getProperty "expectations.readme"))
+           test-path   (or (System/getenv "EXPECTATIONS_TEST_PATH")
+                           (System/getProperty "expectations.test.path")
+                           "test")]
+       (when readme-path
+         (let [^File input (io/file readme-path)]
+           (if (.exists input)
+             (generate-readme input test-path)
+             (println (format "\nExpected to find %s to parse!\n"
+                              (.getCanonicalPath input)))))))))
+
+#?(:clj (readme))

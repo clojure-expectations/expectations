@@ -23,8 +23,14 @@
   :prep-tasks ["javac"]
   :auto-clean false
 
+  ;; have expectations generate a readme.clj test from examples.md
+  ;; into the test/clojure folder
+  :jvm-opts ["-Dexpectations.readme=examples.md"
+             "-Dexpectations.test.path=test/clojure"]
+
   :aliases {"test-success" ["expectations" "expectations.*" "success.*"]
             "test-clojure" ["test" "clojure-test.clojure-test"]
+            "test-readme" ["expectations" "readme"]
             "test-fail" ["expectations" "failure.*"]}
 
   :cljsbuild {:builds [{:source-paths   ["src/cljs" "src/cljc" "test/cljc"]
