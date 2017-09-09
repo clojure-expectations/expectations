@@ -64,4 +64,12 @@
         `(clojure.test/deftest ~n ~@forms#))))
 
 #?(:clj
+   (defmacro expecting
+     "The Expectations version of clojure.test/testing."
+     [string & body]
+     `(binding [t/*testing-contexts* (conj t/*testing-contexts* ~string)]
+        ~@body)))
+
+
+#?(:clj
     (e/disable-run-on-shutdown))

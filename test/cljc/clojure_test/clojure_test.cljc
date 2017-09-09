@@ -34,8 +34,9 @@
   0 (/ 1 0))
 
 (defexpect grouped
-  (expect 42 (from-each [n [41 42 43]] n))
-  (expect 42 (in [41 43]))
+  (expecting "failures in sequence tests"
+    (expect 42 (from-each [n [41 42 43]] n))
+    (expect 42 (in [41 43])))
   (expect (more number? pos?) -1)
   (expect pos? -1)
   (expect "Hello World!" "Hello Clojure!")

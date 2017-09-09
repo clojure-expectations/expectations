@@ -1,6 +1,6 @@
 # Changes in version 2.2.0
 
-Add support for `clojure.test` via the new `expectations.clojure.test` namespace and the `defexpect` macro #82.
+Add support for `clojure.test` via the new `expectations.clojure.test` namespace and the `defexpect` macro #82. Add `expecting` documentation macro (like `clojure.test/testing`).
 
 Add `approximately` predicate, to test if two floating point values are "equal" (within a given tolerance) #84.
 
