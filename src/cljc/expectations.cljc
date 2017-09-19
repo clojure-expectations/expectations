@@ -733,7 +733,7 @@
    (defn- generate-prelude
      "Return the ns form for the readme test."
      []
-     "(ns readme (:require expectations))"))
+     "(ns readme (:require expectations.clojure.test))"))
 
 #?(:clj
    (def ^:private code-fragment
@@ -743,19 +743,22 @@
 #?(:clj
    (defn- expectation-formatter
      "Given the regex match output, generate blank lines or expectations."
-     [[whole prefix match language actual repl expected non-clojure non-code :as args]]
-     (if actual
-       (if expected
-         (format "%s(expectations/expect %s\n\t%s)\n"
-                 prefix expected actual)
-         (format "%s%s\n" prefix actual))
-       (clojure.string/replace match #"[^\n]" ""))))
+     [test-counter]
+     (fn [[whole prefix match language actual repl expected non-clojure non-code :as args]]
+       (if actual
+         (if expected
+           (format "%s(expectations.clojure.test/defexpect %s %s\n\t%s)\n"
+                   prefix
+                   (str "readme-" (swap! test-counter inc))
+                   expected actual)
+           (format "%s%s\n" prefix actual))
+         (clojure.string/replace match #"[^\n]" "")))))
 
 #?(:clj
    (defn- generate-readme
      "Given a File representing the input and an output folder, parse the input
       and write expectations to the output."
-     [^File input ^String output-folder]
+     [^File input ^String output-folder test-counter]
      (let [output-path (str output-folder "/readme.clj")
            output (io/file output-path)]
        (if (or (not (.exists output))
@@ -764,7 +767,7 @@
          (do
            (->> (slurp input)
                 (re-seq code-fragment)
-                (map expectation-formatter)
+                (map (expectation-formatter test-counter))
                 (clojure.string/join "\n")
                 (str (generate-prelude))
                 (spit output))
@@ -790,7 +793,7 @@
       (when readme-path
         (let [^File input (io/file readme-path)]
           (if (.exists input)
-            (generate-readme input test-path)
+            (generate-readme input test-path (atom 0))
             (println (format "\nExpected to find %s to parse!\n"
                              (.getCanonicalPath input)))))))
      ([]
