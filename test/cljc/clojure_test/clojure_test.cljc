@@ -1,6 +1,5 @@
 (ns clojure-test.clojure-test
-  (:require #?(:clj [expectations :refer :all])
-            #?(:clj [expectations.clojure.test :refer :all]
+  (:require #?(:clj [expectations.clojure.test :refer :all]
                :cljs [expectations.clojure.test :refer-macros [defexpect]])))
 
 (defexpect each
