@@ -45,7 +45,7 @@
   (expect (more number? pos?) -1)
   (expect pos? -1)
   (expect "Hello World!" "Hello Clojure!")
-  (expect {:a 1} {:b 2})
+  (expect {:a 1 :b 2 :c 3} {:b 2 :c 4})
   (expect 41 (inc 42))
   (expect Throwable (/ 1 1))
   (expect (/ 1 0) 1)

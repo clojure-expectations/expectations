@@ -25,21 +25,74 @@
           (with-meta n (meta v))
           (deref v)))
 
-(defn ->test
-  "Given a symbolic form and a value (produced from it), attempt to produce a
-  symbol that clojure.test can happily report on, based either on the form or
-  the value, or both."
-  [s x]
-  (cond (fn? x) (symbol (pr-str s))
-        (and (map? x)
-             (or (::e/more x)
-                 (::e/in-flag x)
-                 (::e/from-each-flag x)))
-        (symbol (pr-str s))
-        :else
-        (let [ss (pr-str s)
-              xs (pr-str x)]
-          (if (= ss xs) (symbol ss) (symbol (str xs " from " ss))))))
+(defn clean-up-exception
+  "Given an expected exception, return a simpler representation of it that
+  clojure.test's reporting can display nicely."
+  [ex]
+  (into [(.getClass ex) (.getMessage ex)]
+        ((juxt :fileName :lineNumber)
+         (first (remove e/ignored-fns (map bean (.getStackTrace ex)))))))
+
+(defn ->test-report
+  "Given a test report map, a symbolic form, a value (produced from it), and
+  the next report key (:actual or :expected), merge in more elements to build
+  up a test report that clojure.test can use to report the failure, based
+  either on the form or the value, or both."
+  [m s x k]
+  (let [message (:message m)]
+    (cond (fn? x)
+          (assoc m k s)
+          (and (map? x)
+               (or (::e/more x)
+                   (::e/in-flag x)
+                   (::e/from-each-flag x)))
+          (assoc m k s)
+          (instance? Throwable x)
+          (if (= :actual k)
+            (assoc m :message (str (when message
+                                     (str message "\n"))
+                                   "  thrown: "
+                                   (.getMessage x)
+                                   " from " (pr-str s))
+                   k x)
+            (assoc m :message (str "  wanted: "
+                                   (.getMessage x)
+                                   " from "
+                                   (pr-str s)
+                                   (when message
+                                     (str "\n" message)))
+                   k (clean-up-exception x)))
+          :else
+          (let [ss (pr-str s)
+                xs (pr-str x)]
+            (if (= ss xs)
+              (assoc m k s)
+              (if (= :actual k)
+                (assoc m :message (str (when message
+                                         (str message "\n"))
+                                       "produced: " xs " from " ss)
+                       k s)
+                (assoc m :message (str "  wanted: " xs " from " ss
+                                       (when message
+                                         (str "\n" message)))
+                       k s)))))))
+
+(defn fold-messages-together
+  "Given a test report, attempt to fold in additional information from our
+  Expectations report so that clojure.test can provide more details."
+  [m]
+  (reduce (fn [r k]
+            (if (k r)
+              (assoc r :message
+                     (str (when (:message r)
+                            (str (:message r) "\n"))
+                          (if (= :result k)
+                            (str "failure is "
+                                 (str/join " " (k r)))
+                            (k r))))
+              r))
+          m
+          [:result :expected-message :actual-message]))
 
 (defmacro expect
   "Expectations' equivalent to clojure.test's 'is' macro."
@@ -57,24 +110,27 @@
                       ;; ...and set the actual to either the thrown exception
                       ;; if the compare led to an error, else a symbolic
                       ;; representation of the exception for a failure
-                      (assoc ex# :actual (if (= :error (:type ex#))
-                                           t#
-                                           (->test '~e t#))))))]
-         (merge r#
-                ;; add in a symbolic representation of the expected value
-                {:expected (->test '~e e#)}
+                      (if (= :error (:type ex#))
+                        (assoc ex# :actual t#)
+                        (->test-report ex# '~e t# :actual)))))]
                 ;; if the comparison led to an error, and we didn't go through
                 ;; the exception block above and the actual value is an
                 ;; exception, then set the actual to that exception...
-                (if (= :error (:type r#))
-                  (if (and (not (instance? Throwable (:actual r#)))
-                           (instance? Throwable a#))
-                    {:actual a#}
-                    ;; ...else back the error down to a failure and use a
-                    ;; symbolic representation of the actual value
-                    {:type :fail :actual (->test '~a a#)})
-                  ;; otherwise (pass or fail) so set the symbolic actual value
-                  {:actual (->test '~a a#)})))))))
+         (-> (if (= :error (:type r#))
+               (if (and (not (instance? Throwable (:actual r#)))
+                        (instance? Throwable a#))
+                 (assoc r# :actual a#)
+                 ;; ...else back the error down to a failure and use a
+                 ;; symbolic representation of the actual value
+                 (-> r#
+                     (assoc :type :fail)
+                     (dissoc :result) ; override Expectations message
+                     (->test-report '~a a# :actual)))
+               ;; otherwise (pass or fail) so set the symbolic actual value
+               (->test-report r# '~a a# :actual))
+             ;; add in a symbolic representation of the expected value
+             (->test-report '~e e# :expected)
+             (fold-messages-together)))))))
 
 (defn- contains-expect?
   "Given a form, return true if it contains any calls to the 'expect' macro."
