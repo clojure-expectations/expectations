@@ -9,8 +9,7 @@
   We do not support ClojureScript in clojure.test mode, sorry."
   (:require [clojure.string :as str]
             [clojure.test :as t]
-            [expectations :as e]
-            [expectations.platform :as p]))
+            [expectations :as e]))
 
 (e/disable-run-on-shutdown)
 
@@ -46,24 +45,36 @@
   "Expectations' equivalent to clojure.test's 'is' macro."
   ([a] `(expect true (if ~a true false)))
   ([e a]
-   `(let [e# (p/try ~e (catch t# t#))
-          a# (p/try ~a (catch t# t#))]
+   `(let [e# (try ~e (catch Throwable t# t#))
+          a# (try ~a (catch Throwable t# t#))]
       (t/do-report
-       (let [r#
-             (p/try (assoc (e/compare-expr e# a# '~e '~a)
-                           :expected (->test '~e e#))
-                    (catch e2#
-                      (let [ex# (e/compare-expr e2# a# '~e '~a)]
-                        (assoc ex# :actual
-                               (if (= :error (:type ex#))
-                                 e2#
-                                 (->test '~e e2#))))))]
-         (if (= :error (:type r#))
-           (if (and (not (instance? Throwable (:actual r#)))
-                    (instance? Throwable a#))
-             (assoc r# :actual a#)
-             (assoc r# :type :fail :actual (->test '~a a#)))
-           (assoc r# :actual (->test '~a a#))))))))
+       (let [r# (try
+                  (e/compare-expr e# a# '~e '~a)
+                  (catch Throwable t#
+                    ;; if the comparison fails, attempt to match on the
+                    ;; exception thrown...
+                    (let [ex# (e/compare-expr t# a# '~e '~a)]
+                      ;; ...and set the actual to either the thrown exception
+                      ;; if the compare led to an error, else a symbolic
+                      ;; representation of the exception for a failure
+                      (assoc ex# :actual (if (= :error (:type ex#))
+                                           t#
+                                           (->test '~e t#))))))]
+         (merge r#
+                ;; add in a symbolic representation of the expected value
+                {:expected (->test '~e e#)}
+                ;; if the comparison led to an error, and we didn't go through
+                ;; the exception block above and the actual value is an
+                ;; exception, then set the actual to that exception...
+                (if (= :error (:type r#))
+                  (if (and (not (instance? Throwable (:actual r#)))
+                           (instance? Throwable a#))
+                    {:actual a#}
+                    ;; ...else back the error down to a failure and use a
+                    ;; symbolic representation of the actual value
+                    {:type :fail :actual (->test '~a a#)})
+                  ;; otherwise (pass or fail) so set the symbolic actual value
+                  {:actual (->test '~a a#)})))))))
 
 (defn- contains-expect?
   "Given a form, return true if it contains any calls to the 'expect' macro."
