@@ -49,7 +49,6 @@
 (defn- contains-expect?
   [e]
   (when (and (coll? e) (not (vector? e)))
-    ;(println (first e) (type (first e)))
     (or (= 'expect (first e))
         (some contains-expect? e))))
 
