@@ -24,8 +24,14 @@
 (defexpect default
   41 (inc 41))
 
-(defexpect exception
+(defexpect exception-1
   Throwable (/ 1 1))
+
+(defexpect exception-2
+  Throwable (/ 1 0))
+
+(defexpect exception-3
+  ArithmeticException (/ 1 0))
 
 (defexpect ex-exception
   (/ 1 0) 1)
