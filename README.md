@@ -23,6 +23,10 @@ You can run _all_ expectations via:
 
 This includes the deliberately failing expectations (used to visually confirm behavior for failing tests) and should run 128 assertions in total, of which 43 will fail and 2 will error.
 
+## License & Copyright
+
+Copyright (c) 2010-2017, Jay C Fields, Sean Corfield. All rights reserved. This software is available under the BSD 3-Clause Open Source License.
+
 ## Donate to Jay C Fields, the creator of Expectations
 
-<a class="coinbase-button" data-code="7e288c1998b7d7135eeafbe785a2ce60" data-button-style="custom_large" href="https://www.coinbase.com/checkouts/7e288c1998b7d7135eeafbe785a2ce60">Donate Bitcoins</a><script src="https://www.coinbase.com/assets/button.js" type="text/javascript"></script>
+<a href="https://www.coinbase.com/checkouts/7e288c1998b7d7135eeafbe785a2ce60">Donate Bitcoins</a>
