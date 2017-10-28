@@ -21,7 +21,7 @@ This will run the (successful) expectations that are compatible with ClojureScri
 
 You can run the "readme" tests:
 
-  lein test-readme
+    lein test-readme
 
 This generates `test/clojure/readme.clj` from `examples.md` and runs those generated tests. You should see 4 tests, with one failure and no errors.
 
