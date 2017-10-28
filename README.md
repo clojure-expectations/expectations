@@ -10,12 +10,14 @@ Running the tests:
 
 This will run the (successful) expectations for Clojure (currently 83).
 
-Then run the ClojureScript tests interactively (currently 69):
+Then run the ClojureScript tests interactively:
 
     ./scripts/repl
     cljs.user=> (require 'expectations.test)
     ...
     cljs.user=> (expectations.test/-main)
+
+This will run the (successful) expectations that are compatible with ClojureScript (currently 69/69).
 
 You can run _all_ expectations via:
 
