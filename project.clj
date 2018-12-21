@@ -1,5 +1,5 @@
 (defproject expectations "2.2.0-rc3"
-  :description "testing framework"
+  :description "a minimalist's unit testing framework"
   :jar-name "expectations.jar"
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
   :java-source-paths ["src/java"]
