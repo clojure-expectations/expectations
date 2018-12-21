@@ -1,0 +1,3 @@
+{:paths ["src/clojure" "src/cljc"]
+ :aliases
+ {:test {:extra-paths ["src/clojure" "src/cljc"]}}}

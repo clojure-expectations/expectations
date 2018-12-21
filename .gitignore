@@ -15,4 +15,5 @@ pom.xml.asc
 /node_modules
 /*-init.clj
 /.idea
+/.cpcache
 *.iml
