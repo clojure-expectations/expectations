@@ -9,12 +9,22 @@
 
 ;; stub functions for :refer compatibility:
 (defn- bad-usage [s]
-  (throw (IllegalArgumentException. (str s " should only be used inside expect"))))
-(defn in        [& _] (bad-usage 'in))
-(defn from-each [& _] (bad-usage 'from-each))
-(defn more-of   [& _] (bad-usage 'more-of))
-(defn more->    [& _] (bad-usage 'more->))
-(defn more      [& _] (bad-usage 'more))
+  `(throw (IllegalArgumentException.
+           (str ~s " should only be used inside expect"))))
+(defmacro in           [& _] (bad-usage "in"))
+(defmacro from-each    [& _] (bad-usage "from-each"))
+(defmacro more-of      [& _] (bad-usage "more-of"))
+(defmacro more->       [& _] (bad-usage "more->"))
+(defmacro more         [& _] (bad-usage "more"))
+(defmacro side-effects [& _] (bad-usage "side-effects"))
+
+(defmethod t/assert-expr '=? [msg form]
+  ;; (is (=? val-or-pred expr))
+  (let [[_ e a] form]
+    `(let [e# ~e]
+       (if (fn? e#)
+         (e# ~a)
+         (= e# ~a)))))
 
 (defmacro expect
   "Temporary version, just to jump start things.
@@ -49,23 +59,23 @@
                    (partition 2 (rest (rest e))))]
       `(let [~(second e) ~a] ~@es))
 
-    (clojure.test/function? e)
-    `(clojure.test/is (~e ~a))
-
     (symbol? e)
     (if-let [t (resolve e)]
-      (if (= Class (class t))
-        (if (instance? Throwable t)
-          `(clojure.test/is (~'thrown? ~e ~a))
-          `(clojure.test/is (~'instance? ~e ~a)))
-        `(clojure.test/is (~'= ~e ~a)))
+      (cond (and (= Class (class t)) (isa? t Throwable))
+            `(clojure.test/is (~'thrown? ~e ~a))
+            (= Class (class t))
+            `(clojure.test/is (~'instance? ~e ~a))
+            (clojure.test/function? e)
+            `(clojure.test/is (~e ~a))
+            :else
+            `(clojure.test/is (~'= ~e ~a)))
       `(clojure.test/is (~'= ~e ~a)))
 
     (isa? (type e) java.util.regex.Pattern)
     `(clojure.test/is (re-find ~e ~a))
 
     :else
-    `(clojure.test/is (~'= ~e ~a)))))
+    `(clojure.test/is (~'=? ~e ~a)))))
 
 (comment
   (macroexpand '(expect (more-> 1 :a 2 :b 3 (-> :c :d)) {:a 1 :b 2 :c {:d 4}}))
