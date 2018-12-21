@@ -10,13 +10,18 @@
 ;; stub functions for :refer compatibility:
 (defn- bad-usage [s]
   (throw (IllegalArgumentException. (str s " should only be used inside expect"))))
-(defn more-of [& _] (bad-usage 'more-of))
+(defn in        [& _] (bad-usage 'in))
+(defn from-each [& _] (bad-usage 'from-each))
+(defn more-of   [& _] (bad-usage 'more-of))
+(defn more->    [& _] (bad-usage 'more->))
+(defn more      [& _] (bad-usage 'more))
 
 (defmacro expect
   "Temporary version, just to jump start things.
 
   Things implemented so far:
   * more-of
+  * more->
   * simple predicate test
   * class test
   * exception test
@@ -25,7 +30,6 @@
 
   Things to implement:
   * more
-  * more->
   * from-each
   * in
   * side-effects
@@ -34,26 +38,37 @@
   * context / in-context ?"
   ([a] `(clojure.test/is ~a))
   ([e a]
-   (cond (and (sequential? e) (= 'more-of (first e)))
-         (let [es (mapv (fn [[e a]] `(expect ~e ~a))
-                        (interleave (partition 2 (rest (rest e)))))]
-           `(let [~(second e) ~a] ~@es))
+   (cond
+    (and (sequential? e) (= 'more-> (first e)))
+    (let [es (mapv (fn [[e a->]] `(expect ~e (-> ~a ~a->)))
+                   (partition 2 (rest e)))]
+      `(do ~@es))
 
-         (and (symbol? e) (resolve e))
-         (let [t (resolve e)]
-           (if (= Class (class t))
-             (if (instance? Throwable t)
-               `(clojure.test/is (~'thrown? ~e ~a))
-               `(clojure.test/is (~'instance? ~e ~a)))
-             `(clojure.test/is (~e ~a))))
+    (and (sequential? e) (= 'more-of (first e)))
+    (let [es (mapv (fn [[e a]] `(expect ~e ~a))
+                   (partition 2 (rest (rest e))))]
+      `(let [~(second e) ~a] ~@es))
 
-         (isa? (type e) java.util.regex.Pattern)
-         `(clojure.test/is (re-find ~e ~a))
+    (clojure.test/function? e)
+    `(clojure.test/is (~e ~a))
 
-         :else
-         `(clojure.test/is (~'= ~e ~a)))))
+    (symbol? e)
+    (if-let [t (resolve e)]
+      (if (= Class (class t))
+        (if (instance? Throwable t)
+          `(clojure.test/is (~'thrown? ~e ~a))
+          `(clojure.test/is (~'instance? ~e ~a)))
+        `(clojure.test/is (~'= ~e ~a)))
+      `(clojure.test/is (~'= ~e ~a)))
+
+    (isa? (type e) java.util.regex.Pattern)
+    `(clojure.test/is (re-find ~e ~a))
+
+    :else
+    `(clojure.test/is (~'= ~e ~a)))))
 
 (comment
+  (macroexpand '(expect (more-> 1 :a 2 :b 3 (-> :c :d)) {:a 1 :b 2 :c {:d 4}}))
   (macroexpand '(expect (more-of a 2 a) 4))
   (macroexpand '(expect (more-of {:keys [a b c]} 1 a 2 b 3 c) {:a 1 :b 2 :c 3})))
 
