@@ -1,5 +1,10 @@
 (defproject expectations "2.1.10"
   :description "a minimalist's unit testing framework"
+  :license {:name "BSD 3-Clause License"
+            :url "https://opensource.org/licenses/BSD-3-Clause"}
+  :url "https://github.com/clojure-expectations/expectations"
+  :scm {:name "git"
+        :url "https://github.com/clojure-expectations/expectations"}
   :jar-name "expectations.jar"
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
   :java-source-paths ["src/java"]
