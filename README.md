@@ -8,7 +8,7 @@ Running the tests:
 
     lein do clean, test, cljsbuild test
 
-This will run the (successful) expectations for Clojure and ClojureScript (currently 78 and 64 assertions respectively).
+This will run the (successful) expectations for Clojure and ClojureScript (currently 83 and 69 assertions respectively).
 
 You can also run the ClojureScript tests interactively:
 
