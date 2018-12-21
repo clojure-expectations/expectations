@@ -8,9 +8,9 @@
   (:require [clojure.test :as t]))
 
 ;; stub functions for :refer compatibility:
-;; these should probably throw since they should never be called
-;; and never appear in macroexpanded code!
-(defn more-of [pattern & matches])
+(defn- bad-usage [s]
+  (throw (IllegalArgumentException. (str s " should only be used inside expect"))))
+(defn more-of [& _] (bad-usage 'more-of))
 
 (defmacro expect
   "Temporary version, just to jump start things.
@@ -41,7 +41,6 @@
 
          (and (symbol? e) (resolve e))
          (let [t (resolve e)]
-           (println e '=> t)
            (if (= Class (class t))
              (if (instance? Throwable t)
                `(clojure.test/is (~'thrown? ~e ~a))
