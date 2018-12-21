@@ -8,7 +8,18 @@
   (:require [clojure.test :as t]))
 
 (defmacro expect
-  "Temporary version, just to jump start things."
+  "Temporary version, just to jump start things.
+
+  Things to implement:
+  * more
+  * more-of
+  * more->
+  * from-each
+  * in
+  * side-effects
+  * redef-state ?
+  * freeze-time
+  * context / in-context ?"
   ([a] `(clojure.test/is ~a))
   ([e a] `(clojure.test/is (~'= ~e ~a))))
 
@@ -36,3 +47,24 @@
   "The Expectations version of clojure.test/testing."
   [string & body]
   `(clojure.test/testing ~string ~@body))
+
+(defn approximately
+  "Given a value and an optional delta (default 0.001), return a predicate
+  that expects its argument to be within that delta of the given value."
+  ([^double v] (approximately v 0.001))
+  ([^double v ^double d]
+   (fn [x] (<= (- v (Math/abs d)) x (+ v (Math/abs d))))))
+
+(defn functionally
+  "Given a pair of functions, return a custom predicate that checks that they
+  return the same result when applied to a value. May optionally accept a
+  'difference' function that should accept the result of each function and
+  return a string explaininhg how they actually differ.
+  For explaining strings, you could use expectations/strings-difference."
+  ([expected-fn actual-fn]
+   (functionally expected-fn actual-fn (constantly "not functionally equivalent")))
+  ([expected-fn actual-fn difference-fn]
+   (fn [x]
+     (let [e-val (expected-fn x)
+           a-val (actual-fn x)]
+       (t/is (= e-val a-val) (difference-fn e-val a-val))))))
