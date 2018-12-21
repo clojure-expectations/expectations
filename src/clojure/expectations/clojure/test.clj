@@ -59,17 +59,10 @@
                    (partition 2 (rest (rest e))))]
       `(let [~(second e) ~a] ~@es))
 
-    (symbol? e)
-    (if-let [t (resolve e)]
-      (cond (and (= Class (class t)) (isa? t Throwable))
-            `(clojure.test/is (~'thrown? ~e ~a))
-            (= Class (class t))
-            `(clojure.test/is (~'instance? ~e ~a))
-            (clojure.test/function? e)
-            `(clojure.test/is (~e ~a))
-            :else
-            `(clojure.test/is (~'= ~e ~a)))
-      `(clojure.test/is (~'= ~e ~a)))
+    (and (symbol? e) (resolve e) (class? (resolve e)))
+    (if (isa? (resolve e) Throwable)
+      `(clojure.test/is (~'thrown? ~e ~a))
+      `(clojure.test/is (~'instance? ~e ~a)))
 
     (isa? (type e) java.util.regex.Pattern)
     `(clojure.test/is (re-find ~e ~a))
