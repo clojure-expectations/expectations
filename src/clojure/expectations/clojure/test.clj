@@ -5,7 +5,8 @@
   to clojure.test functionality.
 
   We do not support ClojureScript in clojure.test mode, sorry."
-  (:require [clojure.test :as t]))
+  (:require [clojure.string :as str]
+            [clojure.test :as t]))
 
 ;; stub functions for :refer compatibility:
 (defn- bad-usage [s]
@@ -50,7 +51,14 @@
   ([e a]
    (cond
     (and (sequential? e) (= 'more-> (first e)))
-    (let [es (mapv (fn [[e a->]] `(expect ~e (-> ~a ~a->)))
+    (let [es (mapv (fn [[e a->]]
+                     (if (and (sequential? a->)
+                              (symbol? (first a->))
+                              (let [s (name (first a->))]
+                                (or (str/ends-with? s "->")
+                                    (str/ends-with? s "->>"))))
+                       `(expect ~e (~(first a->) ~a ~@(rest a->)))
+                       `(expect ~e (-> ~a ~a->))))
                    (partition 2 (rest e)))]
       `(do ~@es))
 
