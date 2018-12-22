@@ -86,14 +86,14 @@
 
     (and (symbol? e) (resolve e) (class? (resolve e)))
     (if (isa? (resolve e) Throwable)
-      `(clojure.test/is (~'thrown? ~e ~a))
-      `(clojure.test/is (~'instance? ~e ~a)))
+      `(t/is (~'thrown? ~e ~a))
+      `(t/is (~'instance? ~e ~a)))
 
     (isa? (type e) java.util.regex.Pattern)
-    `(clojure.test/is (re-find ~e ~a))
+    `(t/is (re-find ~e ~a))
 
     :else
-    `(clojure.test/is (~'=? ~e ~a)))))
+    `(t/is (~'=? ~e ~a)))))
 
 (comment
   (macroexpand '(expect (more-> 1 :a 2 :b 3 (-> :c :d)) {:a 1 :b 2 :c {:d 4}}))
@@ -117,13 +117,13 @@
   [n & body]
   (if (and (>= 2 (count body))
            (not (some contains-expect? body)))
-    `(clojure.test/deftest ~n (expect ~@body))
-    `(clojure.test/deftest ~n ~@body)))
+    `(t/deftest ~n (expect ~@body))
+    `(t/deftest ~n ~@body)))
 
 (defmacro expecting
   "The Expectations version of clojure.test/testing."
   [string & body]
-  `(clojure.test/testing ~string ~@body))
+  `(t/testing ~string ~@body))
 
 (defn approximately
   "Given a value and an optional delta (default 0.001), return a predicate
