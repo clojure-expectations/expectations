@@ -51,15 +51,22 @@
 
   Things to implement:
   * more
-  * from-each
   * in
   * side-effects
   * redef-state ?
   * freeze-time
   * context / in-context ?"
-  ([a] `(clojure.test/is ~a))
+  ([a] `(t/is ~a))
   ([e a]
    (cond
+    (and (sequential? a) (= 'from-each (first a)))
+    (let [[_ bindings & body] a]
+      (if (= 1 (count body))
+        `(doseq ~bindings
+           (expect ~e ~(first body)))
+        `(doseq ~bindings
+           (expect ~e (do ~@body)))))
+
     (and (sequential? e) (= 'more-> (first e)))
     (let [es (mapv (fn [[e a->]]
                      (if (and (sequential? a->)
