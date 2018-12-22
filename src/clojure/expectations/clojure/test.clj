@@ -22,15 +22,25 @@
 (defmethod t/assert-expr '=? [msg form]
   ;; (is (=? val-or-pred expr))
   (let [[_ e a] form]
-    `(let [e# ~e]
-       (if (fn? e#)
-         (e# ~a)
-         (= e# ~a)))))
+    `(let [e# ~e
+           a# ~a
+           r# (if (fn? e#) (e# a#) (= e# a#))]
+       (if r#
+         (t/do-report {:type :pass, :message ~msg,
+                       :expected '~form, :actual (if (fn? e#)
+                                                   (list '~e a#)
+                                                   a#)})
+         (t/do-report {:type :fail, :message ~msg,
+                       :expected '~form, :actual (if (fn? e#)
+                                                   (list '~'not (list '~e a#))
+                                                   a#)}))
+       r#)))
 
 (defmacro expect
   "Temporary version, just to jump start things.
 
   Things implemented so far:
+  * from-each
   * more-of
   * more->
   * simple predicate test
