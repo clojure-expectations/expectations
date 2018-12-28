@@ -45,6 +45,7 @@
   * from-each
   * more-of
   * more->
+  * more
   * simple predicate test
   * class test
   * exception test
@@ -52,51 +53,66 @@
   * simple equality
 
   Things to implement:
-  * more
   * in
   * side-effects
   * redef-state ?
   * freeze-time
   * context / in-context ?"
   ([a] `(t/is ~a))
-  ([e a] `(expect ~e ~a true))
-  ([e a ex?]
-   (cond
-    (and (sequential? a) (= 'from-each (first a)))
-    (let [[_ bindings & body] a]
-      (if (= 1 (count body))
-        `(doseq ~bindings
-           (expect ~e ~(first body)))
-        `(doseq ~bindings
-           (expect ~e (do ~@body)))))
+  ([e a] `(expect ~e ~a true ~e))
+  ([e a ex?] `(expect ~e ~a ~ex? ~e))
+  ([e a ex? e']
+   (let [msg (when-not (= e e')
+               (pr-str "  within:"
+                       (list 'expect e' a)))]
+    (cond
+     (and (sequential? a) (= 'from-each (first a)))
+     (let [[_ bindings & body] a]
+       (if (= 1 (count body))
+         `(doseq ~bindings
+            (expect ~e ~(first body) ~ex?))
+         `(doseq ~bindings
+            (expect ~e (do ~@body) ~ex?))))
 
-    (and (sequential? e) (= 'more-> (first e)))
-    (let [es (mapv (fn [[e a->]]
-                     (if (and (sequential? a->)
-                              (symbol? (first a->))
-                              (let [s (name (first a->))]
-                                (or (str/ends-with? s "->")
-                                    (str/ends-with? s "->>"))))
-                       `(expect ~e (~(first a->) (? ~a) ~@(rest a->)) false)
-                       `(expect ~e (-> (? ~a) ~a->) false)))
-                   (partition 2 (rest e)))]
-      `(do ~@es))
+     (and (sequential? e) (= 'more (first e)))
+     (let [es (mapv (fn [e] `(expect ~e ~a ~ex? ~e')) (rest e))]
+       `(do ~@es))
 
-    (and (sequential? e) (= 'more-of (first e)))
-    (let [es (mapv (fn [[e a]] `(expect ~e ~a))
-                   (partition 2 (rest (rest e))))]
-      `(let [~(second e) ~a] ~@es))
+     (and (sequential? e) (= 'more-> (first e)))
+     (let [es (mapv (fn [[e a->]]
+                      (if (and (sequential? a->)
+                               (symbol? (first a->))
+                               (let [s (name (first a->))]
+                                 (or (str/ends-with? s "->")
+                                     (str/ends-with? s "->>"))))
+                        `(expect ~e (~(first a->) (? ~a) ~@(rest a->)) false ~e')
+                        `(expect ~e (-> (? ~a) ~a->) false ~e')))
+                    (partition 2 (rest e)))]
+       `(do ~@es))
 
-    (and ex? (symbol? e) (resolve e) (class? (resolve e)))
-    (if (isa? (resolve e) Throwable)
-      `(t/is (~'thrown? ~e ~a))
-      `(t/is (~'instance? ~e ~a)))
+     (and (sequential? e) (= 'more-of (first e)))
+     (let [es (mapv (fn [[e a]] `(expect ~e ~a ~ex? ~e'))
+                    (partition 2 (rest (rest e))))]
+       `(let [~(second e) ~a] ~@es))
 
-    (isa? (type e) java.util.regex.Pattern)
-    `(t/is (re-find ~e ~a))
+     (and ex? (symbol? e) (resolve e) (class? (resolve e)))
+     (if msg
+       (if (isa? (resolve e) Throwable)
+         `(t/is (~'thrown? ~e ~a) ~msg)
+         `(t/is (~'instance? ~e ~a) ~msg))
+       (if (isa? (resolve e) Throwable)
+         `(t/is (~'thrown? ~e ~a))
+         `(t/is (~'instance? ~e ~a))))
 
-    :else
-    `(t/is (~'=? ~e ~a)))))
+     (isa? (type e) java.util.regex.Pattern)
+     (if msg
+       `(t/is (re-find ~e ~a) ~msg)
+       `(t/is (re-find ~e ~a)))
+
+     :else
+     (if msg
+       `(t/is (~'=? ~e ~a) ~msg)
+       `(t/is (~'=? ~e ~a)))))))
 
 (comment
   (macroexpand '(expect (more-> 1 :a 2 :b 3 (-> :c :d)) {:a 1 :b 2 :c {:d 4}}))
