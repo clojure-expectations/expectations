@@ -36,6 +36,8 @@
                                                    a#)}))
        r#)))
 
+(defmacro ? [form] `(try ~form (catch Throwable t# t#)))
+
 (defmacro expect
   "Temporary version, just to jump start things.
 
@@ -57,7 +59,8 @@
   * freeze-time
   * context / in-context ?"
   ([a] `(t/is ~a))
-  ([e a]
+  ([e a] `(expect ~e ~a true))
+  ([e a ex?]
    (cond
     (and (sequential? a) (= 'from-each (first a)))
     (let [[_ bindings & body] a]
@@ -74,8 +77,8 @@
                               (let [s (name (first a->))]
                                 (or (str/ends-with? s "->")
                                     (str/ends-with? s "->>"))))
-                       `(expect ~e (~(first a->) ~a ~@(rest a->)))
-                       `(expect ~e (-> ~a ~a->))))
+                       `(expect ~e (~(first a->) (? ~a) ~@(rest a->)) false)
+                       `(expect ~e (-> (? ~a) ~a->) false)))
                    (partition 2 (rest e)))]
       `(do ~@es))
 
@@ -84,7 +87,7 @@
                    (partition 2 (rest (rest e))))]
       `(let [~(second e) ~a] ~@es))
 
-    (and (symbol? e) (resolve e) (class? (resolve e)))
+    (and ex? (symbol? e) (resolve e) (class? (resolve e)))
     (if (isa? (resolve e) Throwable)
       `(t/is (~'thrown? ~e ~a))
       `(t/is (~'instance? ~e ~a)))
