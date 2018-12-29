@@ -38,6 +38,14 @@
 
 (defmacro ? [form] `(try ~form (catch Throwable t# t#)))
 
+(defn all-report
+  "Given an atom in which to accumulate results, return a function that
+  can be used in place of clojure.test/do-report, which simple remembers
+  all the reported results."
+  [store]
+  (fn [m]
+    (swap! store update (:type m) (fnil conj []) m)))
+
 (defmacro expect
   "Temporary version, just to jump start things.
 
@@ -63,8 +71,10 @@
   ([e a ex?] `(expect ~e ~a ~ex? ~e))
   ([e a ex? e']
    (let [msg (when-not (= e e')
-               (pr-str "  within:"
-                       (list 'expect e' a)))]
+               (str "  within: "
+                    (pr-str (if (and (sequential? e') (= 'expect (first e')))
+                              e'
+                              (list 'expect e' a)))))]
     (cond
      (and (sequential? a) (= 'from-each (first a)))
      (let [[_ bindings & body] a]
@@ -73,6 +83,31 @@
             (expect ~e ~(first body) ~ex?))
          `(doseq ~bindings
             (expect ~e (do ~@body) ~ex?))))
+
+     (and (sequential? a) (= 'in (first a)))
+     (let [form `(~'expect ~e ~a)]
+       (println "in" e a)
+       `(let [a# ~(second a)]
+          (println "a#" a# (sequential? a#) (set? a#))
+          (cond (or (sequential? a#) (set? a#))
+                (let [report#      t/do-report
+                      all-reports# (atom nil)]
+                  (with-redefs [t/do-report (all-report all-reports#)]
+                    (doseq [~'x a#]
+                      ;; TODO: really want x evaluated here!
+                      (expect ~'x ~e ~ex? ~form)))
+                  (if (contains? @all-reports# :pass)
+                    ;; report all the passes (and no failures or errors)
+                    (doseq [r# (:pass @all-reports#)] (t/do-report r#))
+                    (do
+                      ;; report all the errors and all the failures
+                      (doseq [r# (:error @all-reports#)] (t/do-report r#))
+                      (doseq [r# (:fail @all-reports#)] (t/do-report r#)))))
+                (map? a#)
+                (let [e# ~e]
+                  (expect e# (select-keys e# (keys a#)) ~ex? ~form))
+                :else
+                (throw (IllegalArgumentException. "'in' requires map or sequence")))))
 
      (and (sequential? e) (= 'more (first e)))
      (let [es (mapv (fn [e] `(expect ~e ~a ~ex? ~e')) (rest e))]
