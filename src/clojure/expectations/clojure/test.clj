@@ -18,16 +18,10 @@
 (defmacro more->       [& _] (bad-usage "more->"))
 (defmacro more         [& _] (bad-usage "more"))
 
-(defmacro side-effects [fn-vec & forms]
-  (when-not (vector? fn-vec)
-    (throw (IllegalArgumentException.
-            "side-effects requires a vector as its first argument")))
-  (let [side-effects-sym (gensym "conf-fn")]
-    `(let [~side-effects-sym (atom [])]
-       (with-redefs ~(vec (interleave fn-vec (repeat `(fn [& args#] (swap! ~side-effects-sym conj args#)))))
-         ~@forms)
-       @~side-effects-sym)))
-
+;; smart equality extension to clojure.test assertion -- if the expected form
+;; is a predicate (function) then the assertion is equivalent to (is (e a))
+;; rather than (is (= e a)) and we need the type check done at runtime, not
+;; as part of the macro translation layer
 (defmethod t/assert-expr '=? [msg form]
   ;; (is (=? val-or-pred expr))
   (let [[_ e a] form]
@@ -45,33 +39,44 @@
                                                    a#)}))
        r#)))
 
-(defmacro ? [form] `(try ~form (catch Throwable t# t#)))
+(defmacro ?
+  "Wrapper for forms that might throw an exception so exception class names
+  can be used as predicates. This is only needed for more-> so that you can
+  thread exceptions into code that can parse information out of them, to be
+  used with various expect predicates.
+
+  TODO: revisit this to see if wrapping the whole expect with try/catch will
+  allow this to be omitted."
+  [form]
+  `(try ~form (catch Throwable t# t#)))
 
 (defn all-report
   "Given an atom in which to accumulate results, return a function that
-  can be used in place of clojure.test/do-report, which simple remembers
-  all the reported results."
+  can be used in place of clojure.test/do-report, which simply remembers
+  all the reported results.
+
+  This is used to support the semantics of expect/in."
   [store]
   (fn [m]
     (swap! store update (:type m) (fnil conj []) m)))
 
 (defmacro expect
-  "Temporary version, just to jump start things.
+  "Translate Expectations DSL to clojure.test language.
 
   Things implemented so far:
-  * from-each
-  * more-of
-  * more->
-  * more
   * simple predicate test
   * class test
   * exception test
   * regex test
   * simple equality
+  * from-each actual
+  * in actual
+  * more-of expected
+  * more-> expected
+  * more expected
+  * side-effects (copied from Expectations)
 
   Things to implement:
-  * in
-  * side-effects
   * redef-state ?
   * freeze-time
   * context / in-context ?"
@@ -185,6 +190,17 @@
   "The Expectations version of clojure.test/testing."
   [string & body]
   `(t/testing ~string ~@body))
+
+;; DSL functions copied from Expectations:
+(defmacro side-effects [fn-vec & forms]
+  (when-not (vector? fn-vec)
+    (throw (IllegalArgumentException.
+            "side-effects requires a vector as its first argument")))
+  (let [side-effects-sym (gensym "conf-fn")]
+    `(let [~side-effects-sym (atom [])]
+       (with-redefs ~(vec (interleave fn-vec (repeat `(fn [& args#] (swap! ~side-effects-sym conj args#)))))
+         ~@forms)
+       @~side-effects-sym)))
 
 (defn approximately
   "Given a value and an optional delta (default 0.001), return a predicate
