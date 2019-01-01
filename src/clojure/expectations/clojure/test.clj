@@ -17,7 +17,16 @@
 (defmacro more-of      [& _] (bad-usage "more-of"))
 (defmacro more->       [& _] (bad-usage "more->"))
 (defmacro more         [& _] (bad-usage "more"))
-(defmacro side-effects [& _] (bad-usage "side-effects"))
+
+(defmacro side-effects [fn-vec & forms]
+  (when-not (vector? fn-vec)
+    (throw (IllegalArgumentException.
+            "side-effects requires a vector as its first argument")))
+  (let [side-effects-sym (gensym "conf-fn")]
+    `(let [~side-effects-sym (atom [])]
+       (with-redefs ~(vec (interleave fn-vec (repeat `(fn [& args#] (swap! ~side-effects-sym conj args#)))))
+         ~@forms)
+       @~side-effects-sym)))
 
 (defmethod t/assert-expr '=? [msg form]
   ;; (is (=? val-or-pred expr))
@@ -86,9 +95,7 @@
 
      (and (sequential? a) (= 'in (first a)))
      (let [form `(~'expect ~e ~a)]
-       (println "in" e a)
        `(let [a# ~(second a)]
-          (println "a#" a# (sequential? a#) (set? a#))
           (cond (or (sequential? a#) (set? a#))
                 (let [report#      t/do-report
                       all-reports# (atom nil)]
