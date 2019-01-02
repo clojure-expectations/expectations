@@ -27,7 +27,7 @@ This includes the deliberately failing expectations (used to visually confirm be
 
 ## License & Copyright
 
-Copyright (c) 2010-2017, Jay C Fields, Sean Corfield. All rights reserved. This software is available under the BSD 3-Clause Open Source License.
+Copyright (c) 2010-2019, Jay C Fields, Sean Corfield. All rights reserved. This software is available under the BSD 3-Clause Open Source License.
 
 ## Donate to Jay C Fields, the creator of Expectations
 
