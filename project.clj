@@ -1,5 +1,10 @@
-(defproject expectations "2.2.0-rc3"
+(defproject expectations "2.1.10"
   :description "a minimalist's unit testing framework"
+  :license {:name "BSD 3-Clause License"
+            :url "https://opensource.org/licenses/BSD-3-Clause"}
+  :url "https://github.com/clojure-expectations/expectations"
+  :scm {:name "git"
+        :url "https://github.com/clojure-expectations/expectations"}
   :jar-name "expectations.jar"
   :jar-exclusions [#"\.swp|\.swo|\.DS_Store"]
   :java-source-paths ["src/java"]
@@ -23,14 +28,7 @@
   :prep-tasks ["javac"]
   :auto-clean false
 
-  ;; have expectations generate a readme.clj test from examples.md
-  ;; into the test/clojure folder
-  :jvm-opts ["-Dexpectations.readme=examples.md"
-             "-Dexpectations.test.path=test/clojure"]
-
-  :aliases {"test-success" ["expectations" "expectations.*" "success.*"]
-            "test-clojure" ["test" "clojure-test.clojure-test"]
-            "test-readme" ["expectations" "readme"]
+  :aliases {"test" ["expectations" "expectations.*" "success.*"]
             "test-fail" ["expectations" "failure.*"]}
 
   :cljsbuild {:builds [{:source-paths   ["src/cljs" "src/cljc" "test/cljc"]
