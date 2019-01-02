@@ -6,11 +6,11 @@ Visit the expectations website for all of the expectation docs:
 
 Running the tests:
 
-    lein do clean, test-success, test-clojure
+    lein do clean, test
 
-This will run the (successful) expectations for Clojure and the (unsuccessful) `clojure.test`-compatible tests for Clojure (currently 83/83 and 15/25 tests/assertions respectively, the latter should show 20 failures and 2 errors).
+This will run the (successful) expectations for Clojure (currently 83).
 
-You can also run the ClojureScript tests interactively:
+Then run the ClojureScript tests interactively:
 
     ./scripts/repl
     cljs.user=> (require 'expectations.test)
@@ -19,17 +19,11 @@ You can also run the ClojureScript tests interactively:
 
 This will run the (successful) expectations that are compatible with ClojureScript (currently 69/69).
 
-You can run the "readme" tests:
-
-    lein test-readme
-
-This generates `test/clojure/readme.clj` from `examples.md` and runs those generated tests. You should see 4 tests, with one failure and no errors.
-
 You can run _all_ expectations via:
 
     lein do clean, expectations
 
-This includes the deliberately failing expectations (used to visually confirm behavior for failing tests) and should run 132 assertions in total, of which 44 will fail and 2 will error.
+This includes the deliberately failing expectations (used to visually confirm behavior for failing tests) and should run 128 assertions in total, of which 43 will fail and 2 will error.
 
 ## License & Copyright
 
