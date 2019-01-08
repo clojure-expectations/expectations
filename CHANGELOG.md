@@ -1,6 +1,6 @@
 # Changes coming in version 2.1.11
 
-`(expect ::some-spec (some-expr))` will test the result of `(some-expr)` against `::some-spec` using `clojure.spec` -- if `clojure.spec` is available and `::some-spec` is registered as a spec.
+`(expect ::some-spec (some-expr))` will test the result of `(some-expr)` against `::some-spec` using `clojure.spec` -- if `clojure.spec` is available and `::some-spec` is registered as a spec (Clojure-only).
 
 # Changes in version 2.1.10
 

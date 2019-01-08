@@ -328,9 +328,10 @@
             (require 'clojure.spec.alpha)
             (when-let [get-spec (resolve 'clojure.spec.alpha/get-spec)]
               (get-spec e))
-            (catch Throwable _)))))
+            (catch Throwable _))))
+   :cljs ; spec testing is not supported on cljs yet
+   (defn- spec? [_] false))
 
-(def compare-expr nil) ; make it play nice with reloading
 (defmulti compare-expr (fn [e a _ _]
                          (cond
                               (and (map? a) (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
@@ -385,21 +386,22 @@
        :result           ["expected:" str-e
                           "\n                was:" (pr-str a)]})))
 
-(defmethod compare-expr ::spec [e a str-e str-a]
-  (try
-    (let [valid?      (resolve 'clojure.spec.alpha/valid?)
-          explain-str (resolve 'clojure.spec.alpha/explain-str)]
-      (if (valid? e a)
-        {:type :pass}
-        {:type :fail :raw [str-e str-a]
-         :message (clojure.string/replace (explain-str e a) "\n" "\n           ")
-         :result [(pr-str a) "is not" str-e]}))
-    (catch #?(:clj Exception :cljs js/Error) ex
-      {:type             :fail :raw [str-e str-a]
-       :expected-message (str "also attempted: (" str-e " " str-a ")")
-       :actual-message   (str "       and got: " (p/get-message ex))
-       :result           ["expected:" str-e
-                          "\n                was:" (pr-str a)]})))
+#?(:clj
+   (defmethod compare-expr ::spec [e a str-e str-a]
+     (try
+       (let [valid?      (resolve 'clojure.spec.alpha/valid?)
+             explain-str (resolve 'clojure.spec.alpha/explain-str)]
+         (if (valid? e a)
+           {:type :pass}
+           {:type :fail :raw [str-e str-a]
+            :message (clojure.string/replace (explain-str e a) "\n" "\n           ")
+            :result [(pr-str a) "is not" str-e]}))
+       (catch #?(:clj Exception :cljs js/Error) ex
+         {:type             :fail :raw [str-e str-a]
+          :expected-message (str "also attempted: (" str-e " " str-a ")")
+          :actual-message   (str "       and got: " (p/get-message ex))
+          :result           ["expected:" str-e
+                             "\n                was:" (pr-str a)]}))))
 
 (defn find-failures [the-seq]
   (seq (doall (remove (comp #{:pass} :type) the-seq))))
