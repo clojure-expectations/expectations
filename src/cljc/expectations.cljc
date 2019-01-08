@@ -321,29 +321,40 @@
   (actual-message [e a str-e str-a])
   (message [e a str-e str-a]))
 
+#?(:clj
+   (defn- spec? [e]
+     (and (keyword? e)
+          (try
+            (require 'clojure.spec.alpha)
+            (when-let [get-spec (resolve 'clojure.spec.alpha/get-spec)]
+              (get-spec e))
+            (catch Throwable _)))))
+
+(def compare-expr nil) ; make it play nice with reloading
 (defmulti compare-expr (fn [e a _ _]
                          (cond
-                           (and (map? a) (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
-                           (and (map? a) (not (sorted? a)) (contains? a ::in-flag)) ::in
-                           (satisfies? CustomPred e) ::custom-pred
-                           (and (map? e) (not (sorted? e)) (contains? e ::more)) ::more
-                           (= e a) ::equals
-                           (and (string? e) (string? a)) ::strings
-                           (and (map? e) (map? a)) ::maps
-                           (and (set? e) (set? a)) ::sets
-                           (and (sequential? e) (sequential? a)) ::sequentials
-                           (and (instance? #?(:clj Pattern :cljs js/RegExp) e)
-                                (instance? #?(:clj Pattern :cljs js/RegExp) a)) ::regexps
-                           (instance? #?(:clj Pattern :cljs js/RegExp) e) ::re-seq
-                           (isa? e #?(:clj Throwable :cljs js/Error)) ::expect-exception
-                           (instance? #?(:clj Throwable :cljs js/Error) e) ::expected-exception
-                           (instance? #?(:clj Throwable :cljs js/Error) a) ::actual-exception
-                           (and (instance? #?(:clj Class :cljs js/Function) e)
-                                (instance? #?(:clj Class :cljs js/Function) a)) ::types
-                           (and (instance? #?(:clj Class :cljs js/Function) e)
-                                (not (and (fn? e) (e a)))) ::expect-instance
-                           (fn? e) ::fn
-                           :default ::default)))
+                              (and (map? a) (not (sorted? a)) (contains? a ::from-each-flag)) ::from-each
+                              (and (map? a) (not (sorted? a)) (contains? a ::in-flag)) ::in
+                              (satisfies? CustomPred e) ::custom-pred
+                              (and (map? e) (not (sorted? e)) (contains? e ::more)) ::more
+                              (= e a) ::equals
+                              (and (string? e) (string? a)) ::strings
+                              (and (map? e) (map? a)) ::maps
+                              (and (set? e) (set? a)) ::sets
+                              (and (sequential? e) (sequential? a)) ::sequentials
+                              (and (instance? #?(:clj Pattern :cljs js/RegExp) e)
+                                   (instance? #?(:clj Pattern :cljs js/RegExp) a)) ::regexps
+                              (instance? #?(:clj Pattern :cljs js/RegExp) e) ::re-seq
+                              (isa? e #?(:clj Throwable :cljs js/Error)) ::expect-exception
+                              (instance? #?(:clj Throwable :cljs js/Error) e) ::expected-exception
+                              (instance? #?(:clj Throwable :cljs js/Error) a) ::actual-exception
+                              (and (instance? #?(:clj Class :cljs js/Function) e)
+                                   (instance? #?(:clj Class :cljs js/Function) a)) ::types
+                              (and (instance? #?(:clj Class :cljs js/Function) e)
+                                   (not (and (fn? e) (e a)))) ::expect-instance
+                              (spec? e) ::spec
+                              (fn? e) ::fn
+                              :default ::default)))
 
 (defmethod compare-expr ::equals [e a str-e str-a]
   {:type :pass})
@@ -367,6 +378,22 @@
     (if (e a)
       {:type :pass}
       {:type :fail :raw [str-e str-a] :result [(pr-str a) "is not" str-e]})
+    (catch #?(:clj Exception :cljs js/Error) ex
+      {:type             :fail :raw [str-e str-a]
+       :expected-message (str "also attempted: (" str-e " " str-a ")")
+       :actual-message   (str "       and got: " (p/get-message ex))
+       :result           ["expected:" str-e
+                          "\n                was:" (pr-str a)]})))
+
+(defmethod compare-expr ::spec [e a str-e str-a]
+  (try
+    (let [valid?      (resolve 'clojure.spec.alpha/valid?)
+          explain-str (resolve 'clojure.spec.alpha/explain-str)]
+      (if (valid? e a)
+        {:type :pass}
+        {:type :fail :raw [str-e str-a]
+         :message (clojure.string/replace (explain-str e a) "\n" "\n           ")
+         :result [(pr-str a) "is not" str-e]}))
     (catch #?(:clj Exception :cljs js/Error) ex
       {:type             :fail :raw [str-e str-a]
        :expected-message (str "also attempted: (" str-e " " str-a ")")
