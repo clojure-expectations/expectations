@@ -1,0 +1,4 @@
+{:deps {joda-time/joda-time {:mvn/version "2.9.3"}
+        junit/junit {:mvn/version "4.12"}}
+ :paths ["src/cljc" "src/cljs" "src/clojure"]
+ :aliases {:test {:extra-paths ["test/cljc" "test/clojure" "test"]}}}
