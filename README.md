@@ -1,6 +1,13 @@
 # Expectations
 
-Visit the expectations website for all of the expectation docs:
+This is the "classic" expectations library (considered stable and "in maintenance mode" at this point).
+It uses its own set of tooling and is not compatible with `clojure.test`-based tooling.
+There is a very actively-maintained variant of this library that _is_ compatible with `clojure.test` and its tooling:
+
+[expectations.clojure.test](https://github.com/clojure-expectations/clojure-test) 
+([documentation](https://cljdoc.org/d/expectations/clojure-test/))
+
+Visit this website for all of the "classic" expectation docs:
 
 <a href="https://clojure-expectations.github.io">https://clojure-expectations.github.io</a>
 
