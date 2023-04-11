@@ -1,11 +1,16 @@
 # Expectations
 
 This is the "classic" expectations library (considered stable and "in maintenance mode" at this point).
-It uses its own set of tooling and is not compatible with `clojure.test`-based tooling.
+It uses its own set of tooling and is **not compatible with `clojure.test`-based tooling.**
+
+## `clojure.test` compatibility
+
 There is a very actively-maintained variant of this library that _is_ compatible with `clojure.test` and its tooling:
 
 [expectations.clojure.test](https://github.com/clojure-expectations/clojure-test) 
-([documentation](https://cljdoc.org/d/expectations/clojure-test/))
+([documentation](https://cljdoc.org/d/com.github.seancorfield/expectations/))
+
+## "Classic" Expectations (legacy)
 
 Visit this website for all of the "classic" expectation docs:
 
